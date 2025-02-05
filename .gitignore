@@ -1,8 +1,8 @@
 /.phpunit.cache
 /node_modules
-/public/assets
-!/public/assets/media/*
-!/public/assets/media/**/*
+/public/assets/css
+/public/assets/js
+/public/assets/vendors
 /public/build
 /public/hot
 /public/storage
