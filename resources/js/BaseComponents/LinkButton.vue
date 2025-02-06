@@ -1,5 +1,4 @@
 <script setup>
-import { Link } from '@inertiajs/vue3'
 defineProps({
     href: {
         type: String,
@@ -9,12 +8,14 @@ defineProps({
         type: String,
         default: 'md',
     },
-    color: String,
+    color: {
+        type: String,
+        default: 'light',
+    },
 });
 </script>
 <template>
-    <!-- TODO: Sampai sini -->
-    <a class="btn btn-primary" :href="href">
-        <slot />
+    <a :class="`btn btn-${size} btn-${color}`" :href="href">
+        <slot>Button</slot>
     </a>
 </template>

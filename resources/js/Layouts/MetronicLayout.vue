@@ -1,8 +1,8 @@
 <script setup>
 import { Head } from '@inertiajs/vue3';
-import SideBar from '@/Components/SideBar.vue';
-import Header from '@/Components/Header.vue';
-import Footer from '@/Components/Footer.vue';
+import SideBar from '@/LayoutComponents/SideBar.vue';
+import Header from '@/LayoutComponents/Header.vue';
+import Footer from '@/LayoutComponents/Footer.vue';
 </script>
 
 <template>

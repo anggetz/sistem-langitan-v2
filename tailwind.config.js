@@ -4,7 +4,8 @@ module.exports = {
 	content: [
 		'./resources/metronic/app/**/*.{ts,js}',
 		'./resources/metronic/core/components/**/*.{ts,js}',
-		'./resources/js/**/*.vue'
+		'./resources/views/app.blade.php',
+		'./resources/js/**/*.vue',
 	],
 	safelist: [
 		'demo1',

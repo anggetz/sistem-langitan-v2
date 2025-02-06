@@ -10,7 +10,7 @@ import LinkButton from '@/BaseComponents/LinkButton.vue';
 
         <ContainerFixed>
             <PageHeader title="Dashboard" sub-title="Central Hub for Personal Customization">
-
+                <LinkButton size="sm" href="/">View Profile</LinkButton>
             </PageHeader>
         </ContainerFixed>
 

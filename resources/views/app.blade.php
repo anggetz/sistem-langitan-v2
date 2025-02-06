@@ -1,10 +1,12 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full" data-theme="true" data-theme-mode="light" dir="ltr">
     <head>
         <meta charset="utf-8">
         <meta content="width=device-width, initial-scale=1, shrink-to-fit=no" name="viewport"/>
 
         <title inertia>{{ config('app.name', 'Laravel') }}</title>
+
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 
         <!-- CSS -->
         <link href="assets/vendors/apexcharts/apexcharts.css" rel="stylesheet"/>
@@ -42,17 +44,11 @@
         <!-- End of Theme Mode -->
          
         @inertia
-
         <!-- Scripts -->
-        <script src="assets/js/core.bundle.js">
-        </script>
-        <script src="assets/vendors/apexcharts/apexcharts.min.js">
-        </script>
-        <script src="assets/js/widgets/general.js">
-        </script>
-        <script src="assets/js/layouts/demo1.js">
-        </script>
+        <script src="assets/js/core.bundle.js"></script>
+        <script src="assets/vendors/apexcharts/apexcharts.min.js"></script>
+        <script src="assets/js/widgets/general.js"></script>
+        <script src="assets/js/layouts/demo1.js"></script>
         <!-- End of Scripts -->
-         
     </body>
 </html>
