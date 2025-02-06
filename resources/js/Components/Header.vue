@@ -1,3 +1,6 @@
+<script setup>
+import { Link } from '@inertiajs/vue3'
+</script>
 <template>
     <!-- Header -->
     <header class="header fixed top-0 z-10 start-0 end-0 flex items-stretch shrink-0 bg-[--tw-page-bg] dark:bg-[--tw-page-bg-dark]" data-sticky="true" data-sticky-class="shadow-sm" data-sticky-name="header" id="header">
@@ -5,7 +8,7 @@
      <div class="container-fixed flex justify-between items-stretch lg:gap-4" id="header_container">
       <!-- Mobile Logo -->
       <div class="flex gap-1 lg:hidden items-center -ms-1">
-       <a class="shrink-0" href="html/demo1.html">
+       <a class="shrink-0" href="/">
         <img class="max-h-[25px] w-full" src="assets/media/app/mini-logo.svg"/>
        </a>
        <div class="flex items-center">
@@ -30,11 +33,11 @@
          <div class="menu flex-col lg:flex-row gap-5 lg:gap-7.5" data-menu="true" id="mega_menu">
           <!--Megamenu Item-->
           <div class="menu-item active">
-           <a class="menu-link text-nowrap text-sm text-gray-800 font-medium menu-item-hover:text-primary menu-item-active:text-gray-900 menu-item-active:font-medium" href="html/demo1.html">
+           <Link class="menu-link text-nowrap text-sm text-gray-800 font-medium menu-item-hover:text-primary menu-item-active:text-gray-900 menu-item-active:font-medium" href="/">
             <span class="menu-title text-nowrap">
              Home
             </span>
-           </a>
+           </Link>
           </div>
           <!--End of Megamenu Item-->
           <!--Megamenu Item-->
