@@ -1,12 +1,11 @@
 <script setup>
-import { Head } from '@inertiajs/vue3';
-import SideBar from '@/LayoutComponents/SideBar.vue';
+import Sidebar from '@/LayoutComponents/Sidebar.vue';
 import Header from '@/LayoutComponents/Header.vue';
 import Footer from '@/LayoutComponents/Footer.vue';
 </script>
 
 <template>
-    <SideBar />
+    <Sidebar />
     <!-- Wrapper -->
     <div class="wrapper flex grow flex-col">
         <Header />
