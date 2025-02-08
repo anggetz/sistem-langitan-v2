@@ -1,3 +1,7 @@
+<script setup>
+import { Link } from '@inertiajs/vue3'
+</script>
+
 <template>
       <!--Megamenu Contaoner-->
       <div class="flex items-stretch" id="mega_menu_container">

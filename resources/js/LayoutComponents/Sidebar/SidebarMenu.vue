@@ -1,8 +1,27 @@
+<script setup>
+import MenuItem from './MenuItem.vue'
+import SubmenuItem from './SubmenuItem.vue'
+import GroupMenuItem from './GroupMenuItem.vue'
+</script>
+
 <template>
-    <div class="sidebar-content flex grow shrink-0 py-5 pe-2" id="sidebar_content">
-     <div class="scrollable-y-hover grow shrink-0 flex ps-2 lg:ps-5 pe-1 lg:pe-3" data-scrollable="true" data-scrollable-dependencies="#sidebar_header" data-scrollable-height="auto" data-scrollable-offset="0px" data-scrollable-wrappers="#sidebar_content" id="sidebar_scrollable">
       <!-- Sidebar Menu -->
       <div class="menu flex flex-col grow gap-0.5" data-menu="true" data-menu-accordion-expand-all="false" id="sidebar_menu">
+       <GroupMenuItem title="Group Item Template" />
+       <!-- Use this MenuItem template -->
+       <MenuItem>
+        <template #icon>
+         <i class="ki-filled ki-abstract-8 text-lg"></i>
+        </template>
+        <template #title>
+          Menu Item Template
+        </template>
+        <template #submenu-items>
+         <SubmenuItem href="/">Submenu Item Template</SubmenuItem>
+        </template>
+       </MenuItem>
+       <!-- End of MenuItem template -->
+
        <div class="menu-item" data-menu-item-toggle="accordion" data-menu-item-trigger="click">
         <div class="menu-link flex items-center grow cursor-pointer border border-transparent gap-[10px] ps-[10px] pe-[10px] py-[6px]" tabindex="0">
          <span class="menu-icon items-start text-gray-500 dark:text-gray-400 w-[20px]">
@@ -1290,6 +1309,4 @@
        </div>
       </div>
       <!-- End of Sidebar Menu -->
-     </div>
-    </div>
 </template>
