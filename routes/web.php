@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
-    return Inertia::render('MetronicIndex');
+    return redirect('/metronic');
 });
 
 Route::get('/welcome', function () {
@@ -29,3 +29,7 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
+
+Route::get('/metronic', function () {
+    return Inertia::render('Metronic/Dashboard');
+});
