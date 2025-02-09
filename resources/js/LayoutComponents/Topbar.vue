@@ -4,7 +4,7 @@ import SearchModal from './Topbar/SearchModal.vue';
 import Chat from './Topbar/Chat.vue';
 import Apps from './Topbar/Apps.vue';
 import Notifications from './Topbar/Notifications.vue';
-import ProfileMenu from './Topbar/ProfileMenu.vue';
+import Profile from './Topbar/ProfileMenu.vue';
 </script>
 
 <template>
@@ -14,7 +14,7 @@ import ProfileMenu from './Topbar/ProfileMenu.vue';
        <Chat />
        <Apps />
        <Notifications />
-       <ProfileMenu />
+       <Profile />
       </div>
       <!-- End of Topbar -->
 </template>

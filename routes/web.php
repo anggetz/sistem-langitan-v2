@@ -1,12 +1,14 @@
 <?php
 
+use App\Http\Controllers\Examples\ExamplesController;
+use App\Http\Controllers\Examples\CrudController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
-    return redirect('/examples');
+    return redirect('/examples/dashboard');
 });
 
 Route::get('/welcome', function () {
@@ -31,10 +33,7 @@ Route::middleware('auth')->group(function () {
 require __DIR__.'/auth.php';
 
 Route::prefix('/examples')->group(function() {
-    Route::get('/', function () {
-        return Inertia::render('Examples/Dashboard');
-    });
-    Route::get('/dashboard', function () {
-        return Inertia::render('Examples/Dashboard');
-    });
+    Route::get('/get-profile', [ExamplesController::class, 'getProfile']);
+    Route::get('/dashboard', [ExamplesController::class, 'dashboard']);
+    Route::resource('/crud', CrudController::class);
 });
