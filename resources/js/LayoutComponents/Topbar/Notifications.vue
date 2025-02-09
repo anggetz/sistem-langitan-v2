@@ -129,7 +129,7 @@
             <div class="flex flex-col gap-5 pt-3 pb-4 divider-y divider-gray-200">
              <div class="flex grow gap-2.5 px-5">
               <div class="relative shrink-0 mt-0.5">
-               <img alt="" class="rounded-full size-8" src="assets/media/avatars/300-4.png"/>
+               <img alt="" class="rounded-full size-8" src="/assets/media/avatars/300-4.png"/>
                <span class="size-1.5 badge badge-circle badge-success absolute top-7 end-0.5 ring-1 ring-light transform -translate-y-1/2">
                </span>
               </div>
@@ -180,7 +180,7 @@
              </div>
              <div class="flex grow gap-2.5 px-5">
               <div class="relative shrink-0 mt-0.5">
-               <img alt="" class="rounded-full size-8" src="assets/media/avatars/300-5.png"/>
+               <img alt="" class="rounded-full size-8" src="/assets/media/avatars/300-5.png"/>
                <span class="size-1.5 badge badge-circle badge-success absolute top-7 end-0.5 ring-1 ring-light transform -translate-y-1/2">
                </span>
               </div>
@@ -221,7 +221,7 @@
              </div>
              <div class="flex grow gap-2.5 px-5" id="notification_request_3">
               <div class="relative shrink-0 mt-0.5">
-               <img alt="" class="rounded-full size-8" src="assets/media/avatars/300-27.png"/>
+               <img alt="" class="rounded-full size-8" src="/assets/media/avatars/300-27.png"/>
                <span class="size-1.5 badge badge-circle bg-gray-400 absolute top-7 end-0.5 ring-1 ring-light transform -translate-y-1/2">
                </span>
               </div>
@@ -262,7 +262,7 @@
              </div>
              <div class="flex grow gap-2.5 px-5">
               <div class="relative shrink-0 mt-0.5">
-               <img alt="" class="rounded-full size-8" src="assets/media/avatars/300-1.png"/>
+               <img alt="" class="rounded-full size-8" src="/assets/media/avatars/300-1.png"/>
                <span class="size-1.5 badge badge-circle bg-gray-400 absolute top-7 end-0.5 ring-1 ring-light transform -translate-y-1/2">
                </span>
               </div>
@@ -284,7 +284,7 @@
                 </span>
                </div>
                <div class="card shadow-none flex items-center flex-row gap-1.5 p-2.5 rounded-lg bg-light-active">
-                <img class="h-5" src="assets/media/file-types/pdf.svg"/>
+                <img class="h-5" src="/assets/media/file-types/pdf.svg"/>
                 <a class="hover:text-primary-active font-medium text-gray-700 text-xs me-1" href="#">
                  Launch_nov24.pptx
                 </a>
@@ -298,7 +298,7 @@
              </div>
              <div class="flex grow gap-2.5 px-5">
               <div class="relative shrink-0 mt-0.5">
-               <img alt="" class="rounded-full size-8" src="assets/media/avatars/300-11.png"/>
+               <img alt="" class="rounded-full size-8" src="/assets/media/avatars/300-11.png"/>
                <span class="size-1.5 badge badge-circle badge-success absolute top-7 end-0.5 ring-1 ring-light transform -translate-y-1/2">
                </span>
               </div>
@@ -326,7 +326,7 @@
              </div>
              <div class="flex grow gap-2.5 px-5">
               <div class="relative shrink-0 mt-0.5">
-               <img alt="" class="rounded-full size-8" src="assets/media/avatars/300-14.png"/>
+               <img alt="" class="rounded-full size-8" src="/assets/media/avatars/300-14.png"/>
                <span class="size-1.5 badge badge-circle bg-gray-400 absolute top-7 end-0.5 ring-1 ring-light transform -translate-y-1/2">
                </span>
               </div>
@@ -349,7 +349,7 @@
                </div>
                <div class="card shadow-none flex items-center flex-row gap-1.5 p-2.5 rounded-lg bg-light-active">
                 <div class="flex items-center justify-center w-[26px] h-[30px] shrink-0 bg-light rounded border border-gray-200">
-                 <img class="h-5" src="assets/media/file-types/figma.svg"/>
+                 <img class="h-5" src="/assets/media/file-types/figma.svg"/>
                 </div>
                 <a class="hover:text-primary-active font-medium text-gray-700 text-xs me-1" href="#">
                  Launcher-UIkit.fig
@@ -380,7 +380,7 @@
             <div class="flex flex-col gap-5 pt-3 pb-4">
              <div class="flex grow gap-2.5 px-5" id="notification_request_13">
               <div class="relative shrink-0 mt-0.5">
-               <img alt="" class="rounded-full size-8" src="assets/media/avatars/300-25.png"/>
+               <img alt="" class="rounded-full size-8" src="/assets/media/avatars/300-25.png"/>
                <span class="size-1.5 badge badge-circle badge-success absolute top-7 end-0.5 ring-1 ring-light transform -translate-y-1/2">
                </span>
               </div>
@@ -447,7 +447,7 @@
              </div>
              <div class="flex grow gap-2.5 px-5">
               <div class="relative shrink-0 mt-0.5">
-               <img alt="" class="rounded-full size-8" src="assets/media/avatars/300-34.png"/>
+               <img alt="" class="rounded-full size-8" src="/assets/media/avatars/300-34.png"/>
                <span class="size-1.5 badge badge-circle bg-gray-400 absolute top-7 end-0.5 ring-1 ring-light transform -translate-y-1/2">
                </span>
               </div>
@@ -470,7 +470,7 @@
                </div>
                <div class="card shadow-none flex items-center justify-between flex-row gap-1.5 p-2.5 rounded-lg bg-light-active">
                 <div class="flex items-center gap-1.5">
-                 <img class="h-6" src="assets/media/file-types/xls.svg"/>
+                 <img class="h-6" src="/assets/media/file-types/xls.svg"/>
                  <div class="flex flex-col gap-0.5">
                   <a class="hover:text-primary-active font-medium text-gray-700 text-xs" href="#">
                    Redesign-2024.xls
@@ -497,7 +497,7 @@
              </div>
              <div class="flex grow gap-2 px-5">
               <div class="relative shrink-0 mt-0.5">
-               <img alt="" class="rounded-full size-8" src="assets/media/avatars/300-29.png"/>
+               <img alt="" class="rounded-full size-8" src="/assets/media/avatars/300-29.png"/>
                <span class="size-1.5 badge badge-circle bg-gray-400 absolute top-7 end-0.5 ring-1 ring-light transform -translate-y-1/2">
                </span>
               </div>
@@ -536,10 +536,10 @@
                  </div>
                  <div class="flex -space-x-2">
                   <div class="flex">
-                   <img class="hover:z-5 relative shrink-0 rounded-full ring-1 ring-light-light size-6" src="assets/media/avatars/300-3.png"/>
+                   <img class="hover:z-5 relative shrink-0 rounded-full ring-1 ring-light-light size-6" src="/assets/media/avatars/300-3.png"/>
                   </div>
                   <div class="flex">
-                   <img class="hover:z-5 relative shrink-0 rounded-full ring-1 ring-light-light size-6" src="assets/media/avatars/300-2.png"/>
+                   <img class="hover:z-5 relative shrink-0 rounded-full ring-1 ring-light-light size-6" src="/assets/media/avatars/300-2.png"/>
                   </div>
                  </div>
                 </div>
@@ -558,7 +558,7 @@
              </div>
              <div class="flex grow gap-2.5 px-5" id="notification_request_3">
               <div class="relative shrink-0 mt-0.5">
-               <img alt="" class="rounded-full size-8" src="assets/media/avatars/300-30.png"/>
+               <img alt="" class="rounded-full size-8" src="/assets/media/avatars/300-30.png"/>
                <span class="size-1.5 badge badge-circle bg-gray-400 absolute top-7 end-0.5 ring-1 ring-light transform -translate-y-1/2">
                </span>
               </div>
@@ -597,7 +597,7 @@
              </div>
              <div class="flex grow gap-2.5 px-5">
               <div class="relative shrink-0 mt-0.5">
-               <img alt="" class="rounded-full size-8" src="assets/media/avatars/300-24.png"/>
+               <img alt="" class="rounded-full size-8" src="/assets/media/avatars/300-24.png"/>
                <span class="size-1.5 badge badge-circle badge-success absolute top-7 end-0.5 ring-1 ring-light transform -translate-y-1/2">
                </span>
               </div>
@@ -642,7 +642,7 @@
             <div class="flex flex-col gap-5 pt-3 pb-4">
              <div class="flex grow gap-2 px-5">
               <div class="relative shrink-0 mt-0.5">
-               <img alt="" class="rounded-full size-8" src="assets/media/avatars/300-15.png"/>
+               <img alt="" class="rounded-full size-8" src="/assets/media/avatars/300-15.png"/>
                <span class="size-1.5 badge badge-circle bg-gray-400 absolute top-7 end-0.5 ring-1 ring-light transform -translate-y-1/2">
                </span>
               </div>
@@ -689,13 +689,13 @@
                  </div>
                  <div class="flex -space-x-2">
                   <div class="flex">
-                   <img class="hover:z-5 relative shrink-0 rounded-full ring-1 ring-light-light size-6" src="assets/media/avatars/300-4.png"/>
+                   <img class="hover:z-5 relative shrink-0 rounded-full ring-1 ring-light-light size-6" src="/assets/media/avatars/300-4.png"/>
                   </div>
                   <div class="flex">
-                   <img class="hover:z-5 relative shrink-0 rounded-full ring-1 ring-light-light size-6" src="assets/media/avatars/300-1.png"/>
+                   <img class="hover:z-5 relative shrink-0 rounded-full ring-1 ring-light-light size-6" src="/assets/media/avatars/300-1.png"/>
                   </div>
                   <div class="flex">
-                   <img class="hover:z-5 relative shrink-0 rounded-full ring-1 ring-light-light size-6" src="assets/media/avatars/300-2.png"/>
+                   <img class="hover:z-5 relative shrink-0 rounded-full ring-1 ring-light-light size-6" src="/assets/media/avatars/300-2.png"/>
                   </div>
                   <div class="flex">
                    <span class="hover:z-5 relative inline-flex items-center justify-center shrink-0 rounded-full ring-1 font-semibold leading-none text-3xs size-6 text-success-inverse size-6 ring-success-light bg-success">
@@ -719,7 +719,7 @@
              </div>
              <div class="flex grow gap-2.5 px-5">
               <div class="relative shrink-0 mt-0.5">
-               <img alt="" class="rounded-full size-8" src="assets/media/avatars/300-6.png"/>
+               <img alt="" class="rounded-full size-8" src="/assets/media/avatars/300-6.png"/>
                <span class="size-1.5 badge badge-circle absolute top-7 end-0.5 ring-1 ring-light transform -translate-y-1/2">
                </span>
               </div>
@@ -748,7 +748,7 @@
              </div>
              <div class="flex grow gap-2.5 px-5">
               <div class="relative shrink-0 mt-0.5">
-               <img alt="" class="rounded-full size-8" src="assets/media/avatars/300-12.png"/>
+               <img alt="" class="rounded-full size-8" src="/assets/media/avatars/300-12.png"/>
                <span class="size-1.5 badge badge-circle badge-success absolute top-7 end-0.5 ring-1 ring-light transform -translate-y-1/2">
                </span>
               </div>
@@ -771,7 +771,7 @@
                </div>
                <div class="card shadow-none flex items-center justify-between flex-row gap-1.5 p-2.5 rounded-lg bg-light-active">
                 <div class="flex items-center gap-1.5">
-                 <img class="h-6" src="assets/media/file-types/word.svg"/>
+                 <img class="h-6" src="/assets/media/file-types/word.svg"/>
                  <div class="flex flex-col gap-0.5">
                   <a class="hover:text-primary-active font-medium text-gray-700 text-xs" href="#">
                    Landing-page.docx
@@ -794,7 +794,7 @@
                </div>
                <div class="card shadow-none flex items-center justify-between flex-row gap-1.5 p-2.5 rounded-lg bg-light-active">
                 <div class="flex items-center gap-1.5">
-                 <img class="h-6" src="assets/media/file-types/svg.svg"/>
+                 <img class="h-6" src="/assets/media/file-types/svg.svg"/>
                  <div class="flex flex-col gap-0.5">
                   <a class="hover:text-primary-active font-medium text-gray-700 text-xs" href="#">
                    New-icon.svg
@@ -821,7 +821,7 @@
              </div>
              <div class="flex grow gap-2.5 px-5">
               <div class="relative shrink-0 mt-0.5">
-               <img alt="" class="rounded-full size-8" src="assets/media/avatars/300-21.png"/>
+               <img alt="" class="rounded-full size-8" src="/assets/media/avatars/300-21.png"/>
                <span class="size-1.5 badge badge-circle badge-success absolute top-7 end-0.5 ring-1 ring-light transform -translate-y-1/2">
                </span>
               </div>
@@ -871,7 +871,7 @@
              </div>
              <div class="flex grow gap-2.5 px-5" id="notification_request_3">
               <div class="relative shrink-0 mt-0.5">
-               <img alt="" class="rounded-full size-8" src="assets/media/avatars/300-13.png"/>
+               <img alt="" class="rounded-full size-8" src="/assets/media/avatars/300-13.png"/>
                <span class="size-1.5 badge badge-circle badge-success absolute top-7 end-0.5 ring-1 ring-light transform -translate-y-1/2">
                </span>
               </div>
@@ -927,7 +927,7 @@
             <div class="flex flex-col gap-5 pt-3 pb-4">
              <div class="flex grow gap-2.5 px-5">
               <div class="relative shrink-0 mt-0.5">
-               <img alt="" class="rounded-full size-8" src="assets/media/avatars/300-1.png"/>
+               <img alt="" class="rounded-full size-8" src="/assets/media/avatars/300-1.png"/>
                <span class="size-1.5 badge badge-circle bg-gray-400 absolute top-7 end-0.5 ring-1 ring-light transform -translate-y-1/2">
                </span>
               </div>
@@ -989,7 +989,7 @@
              </div>
              <div class="flex grow gap-2.5 px-5" id="notification_request_17">
               <div class="relative shrink-0 mt-0.5">
-               <img alt="" class="rounded-full size-8" src="assets/media/avatars/300-19.png"/>
+               <img alt="" class="rounded-full size-8" src="/assets/media/avatars/300-19.png"/>
                <span class="size-1.5 badge badge-circle badge-success absolute top-7 end-0.5 ring-1 ring-light transform -translate-y-1/2">
                </span>
               </div>
@@ -1012,7 +1012,7 @@
                </div>
                <div class="card shadow-none flex items-center flex-row gap-1.5 p-2.5 rounded-lg bg-light-active">
                 <div class="flex items-center justify-center w-[26px] h-[30px] shrink-0 bg-white rounded border border-gray-200">
-                 <img class="h-5" src="assets/media/brand-logos/jira.svg"/>
+                 <img class="h-5" src="/assets/media/brand-logos/jira.svg"/>
                 </div>
                 <a class="hover:text-primary-active font-medium text-gray-700 text-xs me-1" href="#">
                  User-feedback.jira
@@ -1035,7 +1035,7 @@
              </div>
              <div class="flex grow gap-2.5 px-5">
               <div class="relative shrink-0 mt-0.5">
-               <img alt="" class="rounded-full size-8" src="assets/media/avatars/300-17.png"/>
+               <img alt="" class="rounded-full size-8" src="/assets/media/avatars/300-17.png"/>
                <span class="size-1.5 badge badge-circle badge-success absolute top-7 end-0.5 ring-1 ring-light transform -translate-y-1/2">
                </span>
               </div>
@@ -1069,7 +1069,7 @@
              </div>
              <div class="flex grow gap-2.5 px-5">
               <div class="relative shrink-0 mt-0.5">
-               <img alt="" class="rounded-full size-8" src="assets/media/avatars/300-34.png"/>
+               <img alt="" class="rounded-full size-8" src="/assets/media/avatars/300-34.png"/>
                <span class="size-1.5 badge badge-circle badge-success absolute top-7 end-0.5 ring-1 ring-light transform -translate-y-1/2">
                </span>
               </div>
@@ -1097,7 +1097,7 @@
              </div>
              <div class="flex grow gap-2.5 px-5">
               <div class="relative shrink-0 mt-0.5">
-               <img alt="" class="rounded-full size-8" src="assets/media/avatars/300-9.png"/>
+               <img alt="" class="rounded-full size-8" src="/assets/media/avatars/300-9.png"/>
                <span class="size-1.5 badge badge-circle bg-gray-400 absolute top-7 end-0.5 ring-1 ring-light transform -translate-y-1/2">
                </span>
               </div>
@@ -1134,7 +1134,7 @@
              </div>
              <div class="flex grow gap-2.5 px-5" id="notification_request_3">
               <div class="relative shrink-0 mt-0.5">
-               <img alt="" class="rounded-full size-8" src="assets/media/avatars/300-13.png"/>
+               <img alt="" class="rounded-full size-8" src="/assets/media/avatars/300-13.png"/>
                <span class="size-1.5 badge badge-circle badge-success absolute top-7 end-0.5 ring-1 ring-light transform -translate-y-1/2">
                </span>
               </div>

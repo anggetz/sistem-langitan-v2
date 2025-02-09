@@ -19,7 +19,7 @@
            <div class="flex items-center justify-between flex-wrap gap-2 px-5">
             <div class="flex items-center flex-wrap gap-2">
              <div class="flex items-center justify-center shrink-0 rounded-full bg-gray-100 border border-gray-200 size-11">
-              <img alt="" class="size-7" src="assets/media/brand-logos/gitlab.svg"/>
+              <img alt="" class="size-7" src="/assets/media/brand-logos/gitlab.svg"/>
              </div>
              <div class="flex flex-col">
               <a class="text-2sm font-semibold text-gray-900 hover:text-primary-active" href="#">
@@ -33,13 +33,13 @@
             <div class="flex items-center gap-2.5">
              <div class="flex -space-x-2">
               <div class="flex">
-               <img class="hover:z-5 relative shrink-0 rounded-full ring-1 ring-light-light size-[30px]" src="assets/media/avatars/300-4.png"/>
+               <img class="hover:z-5 relative shrink-0 rounded-full ring-1 ring-light-light size-[30px]" src="/assets/media/avatars/300-4.png"/>
               </div>
               <div class="flex">
-               <img class="hover:z-5 relative shrink-0 rounded-full ring-1 ring-light-light size-[30px]" src="assets/media/avatars/300-1.png"/>
+               <img class="hover:z-5 relative shrink-0 rounded-full ring-1 ring-light-light size-[30px]" src="/assets/media/avatars/300-1.png"/>
               </div>
               <div class="flex">
-               <img class="hover:z-5 relative shrink-0 rounded-full ring-1 ring-light-light size-[30px]" src="assets/media/avatars/300-2.png"/>
+               <img class="hover:z-5 relative shrink-0 rounded-full ring-1 ring-light-light size-[30px]" src="/assets/media/avatars/300-2.png"/>
               </div>
               <div class="flex">
                <span class="hover:z-5 relative inline-flex items-center justify-center shrink-0 rounded-full ring-1 font-semibold leading-none text-3xs size-[30px] text-success-inverse size-6 ring-success-light bg-success">
@@ -136,7 +136,7 @@
          <div class="scrollable-y-auto" data-scrollable="true" data-scrollable-dependencies="#header" data-scrollable-max-height="auto" data-scrollable-offset="280px">
           <div class="flex flex-col gap-5 py-5">
            <div class="flex items-end gap-3.5 px-5">
-            <img alt="" class="rounded-full size-9" src="assets/media/avatars/300-5.png"/>
+            <img alt="" class="rounded-full size-9" src="/assets/media/avatars/300-5.png"/>
             <div class="flex flex-col gap-1.5">
              <div class="card shadow-none flex flex-col bg-gray-100 gap-2.5 p-3 rounded-bl-none">
               <p class="text-2sm font-medium text-gray-700">
@@ -166,13 +166,13 @@
              </div>
             </div>
             <div class="relative shrink-0">
-             <img alt="" class="rounded-full size-9" src="assets/media/avatars/300-2.png"/>
+             <img alt="" class="rounded-full size-9" src="/assets/media/avatars/300-2.png"/>
              <span class="size-[4.8px] badge badge-circle badge-success absolute top-7 end-0 transform -translate-y-1/2">
              </span>
             </div>
            </div>
            <div class="flex items-end gap-3.5 px-5">
-            <img alt="" class="rounded-full size-9" src="assets/media/avatars/300-4.png"/>
+            <img alt="" class="rounded-full size-9" src="/assets/media/avatars/300-4.png"/>
             <div class="flex flex-col gap-1.5">
              <div class="card shadow-none flex flex-col bg-gray-100 gap-2.5 p-3 rounded-bl-none">
               <p class="text-2sm font-medium text-gray-700">
@@ -185,7 +185,7 @@
             </div>
            </div>
            <div class="flex items-end gap-3.5 px-5">
-            <img alt="" class="rounded-full size-9" src="assets/media/avatars/300-1.png"/>
+            <img alt="" class="rounded-full size-9" src="/assets/media/avatars/300-1.png"/>
             <div class="flex flex-col gap-1.5">
              <div class="card shadow-none flex flex-col bg-gray-100 gap-2.5 p-3 rounded-bl-none">
               <p class="text-2sm font-medium text-gray-700">
@@ -213,7 +213,7 @@
              </div>
             </div>
             <div class="relative shrink-0">
-             <img alt="" class="rounded-full size-9" src="assets/media/avatars/300-2.png"/>
+             <img alt="" class="rounded-full size-9" src="/assets/media/avatars/300-2.png"/>
              <span class="size-[4.8px] badge badge-circle badge-success absolute top-7 end-0 transform -translate-y-1/2">
              </span>
             </div>
@@ -234,13 +234,13 @@
              </div>
             </div>
             <div class="relative shrink-0">
-             <img alt="" class="rounded-full size-9" src="assets/media/avatars/300-2.png"/>
+             <img alt="" class="rounded-full size-9" src="/assets/media/avatars/300-2.png"/>
              <span class="size-[4.8px] badge badge-circle badge-success absolute top-7 end-0 transform -translate-y-1/2">
              </span>
             </div>
            </div>
            <div class="flex items-end gap-3.5 px-5">
-            <img alt="" class="rounded-full size-9" src="assets/media/avatars/300-4.png"/>
+            <img alt="" class="rounded-full size-9" src="/assets/media/avatars/300-4.png"/>
             <div class="flex flex-col gap-1.5">
              <div class="card shadow-none flex flex-col bg-gray-100 gap-2.5 p-3 rounded-bl-none">
               <p class="text-2sm font-medium text-gray-700">
@@ -257,7 +257,7 @@
          <div class="mb-2.5">
           <div class="flex grow gap-2 p-5 bg-gray-100 mb-2.5" id="join_request">
            <div class="relative shrink-0">
-            <img alt="" class="rounded-full size-8" src="assets/media/avatars/300-14.png"/>
+            <img alt="" class="rounded-full size-8" src="/assets/media/avatars/300-14.png"/>
             <span class="size-1.5 badge badge-circle bg-gray-400 absolute top-7 end-0.5 ring-1 ring-light transform -translate-y-1/2">
             </span>
            </div>
@@ -289,7 +289,7 @@
            </div>
           </div>
           <div class="relative grow mx-5">
-           <img alt="" class="rounded-full size-[30px] absolute start-0 top-2/4 -translate-y-2/4 ms-2.5" src="assets/media/avatars/300-2.png"/>
+           <img alt="" class="rounded-full size-[30px] absolute start-0 top-2/4 -translate-y-2/4 ms-2.5" src="/assets/media/avatars/300-2.png"/>
            <input class="input h-auto py-4 ps-12 bg-transparent" placeholder="Write a message..." type="text" value=""/>
            <div class="flex items-center gap-2.5 absolute end-3 top-1/2 -translate-y-1/2">
             <button class="btn btn-sm btn-icon btn-light btn-clear">

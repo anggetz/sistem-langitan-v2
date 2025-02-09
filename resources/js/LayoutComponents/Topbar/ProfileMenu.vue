@@ -2,13 +2,13 @@
        <div class="menu" data-menu="true">
         <div class="menu-item" data-menu-item-offset="20px, 10px" data-menu-item-offset-rtl="-20px, 10px" data-menu-item-placement="bottom-end" data-menu-item-placement-rtl="bottom-start" data-menu-item-toggle="dropdown" data-menu-item-trigger="click|lg:click">
          <div class="menu-toggle btn btn-icon rounded-full">
-          <img alt="" class="size-9 rounded-full border-2 border-success shrink-0" src="assets/media/avatars/300-2.png">
+          <img alt="" class="size-9 rounded-full border-2 border-success shrink-0" src="/assets/media/avatars/300-2.png">
           </img>
          </div>
          <div class="menu-dropdown menu-default light:border-gray-300 w-screen max-w-[250px]">
           <div class="flex items-center justify-between px-5 py-1.5 gap-1.5">
            <div class="flex items-center gap-2">
-            <img alt="" class="size-9 rounded-full border-2 border-success" src="assets/media/avatars/300-2.png">
+            <img alt="" class="size-9 rounded-full border-2 border-success" src="/assets/media/avatars/300-2.png">
              <div class="flex flex-col gap-1.5">
               <span class="text-sm text-gray-800 font-semibold leading-none">
                Cody Fisher
@@ -177,14 +177,14 @@
              </span>
              <div class="flex items-center gap-1.5 rounded-md border border-gray-300 text-gray-600 p-1.5 text-2xs font-medium shrink-0">
               English
-              <img alt="" class="inline-block size-3.5 rounded-full" src="assets/media/flags/united-states.svg"/>
+              <img alt="" class="inline-block size-3.5 rounded-full" src="/assets/media/flags/united-states.svg"/>
              </div>
             </div>
             <div class="menu-dropdown menu-default light:border-gray-300 w-full max-w-[170px]">
              <div class="menu-item active">
               <a class="menu-link h-10" href="?dir=ltr">
                <span class="menu-icon">
-                <img alt="" class="inline-block size-4 rounded-full" src="assets/media/flags/united-states.svg"/>
+                <img alt="" class="inline-block size-4 rounded-full" src="/assets/media/flags/united-states.svg"/>
                </span>
                <span class="menu-title">
                 English
@@ -198,7 +198,7 @@
              <div class="menu-item">
               <a class="menu-link h-10" href="?dir=rtl">
                <span class="menu-icon">
-                <img alt="" class="inline-block size-4 rounded-full" src="assets/media/flags/saudi-arabia.svg"/>
+                <img alt="" class="inline-block size-4 rounded-full" src="/assets/media/flags/saudi-arabia.svg"/>
                </span>
                <span class="menu-title">
                 Arabic(Saudi)
@@ -208,7 +208,7 @@
              <div class="menu-item">
               <a class="menu-link h-10" href="?dir=ltr">
                <span class="menu-icon">
-                <img alt="" class="inline-block size-4 rounded-full" src="assets/media/flags/spain.svg"/>
+                <img alt="" class="inline-block size-4 rounded-full" src="/assets/media/flags/spain.svg"/>
                </span>
                <span class="menu-title">
                 Spanish
@@ -218,7 +218,7 @@
              <div class="menu-item">
               <a class="menu-link h-10" href="?dir=ltr">
                <span class="menu-icon">
-                <img alt="" class="inline-block size-4 rounded-full" src="assets/media/flags/germany.svg"/>
+                <img alt="" class="inline-block size-4 rounded-full" src="/assets/media/flags/germany.svg"/>
                </span>
                <span class="menu-title">
                 German
@@ -228,7 +228,7 @@
              <div class="menu-item">
               <a class="menu-link h-10" href="?dir=ltr">
                <span class="menu-icon">
-                <img alt="" class="inline-block size-4 rounded-full" src="assets/media/flags/japan.svg"/>
+                <img alt="" class="inline-block size-4 rounded-full" src="/assets/media/flags/japan.svg"/>
                </span>
                <span class="menu-title">
                 Japanese
