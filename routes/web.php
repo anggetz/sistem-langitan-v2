@@ -30,9 +30,11 @@ Route::middleware('auth')->group(function () {
 
 require __DIR__.'/auth.php';
 
-Route::get('/metronic', function () {
-    return Inertia::render('Metronic/Dashboard');
-});
-Route::get('/metronic/dashboard', function () {
-    return Inertia::render('Metronic/Dashboard');
+Route::prefix('/metronic')->group(function() {
+    Route::get('/', function () {
+        return Inertia::render('Metronic/Dashboard');
+    });
+    Route::get('/dashboard', function () {
+        return Inertia::render('Metronic/Dashboard');
+    });
 });
