@@ -1,5 +1,5 @@
 <template>
-  <div class="modal" data-modal="true" id="search_modal" data-modal-backdrop="false">
+  <div class="modal" data-modal="true" id="search_modal" data-modal-backdrop="true">
    <div class="modal-content max-w-[600px] top-[15%]">
     <div class="modal-header py-4 px-5">
      <i class="ki-filled ki-magnifier text-gray-700 text-xl">

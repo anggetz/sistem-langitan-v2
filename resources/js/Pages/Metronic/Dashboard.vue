@@ -3,6 +3,7 @@ import MetronicLayout from '@/Layouts/MetronicLayout.vue';
 import ContainerFixed from '@/LayoutComponents/ContainerFixed.vue';
 import PageHeader from '@/BaseComponents/PageHeader.vue';
 import LinkButton from '@/BaseComponents/LinkButton.vue';
+import SearchModal from '@/LayoutComponents/Topbar/SearchModal.vue';
 </script>
 
 <template>
@@ -1784,4 +1785,8 @@ import LinkButton from '@/BaseComponents/LinkButton.vue';
         </div>
         <!-- End of Container -->
     </MetronicLayout>
+
+    <!-- Search Modal : Ditambahkan hanya jika akan diakses pada sebuah halaman -->
+    <SearchModal />
+    <!-- End of Search Modal -->
 </template>

@@ -33,3 +33,6 @@ require __DIR__.'/auth.php';
 Route::get('/metronic', function () {
     return Inertia::render('Metronic/Dashboard');
 });
+Route::get('/metronic/dashboard', function () {
+    return Inertia::render('Metronic/Dashboard');
+});

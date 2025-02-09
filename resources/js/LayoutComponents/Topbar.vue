@@ -17,7 +17,4 @@ import ProfileMenu from './Topbar/ProfileMenu.vue';
        <ProfileMenu />
       </div>
       <!-- End of Topbar -->
-      <!-- Search Modal -->
-      <SearchModal /> 
-      <!-- End of Search Modal -->
 </template>

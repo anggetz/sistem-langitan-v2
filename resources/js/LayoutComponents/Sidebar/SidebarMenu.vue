@@ -17,53 +17,26 @@ import GroupMenuItem from './GroupMenuItem.vue'
           Menu Item Template
         </template>
         <template #submenu-items>
-         <SubmenuItem href="/">Submenu Item Template</SubmenuItem>
+         <SubmenuItem href="/metronic/dashboard">Submenu Item Template</SubmenuItem>
         </template>
        </MenuItem>
        <!-- End of MenuItem template -->
 
-       <div class="menu-item" data-menu-item-toggle="accordion" data-menu-item-trigger="click">
-        <div class="menu-link flex items-center grow cursor-pointer border border-transparent gap-[10px] ps-[10px] pe-[10px] py-[6px]" tabindex="0">
-         <span class="menu-icon items-start text-gray-500 dark:text-gray-400 w-[20px]">
-          <i class="ki-filled ki-element-11 text-lg">
-          </i>
-         </span>
-         <span class="menu-title text-sm font-medium text-gray-800 menu-item-active:text-primary menu-link-hover:!text-primary">
-          Dashboards
-         </span>
-         <span class="menu-arrow text-gray-400 w-[20px] shrink-0 justify-end ms-1 me-[-10px]">
-          <i class="ki-filled ki-plus text-2xs menu-item-show:hidden">
-          </i>
-          <i class="ki-filled ki-minus text-2xs hidden menu-item-show:inline-flex">
-          </i>
-         </span>
-        </div>
-        <div class="menu-accordion gap-0.5 ps-[10px] relative before:absolute before:start-[20px] before:top-0 before:bottom-0 before:border-s before:border-gray-200">
-         <div class="menu-item">
-          <a class="menu-link border border-transparent items-center grow menu-item-active:bg-secondary-active dark:menu-item-active:bg-coal-300 dark:menu-item-active:border-gray-100 menu-item-active:rounded-lg hover:bg-secondary-active dark:hover:bg-coal-300 dark:hover:border-gray-100 hover:rounded-lg gap-[14px] ps-[10px] pe-[10px] py-[8px]" href="html/demo1.html" tabindex="0">
-           <span class="menu-bullet flex w-[6px] -start-[3px] rtl:start-0 relative before:absolute before:top-0 before:size-[6px] before:rounded-full rtl:before:translate-x-1/2 before:-translate-y-1/2 menu-item-active:before:bg-primary menu-item-hover:before:bg-primary">
-           </span>
-           <span class="menu-title text-2sm font-normal text-gray-800 menu-item-active:text-primary menu-item-active:font-semibold menu-link-hover:!text-primary">
-            Light Sidebar
-           </span>
-          </a>
-         </div>
-         <div class="menu-item">
-          <a class="menu-link border border-transparent items-center grow menu-item-active:bg-secondary-active dark:menu-item-active:bg-coal-300 dark:menu-item-active:border-gray-100 menu-item-active:rounded-lg hover:bg-secondary-active dark:hover:bg-coal-300 dark:hover:border-gray-100 hover:rounded-lg gap-[14px] ps-[10px] pe-[10px] py-[8px]" href="html/demo1/dashboards/dark-sidebar.html" tabindex="0">
-           <span class="menu-bullet flex w-[6px] -start-[3px] rtl:start-0 relative before:absolute before:top-0 before:size-[6px] before:rounded-full rtl:before:translate-x-1/2 before:-translate-y-1/2 menu-item-active:before:bg-primary menu-item-hover:before:bg-primary">
-           </span>
-           <span class="menu-title text-2sm font-normal text-gray-800 menu-item-active:text-primary menu-item-active:font-semibold menu-link-hover:!text-primary">
-            Dark Sidebar
-           </span>
-          </a>
-         </div>
-        </div>
-       </div>
-       <div class="menu-item pt-2.25 pb-px">
-        <span class="menu-heading uppercase text-2sm font-medium text-gray-500 ps-[10px] pe-[10px]">
-         User
-        </span>
-       </div>
+       <MenuItem>
+        <template #icon>
+         <i class="ki-filled ki-element-11 text-lg"></i>
+        </template>
+        <template #title>
+         Dashboards
+        </template>
+        <template #submenu-items>
+         <SubmenuItem href="/metronic/dashboard">Light Sidebar</SubmenuItem>
+         <SubmenuItem href="/metronic/dark-sidebar">Dark Sidebar</SubmenuItem>
+        </template>
+       </MenuItem>
+
+       <GroupMenuItem title="User" />
+
        <div class="menu-item" data-menu-item-toggle="accordion" data-menu-item-trigger="click">
         <div class="menu-link flex items-center grow cursor-pointer border border-transparent gap-[10px] ps-[10px] pe-[10px] py-[6px]" tabindex="0">
          <span class="menu-icon items-start text-gray-500 dark:text-gray-400 w-[20px]">

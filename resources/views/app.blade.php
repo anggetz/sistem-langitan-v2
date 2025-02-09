@@ -9,17 +9,24 @@
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 
         <!-- CSS -->
-        <link href="assets/vendors/apexcharts/apexcharts.css" rel="stylesheet"/>
-        <link href="assets/vendors/keenicons/styles.bundle.css" rel="stylesheet"/>
-        <link href="assets/css/styles.css" rel="stylesheet"/>
+        <link href="{{ url('assets/vendors/apexcharts/apexcharts.css') }}" rel="stylesheet"/>
+        <link href="{{ url('assets/vendors/keenicons/styles.bundle.css') }}" rel="stylesheet"/>
+        <link href="{{ url('assets/css/styles.css') }}" rel="stylesheet"/>
 
-        <!-- Scripts -->
+        <!-- Extenal Scripts -->
+        <script src="{{ url('assets/js/core.bundle.js') }}"></script>
+        <script src="{{ url('assets/vendors/apexcharts/apexcharts.min.js') }}"></script>
+        <script src="{{ url('assets/js/widgets/general.js') }}"></script>
+        <script src="{{ url('assets/js/layouts/demo1.js') }}"></script>
+        <!-- End of Scripts -->
+
+        <!-- Mandatory Scripts -->
         @routes
         @vite(['resources/js/app.js', "resources/js/Pages/{$page['component']}.vue"])
         @inertiaHead
     </head>
     <body class="antialiased flex h-full text-base text-gray-700 [--tw-page-bg:#fefefe] [--tw-page-bg-dark:var(--tw-coal-500)] demo1 sidebar-fixed header-fixed bg-[--tw-page-bg] dark:bg-[--tw-page-bg-dark]">
-        
+
         <!-- Theme Mode -->
         <script>
         const defaultThemeMode = 'light'; // light|dark|system
@@ -42,13 +49,8 @@
             }
         </script>
         <!-- End of Theme Mode -->
-         
+
         @inertia
-        <!-- Scripts -->
-        <script src="assets/js/core.bundle.js"></script>
-        <script src="assets/vendors/apexcharts/apexcharts.min.js"></script>
-        <script src="assets/js/widgets/general.js"></script>
-        <script src="assets/js/layouts/demo1.js"></script>
-        <!-- End of Scripts -->
+
     </body>
 </html>
