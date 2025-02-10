@@ -31,9 +31,20 @@ class HandleInertiaRequests extends Middleware
     {
         return [
             ...parent::share($request),
+
+            // TODO: Hapus bagian ini jika sudah diimplementasi
             'auth' => [
-                'user' => $request->user(),
-            ],
+                'user' => [
+                    'name' => 'Nama User',
+                    'email' => 'user@company.com',
+                    'role' => 'User' // Ganti ke 'User' atau Lainnya jika ingin melihat menu lain
+                ]
+            ]
+
+            // TODO: Aktifkan bagian ini jika sudah diimplementasi
+            // 'auth' => [
+            //     'user' => $request->user(),
+            // ],
         ];
     }
 }

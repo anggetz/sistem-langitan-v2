@@ -1,26 +1,21 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { computed, ref, onMounted } from 'vue'
+import { usePage } from '@inertiajs/vue3'
 import MenuItem from './MenuItem.vue'
 import SubmenuItem from './SubmenuItem.vue'
 import GroupMenuItem from './GroupMenuItem.vue'
 
-// Definisi role disini menyesuaikan daftar role aplikasi
+// TODO: Sesuaikan jenis role disini sesuai role aplikasi
 const roleAdmin = ref(null)
-const roleOther = ref(null)
+const roleUser = ref(null)
 
-onMounted(async () => {
-  try {
-    const response = await fetch('/examples/get-profile')
-    const data = await response.json()
-    if (data.role_id === 1) {
-      roleAdmin.value = true;
-    } else if (data.role_id === 2) {
-      roleOther.value = true;
-    }
-  } catch (error) {
-    console.error('Failed to fetch profile:', error)
-  }
+onMounted(() => {
+  const page = usePage()
+  const user = computed(() => page.props.auth.user)
+  roleAdmin.value = (user.value.role === 'Admin')
+  roleUser.value = (user.value.role === 'User')
 })
+
 </script>
 
 <template>
@@ -84,10 +79,10 @@ onMounted(async () => {
   </div>
   <!-- End of Sidebar Menu -->
 
-  <!-- Sidebar Menu: Other -->
-  <div v-if="roleOther" class="menu flex flex-col grow gap-0.5" data-menu="true" data-menu-accordion-expand-all="false" id="sidebar_menu">
+  <!-- Sidebar Menu: User -->
+  <div v-else-if="roleUser" class="menu flex flex-col grow gap-0.5" data-menu="true" data-menu-accordion-expand-all="false" id="sidebar_menu">
 
-    <GroupMenuItem title="Sidebar Role Lain" />
+    <GroupMenuItem title="Sidebar Role User" />
 
     <MenuItem prefix-url="/examples/dashboard">
     <template #icon>
@@ -119,4 +114,23 @@ onMounted(async () => {
   </div>
   <!-- End of Sidebar Menu -->
 
+  <!-- Sidebar Menu: Lain -->
+  <div v-else class="menu flex flex-col grow gap-0.5" data-menu="true" data-menu-accordion-expand-all="false" id="sidebar_menu">
+
+    <GroupMenuItem title="Sidebar Role Lain" />
+
+    <MenuItem prefix-url="/examples/dashboard">
+    <template #icon>
+      <i class="ki-filled ki-element-11 text-lg"></i>
+    </template>
+    <template #title>
+      Dashboards
+    </template>
+    <template #submenu-items>
+      <SubmenuItem href="/examples/dashboard">Default Dashboard</SubmenuItem>
+    </template>
+    </MenuItem>
+
+  </div>
+  <!-- End of Sidebar Menu -->
 </template>
