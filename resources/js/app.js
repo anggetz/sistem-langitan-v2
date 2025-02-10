@@ -2,7 +2,6 @@ import { createInertiaApp } from '@inertiajs/vue3';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createApp, h } from 'vue';
 import { ZiggyVue } from '../../vendor/tightenco/ziggy';
-import KTLayout from '@/../metronic/app/layouts/demo1.js';
 
 import '../css/app.css';
 import './bootstrap';
@@ -17,7 +16,6 @@ createInertiaApp({
             import.meta.glob('./Pages/**/*.vue'),
         ),
     setup({ el, App, props, plugin }) {
-        KTLayout.init();
         return createApp({ render: () => h(App, props) })
             .use(plugin)
             .use(ZiggyVue)
