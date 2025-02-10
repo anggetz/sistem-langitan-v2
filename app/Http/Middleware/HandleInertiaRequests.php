@@ -37,7 +37,7 @@ class HandleInertiaRequests extends Middleware
                 'user' => [
                     'name' => 'Nama User',
                     'email' => 'user@company.com',
-                    'role' => 'User' // Ganti ke 'User' atau Lainnya jika ingin melihat menu lain
+                    'role' => 'Admin' // Ganti ke 'User' atau Lainnya jika ingin melihat menu lain
                 ]
             ]
 
