@@ -1,11 +1,7 @@
 <script setup>
-import Checkbox from '@/Components/Checkbox.vue';
-import GuestLayout from '@/Layouts/GuestLayout.vue';
-import InputError from '@/Components/InputError.vue';
-import InputLabel from '@/Components/InputLabel.vue';
-import PrimaryButton from '@/Components/PrimaryButton.vue';
-import TextInput from '@/Components/TextInput.vue';
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { Head, Link, useForm } from '@inertiajs/vue3'
+import MetronicGuestLayout from '@/Layouts/MetronicGuestLayout.vue';
+import Checkbox from '@/BaseComponents/Checkbox.vue';
 
 defineProps({
     canResetPassword: {
@@ -30,71 +26,93 @@ const submit = () => {
 </script>
 
 <template>
-    <GuestLayout>
-        <Head title="Log in" />
+  <MetronicGuestLayout>
+    <Head title="Login" />
+    <div class="card max-w-[370px] w-full">
+      <form @submit.prevent="submit" class="card-body flex flex-col gap-5 p-10" id="sign_in_form">
+        <div class="text-center mb-2.5">
+          <h3 class="text-lg font-medium text-gray-900 leading-none mb-2.5">
+            Sign in
+          </h3>
+          <div class="flex items-center justify-center font-medium">
+            <span class="text-2sm text-gray-700 me-1.5">
+              Need an account?
+            </span>
+            <Link class="text-2sm link" :href="route('register')">
+              Sign up
+            </Link>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-2.5">
+          <a class="btn btn-light btn-sm justify-center" href="#">
+            <img alt="" class="size-3.5 shrink-0" src="assets/media/brand-logos/google.svg" />
+            Use Google
+          </a>
+          <a class="btn btn-light btn-sm justify-center" href="#">
+            <img alt="" class="size-3.5 shrink-0 dark:hidden" src="assets/media/brand-logos/apple-black.svg" />
+            <img alt="" class="size-3.5 shrink-0 light:hidden" src="assets/media/brand-logos/apple-white.svg" />
+            Use Apple
+          </a>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="border-t border-gray-200 w-full">
+          </span>
+          <span class="text-2xs text-gray-500 font-medium uppercase">
+            Or
+          </span>
+          <span class="border-t border-gray-200 w-full">
+          </span>
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="form-label font-normal text-gray-900">
+            Email
+          </label>
+          <input v-model="form.email" class="input" placeholder="email@email.com" type="text" value="" />
+          <span v-show="form.errors.email" class="form-info text-danger font-normal">
+            {{ form.errors.email }}
+          </span>
+        </div>
+        <div class="flex flex-col gap-1">
+          <div class="flex items-center justify-between gap-1">
+            <label class="form-label font-normal text-gray-900">
+              Password
+            </label>
+            <a class="text-2sm link shrink-0" href="html/demo1/authentication/classic/reset-password/enter-email.html">
+              Forgot Password?
+            </a>
+          </div>
+          <div class="input" data-toggle-password="true">
+            <input v-model="form.password" name="user_password" placeholder="Enter Password" type="password" value="" />
+            <button class="btn btn-icon" data-toggle-password-trigger="true" type="button">
+              <i class="ki-filled ki-eye text-gray-500 toggle-password-active:hidden">
+              </i>
+              <i class="ki-filled ki-eye-slash text-gray-500 hidden toggle-password-active:block">
+              </i>
+            </button>
+          </div>
+          <span v-show="form.errors.password" class="form-info text-danger font-normal">
+            {{ form.errors.password }}
+          </span>
+        </div>
+        <label class="checkbox-group">
+          <Checkbox v-model:checked="form.remember" class="checkbox checkbox-sm" name="check" type="checkbox" value="1" />
+          <span class="checkbox-label">
+            Remember me
+          </span>
+        </label>
+        <button class="btn btn-primary flex justify-center grow">
+          Sign In
+        </button>
 
-        <div v-if="status" class="mb-4 text-sm font-medium text-green-600">
-            {{ status }}
+        <div v-if="status" class="text-center mb-2.5">
+          <div class="flex items-center justify-center font-medium">
+            <span class="text-2sm text-gray-700 me-1.5">
+              {{ status }}
+            </span>
+          </div>
         </div>
 
-        <form @submit.prevent="submit">
-            <div>
-                <InputLabel for="email" value="Email" />
-
-                <TextInput
-                    id="email"
-                    type="email"
-                    class="mt-1 block w-full"
-                    v-model="form.email"
-                    required
-                    autofocus
-                    autocomplete="username"
-                />
-
-                <InputError class="mt-2" :message="form.errors.email" />
-            </div>
-
-            <div class="mt-4">
-                <InputLabel for="password" value="Password" />
-
-                <TextInput
-                    id="password"
-                    type="password"
-                    class="mt-1 block w-full"
-                    v-model="form.password"
-                    required
-                    autocomplete="current-password"
-                />
-
-                <InputError class="mt-2" :message="form.errors.password" />
-            </div>
-
-            <div class="mt-4 block">
-                <label class="flex items-center">
-                    <Checkbox name="remember" v-model:checked="form.remember" />
-                    <span class="ms-2 text-sm text-gray-600"
-                        >Remember me</span
-                    >
-                </label>
-            </div>
-
-            <div class="mt-4 flex items-center justify-end">
-                <Link
-                    v-if="canResetPassword"
-                    :href="route('password.request')"
-                    class="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                >
-                    Forgot your password?
-                </Link>
-
-                <PrimaryButton
-                    class="ms-4"
-                    :class="{ 'opacity-25': form.processing }"
-                    :disabled="form.processing"
-                >
-                    Log in
-                </PrimaryButton>
-            </div>
-        </form>
-    </GuestLayout>
+      </form>
+    </div>
+  </MetronicGuestLayout>
 </template>
