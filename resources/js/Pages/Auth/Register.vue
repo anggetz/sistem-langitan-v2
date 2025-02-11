@@ -19,7 +19,8 @@ const submit = () => {
 <template>
   <MetronicGuestLayout>
 
-    <Head title="Sign up" />
+    <Head title="Register" />
+
     <div class="card max-w-[370px] w-full">
       <form @submit.prevent="submit" class="card-body flex flex-col gap-5 p-10" id="sign_up_form">
         <div class="text-center mb-2.5">
