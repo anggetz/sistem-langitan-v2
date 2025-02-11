@@ -1,3 +1,11 @@
+<script setup>
+import { computed } from 'vue'
+import { usePage } from '@inertiajs/vue3'
+
+const user = computed(() => usePage().props.auth.user)
+
+</script>
+
 <template>
        <div class="menu" data-menu="true">
         <div class="menu-item" data-menu-item-offset="20px, 10px" data-menu-item-offset-rtl="-20px, 10px" data-menu-item-placement="bottom-end" data-menu-item-placement-rtl="bottom-start" data-menu-item-toggle="dropdown" data-menu-item-trigger="click|lg:click">
@@ -11,10 +19,10 @@
             <img alt="" class="size-9 rounded-full border-2 border-success" src="/assets/media/avatars/300-2.png">
              <div class="flex flex-col gap-1.5">
               <span class="text-sm text-gray-800 font-semibold leading-none">
-               Cody Fisher
+               {{ user.name }}
               </span>
               <a class="text-xs text-gray-600 hover:text-primary font-medium leading-none" href="html/demo1/account/home/get-started.html">
-               c.fisher@gmail.com
+               {{ user.email }}
               </a>
              </div>
             </img>
