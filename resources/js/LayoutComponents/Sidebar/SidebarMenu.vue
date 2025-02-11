@@ -6,16 +6,9 @@ import SubmenuItem from './SubmenuItem.vue'
 import GroupMenuItem from './GroupMenuItem.vue'
 
 // TODO: Sesuaikan jenis role disini sesuai role aplikasi
-const roleAdmin = ref(null)
-const roleUser = ref(null)
-
-onMounted(() => {
-  const page = usePage()
-  const user = computed(() => page.props.auth.user)
-  roleAdmin.value = (user.value.role === 'Admin')
-  roleUser.value = (user.value.role === 'User')
-})
-
+const user = computed(() => usePage().props.auth.user)
+const roleAdmin = ref(user.value.role === 'Admin')
+const roleUser = ref(user.value.role === 'User')
 </script>
 
 <template>
@@ -72,7 +65,26 @@ onMounted(() => {
       Components
     </template>
     <template #submenu-items>
-
+      <SubmenuItem href="/examples/components/accordion">Accordion</SubmenuItem>
+      <SubmenuItem href="/examples/components/accordion">Avatar</SubmenuItem>
+      <SubmenuItem href="/examples/components/badge">Badge</SubmenuItem>
+      <SubmenuItem href="/examples/components/button">Button</SubmenuItem>
+      <SubmenuItem href="/examples/components/button-group">Button Group</SubmenuItem>
+      <SubmenuItem href="/examples/components/card">Card</SubmenuItem>
+      <SubmenuItem href="/examples/components/collapse">Collapse</SubmenuItem>
+      <SubmenuItem href="/examples/components/container">Container</SubmenuItem>
+      <SubmenuItem href="/examples/components/dismiss">Dismiss</SubmenuItem>
+      <SubmenuItem href="/examples/components/drawer">Drawer</SubmenuItem>
+      <SubmenuItem href="/examples/components/dropdown">Dropdown</SubmenuItem>
+      <SubmenuItem href="/examples/components/modal">Modal</SubmenuItem>
+      <SubmenuItem href="/examples/components/progress">Progress</SubmenuItem>
+      <SubmenuItem href="/examples/components/rating">Rating</SubmenuItem>
+      <SubmenuItem href="/examples/components/reparent">Reparent</SubmenuItem>
+      <SubmenuItem href="/examples/components/scrollable">Scrollable</SubmenuItem>
+      <SubmenuItem href="/examples/components/table">Table</SubmenuItem>
+      <SubmenuItem href="/examples/components/theme">Theme</SubmenuItem>
+      <SubmenuItem href="/examples/components/toggle">Toggle</SubmenuItem>
+      <SubmenuItem href="/examples/components/tooltip">Tooltip</SubmenuItem>
     </template>
     </MenuItem>
 
