@@ -1,7 +1,8 @@
 <?php
 
-use App\Http\Controllers\Examples\ExamplesController;
+use App\Http\Controllers\Examples\ComponentsController;
 use App\Http\Controllers\Examples\CrudController;
+use App\Http\Controllers\Examples\ExamplesController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -36,4 +37,5 @@ Route::prefix('/examples')->group(function() {
     Route::get('/get-profile', [ExamplesController::class, 'getProfile']);
     Route::get('/dashboard', [ExamplesController::class, 'dashboard']);
     Route::resource('/crud', CrudController::class);
+    Route::get('/components/accordion', [ComponentsController::class, 'accordion']);
 });

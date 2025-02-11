@@ -11,7 +11,7 @@ defineProps({
                 {{ title ? title : '[Page Title]'}}
             </h1>
             <div class="flex items-center gap-2 text-sm font-normal text-gray-700">
-                {{ subTitle ? subTitle : '[Sub title of the page with description]'}}
+                {{ subTitle }}
             </div>
         </div>
         <div v-if="$slots.default" class="flex items-center gap-2.5">

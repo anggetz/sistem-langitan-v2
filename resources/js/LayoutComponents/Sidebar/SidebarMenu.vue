@@ -66,7 +66,7 @@ const roleUser = ref(user.value.role === 'User')
     </template>
     <template #submenu-items>
       <SubmenuItem href="/examples/components/accordion">Accordion</SubmenuItem>
-      <SubmenuItem href="/examples/components/accordion">Avatar</SubmenuItem>
+      <SubmenuItem href="/examples/components/avatar">Avatar</SubmenuItem>
       <SubmenuItem href="/examples/components/badge">Badge</SubmenuItem>
       <SubmenuItem href="/examples/components/button">Button</SubmenuItem>
       <SubmenuItem href="/examples/components/button-group">Button Group</SubmenuItem>
