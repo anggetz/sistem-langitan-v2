@@ -77,9 +77,9 @@ const submit = () => {
             <label class="form-label font-normal text-gray-900">
               Password
             </label>
-            <a class="text-2sm link shrink-0" href="html/demo1/authentication/classic/reset-password/enter-email.html">
+            <Link class="text-2sm link shrink-0" :href="route('password.request')">
               Forgot Password?
-            </a>
+            </Link>
           </div>
           <div class="input" data-toggle-password="true">
             <input v-model="form.password" name="user_password" placeholder="Enter Password" type="password" value="" />
