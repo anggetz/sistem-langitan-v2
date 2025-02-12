@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Examples;
+namespace App\Http\Controllers\MetronicDemo;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;

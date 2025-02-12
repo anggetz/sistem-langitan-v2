@@ -1,15 +1,12 @@
 <?php
 
-use App\Http\Controllers\Examples\ComponentsController;
-use App\Http\Controllers\Examples\CrudController;
-use App\Http\Controllers\Examples\ExamplesController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
-    return redirect('/examples/dashboard');
+    return redirect('/metronic-demo/dashboard');
 });
 
 Route::get('/welcome', function () {
@@ -33,9 +30,7 @@ Route::middleware('auth')->group(function () {
 
 require __DIR__.'/auth.php';
 
-Route::prefix('/examples')->group(function() {
-    Route::get('/get-profile', [ExamplesController::class, 'getProfile']);
-    Route::get('/dashboard', [ExamplesController::class, 'dashboard']);
-    Route::resource('/crud', CrudController::class);
-    Route::get('/components/accordion', [ComponentsController::class, 'accordion']);
-});
+// Metronic theme demo
+if (config('app.env') != 'production') {
+    require __DIR__.'/metronic-demo.php';
+}

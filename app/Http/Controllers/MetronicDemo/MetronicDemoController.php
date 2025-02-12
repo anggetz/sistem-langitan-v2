@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Http\Controllers\Examples;
+namespace App\Http\Controllers\MetronicDemo;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
-class ExamplesController extends Controller
+class MetronicDemoController extends Controller
 {
     /**
      * Fungsi ini digunakan untuk mendapatkan data profile user secara ajax untuk kebutuhan
