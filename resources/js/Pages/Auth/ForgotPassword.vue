@@ -1,68 +1,61 @@
-<script setup>
-import GuestLayout from '@/Layouts/GuestLayout.vue';
-import InputError from '@/Components/InputError.vue';
-import InputLabel from '@/Components/InputLabel.vue';
-import PrimaryButton from '@/Components/PrimaryButton.vue';
-import TextInput from '@/Components/TextInput.vue';
+<script setup lang="ts">
+import MetronicGuestLayout from '@/Layouts/MetronicGuestLayout.vue';
 import { Head, useForm } from '@inertiajs/vue3';
 
 defineProps({
-    status: {
-        type: String,
-    },
+  status: {
+    type: String,
+  },
 });
 
 const form = useForm({
-    email: '',
+  email: '',
 });
 
 const submit = () => {
-    form.post(route('password.email'));
+  form.post(route('password.email'));
 };
 </script>
 
 <template>
-    <GuestLayout>
-        <Head title="Forgot Password" />
+  <MetronicGuestLayout>
 
-        <div class="mb-4 text-sm text-gray-600">
-            Forgot your password? No problem. Just let us know your email
-            address and we will email you a password reset link that will allow
-            you to choose a new one.
+    <Head title="Forgot Password" />
+
+    <div class="card max-w-[370px] w-full">
+      <form @submit.prevent="submit" class="card-body flex flex-col gap-5 p-10" id="reset_password_enter_email_form">
+        <div class="text-center">
+          <h3 class="text-lg font-medium text-gray-900">
+            Your Email
+          </h3>
+          <span class="text-2sm text-gray-700">
+            Enter your email to reset password
+          </span>
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="form-label font-normal text-gray-900">
+            Email
+          </label>
+          <input v-model="form.email" class="input" placeholder="email@email.com" type="text" />
+          <span v-show="form.errors.email" class="form-info text-danger font-normal">
+            {{ form.errors.email }}
+          </span>
+        </div>
+        <button class="btn btn-primary flex justify-center grow">
+          Continue
+          <i class="ki-filled ki-black-right">
+          </i>
+        </button>
+
+        <div v-if="status" class="text-center mb-2.5">
+          <div class="flex items-center justify-center font-medium">
+            <span class="text-2sm text-gray-700 me-1.5">
+              {{ status }}
+            </span>
+          </div>
         </div>
 
-        <div
-            v-if="status"
-            class="mb-4 text-sm font-medium text-green-600"
-        >
-            {{ status }}
-        </div>
-
-        <form @submit.prevent="submit">
-            <div>
-                <InputLabel for="email" value="Email" />
-
-                <TextInput
-                    id="email"
-                    type="email"
-                    class="mt-1 block w-full"
-                    v-model="form.email"
-                    required
-                    autofocus
-                    autocomplete="username"
-                />
-
-                <InputError class="mt-2" :message="form.errors.email" />
-            </div>
-
-            <div class="mt-4 flex items-center justify-end">
-                <PrimaryButton
-                    :class="{ 'opacity-25': form.processing }"
-                    :disabled="form.processing"
-                >
-                    Email Password Reset Link
-                </PrimaryButton>
-            </div>
-        </form>
-    </GuestLayout>
+      </form>
+    </div>
+  </MetronicGuestLayout>
 </template>
