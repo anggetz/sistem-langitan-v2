@@ -25,7 +25,7 @@ class MetronicDemoController extends Controller
 
     public function dashboard()
     {
-        return Inertia::render('Examples/Dashboard');
+        return Inertia::render('MetronicDemo/Dashboard');
     }
 
 }

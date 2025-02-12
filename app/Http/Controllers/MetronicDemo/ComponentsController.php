@@ -10,6 +10,6 @@ class ComponentsController extends Controller
 {
     public function accordion()
     {
-        return Inertia::render('Examples/Components/Accordion');
+        return Inertia::render('MetronicDemo/Components/Accordion');
     }
 }
