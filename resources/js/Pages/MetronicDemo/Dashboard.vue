@@ -1,5 +1,5 @@
 <script setup>
-import MetronicLayout from '@/Layouts/MetronicLayout.vue';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import ContainerFixed from '@/LayoutComponents/ContainerFixed.vue';
 import PageHeader from '@/BaseComponents/PageHeader.vue';
 import LinkButton from '@/BaseComponents/LinkButton.vue';
@@ -7,7 +7,7 @@ import SearchModal from '@/LayoutComponents/Topbar/SearchModal.vue';
 </script>
 
 <template>
-    <MetronicLayout>
+    <AuthenticatedLayout>
 
         <ContainerFixed>
             <PageHeader title="Dashboard" sub-title="Central Hub for Personal Customization">
@@ -1784,7 +1784,7 @@ import SearchModal from '@/LayoutComponents/Topbar/SearchModal.vue';
             </div>
         </div>
         <!-- End of Container -->
-    </MetronicLayout>
+    </AuthenticatedLayout>
 
     <!-- Search Modal : Ditambahkan hanya jika akan diakses pada sebuah halaman -->
     <SearchModal />

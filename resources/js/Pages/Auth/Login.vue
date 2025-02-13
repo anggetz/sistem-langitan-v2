@@ -1,6 +1,6 @@
 <script setup>
 import { Head, Link, useForm } from '@inertiajs/vue3'
-import MetronicGuestLayout from '@/Layouts/MetronicGuestLayout.vue';
+import GuestLayout from '@/Layouts/GuestLayout.vue';
 import Checkbox from '@/BaseComponents/Checkbox.vue';
 
 defineProps({
@@ -26,7 +26,7 @@ const submit = () => {
 </script>
 
 <template>
-  <MetronicGuestLayout>
+  <GuestLayout>
     <Head title="Login" />
     <div class="card max-w-[370px] w-full">
       <form @submit.prevent="submit" class="card-body flex flex-col gap-5 p-10" id="sign_in_form">
@@ -114,5 +114,5 @@ const submit = () => {
 
       </form>
     </div>
-  </MetronicGuestLayout>
+  </GuestLayout>
 </template>

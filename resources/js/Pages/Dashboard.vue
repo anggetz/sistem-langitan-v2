@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import MetronicLayout from '@/Layouts/MetronicLayout.vue';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head } from '@inertiajs/vue3';
 </script>
 
 <template>
-  <MetronicLayout>
+  <AuthenticatedLayout>
 
     <Head title="Dashboard" />
 
-  </MetronicLayout>
+  </AuthenticatedLayout>
 </template>

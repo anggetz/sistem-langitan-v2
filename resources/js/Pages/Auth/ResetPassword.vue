@@ -1,6 +1,6 @@
 <script setup>
-import MetronicGuestLayout from '@/Layouts/MetronicGuestLayout.vue';
 import { Head, useForm } from '@inertiajs/vue3';
+import GuestLayout from '@/Layouts/GuestLayout.vue';
 
 const props = defineProps({
   email: {
@@ -28,7 +28,7 @@ const submit = () => {
 </script>
 
 <template>
-  <MetronicGuestLayout>
+  <GuestLayout>
 
     <Head title="Reset Password" />
 
@@ -85,5 +85,5 @@ const submit = () => {
       </form>
     </div>
 
-  </MetronicGuestLayout>
+  </GuestLayout>
 </template>

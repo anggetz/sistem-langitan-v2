@@ -1,9 +1,9 @@
 <script setup>
-import MetronicLayout from '@/Layouts/MetronicLayout.vue';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 </script>
 
 <template>
-    <MetronicLayout>
-        
-    </MetronicLayout>
+    <AuthenticatedLayout>
+
+    </AuthenticatedLayout>
 </template>

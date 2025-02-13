@@ -1,10 +1,10 @@
-<script setup lang="ts">
+<script setup>
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import ContainerFixed from '@/LayoutComponents/ContainerFixed.vue';
-import MetronicLayout from '@/Layouts/MetronicLayout.vue';
 </script>
 
 <template>
-  <MetronicLayout>
+  <AuthenticatedLayout>
 
     <ContainerFixed>
       <div class="flex flex-col gap-1.5 mb-5">
@@ -89,5 +89,5 @@ import MetronicLayout from '@/Layouts/MetronicLayout.vue';
       </div>
     </ContainerFixed>
 
-  </MetronicLayout>
+  </AuthenticatedLayout>
 </template>

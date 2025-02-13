@@ -1,6 +1,6 @@
 <script setup>
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import MetronicGuestLayout from '@/Layouts/MetronicGuestLayout.vue';
+import GuestLayout from '@/Layouts/GuestLayout.vue';
 
 const form = useForm({
     name: '',
@@ -17,7 +17,7 @@ const submit = () => {
 </script>
 
 <template>
-  <MetronicGuestLayout>
+  <GuestLayout>
 
     <Head title="Register" />
 
@@ -122,5 +122,5 @@ const submit = () => {
         </button>
       </form>
     </div>
-  </MetronicGuestLayout>
+  </GuestLayout>
 </template>
