@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue'
-import { usePage } from '@inertiajs/vue3'
+import { usePage, Link } from '@inertiajs/vue3'
 
 const user = computed(() => usePage().props.auth.user)
 
@@ -265,9 +265,9 @@ const user = computed(() => usePage().props.auth.user)
             </div>
            </div>
            <div class="menu-item px-4 py-1.5">
-            <a class="btn btn-sm btn-light justify-center" href="html/demo1/authentication/classic/sign-in.html">
+            <Link class="btn btn-sm btn-light justify-center" :href="route('logout')" method="post" as="button">
              Log out
-            </a>
+            </Link>
            </div>
           </div>
          </div>
