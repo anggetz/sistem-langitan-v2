@@ -7,8 +7,14 @@ import GroupMenuItem from './GroupMenuItem.vue'
 
 // TODO: Sesuaikan jenis role disini sesuai role aplikasi
 const user = computed(() => usePage().props.auth.user)
-const roleAdmin = ref(user.value.role === 'Admin')
-const roleUser = ref(user.value.role === 'User')
+const roleAdmin = ref(null)
+const roleUser = ref(null)
+if (user.value && user.value.role) {
+    roleAdmin.value = user.value.role === 'Admin'
+    roleUser.value = user.value.role === 'User'
+} else {
+    roleAdmin.value = true
+}
 </script>
 
 <template>
