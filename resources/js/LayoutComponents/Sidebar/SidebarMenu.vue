@@ -7,21 +7,15 @@ import GroupMenuItem from './GroupMenuItem.vue'
 
 // TODO: Sesuaikan jenis role disini sesuai role aplikasi
 const user = computed(() => usePage().props.auth.user)
-const roleAdmin = ref(null)
-const roleUser = ref(null)
-if (user.value && user.value.role) {
-    roleAdmin.value = user.value.role === 'Admin'
-    roleUser.value = user.value.role === 'User'
-} else {
-    roleAdmin.value = true
-}
+const roleAdmin = ref(user.value.role === 'Admin')
+const roleUser = ref(user.value.role === 'User')
 </script>
 
 <template>
   <!-- Sidebar Menu: Admin -->
   <div v-if="roleAdmin" class="menu flex flex-col grow gap-0.5" data-menu="true" data-menu-accordion-expand-all="false" id="sidebar_menu">
 
-    <MenuItem prefix-url="/examples/dashboard">
+    <MenuItem prefix-url="/dashboard">
     <template #icon>
       <i class="ki-filled ki-element-11 text-lg"></i>
     </template>
@@ -29,68 +23,7 @@ if (user.value && user.value.role) {
       Dashboards
     </template>
     <template #submenu-items>
-      <SubmenuItem href="/examples/dashboard">Default Dashboard</SubmenuItem>
-    </template>
-    </MenuItem>
-
-    <GroupMenuItem title="Examples" />
-
-    <MenuItem prefix-url="/examples/crud">
-    <template #icon>
-      <i class="ki-filled ki-menu text-lg"></i>
-    </template>
-    <template #title>
-      CRUD
-    </template>
-    <template #submenu-items>
-      <SubmenuItem href="/examples/crud/index">Index</SubmenuItem>
-      <SubmenuItem href="/examples/crud/create">Create</SubmenuItem>
-    </template>
-    </MenuItem>
-
-    <MenuItem prefix-url="/examples/templates">
-    <template #icon>
-      <i class="ki-filled ki-abstract-22 text-lg"></i>
-    </template>
-    <template #title>
-      Templates
-    </template>
-    <template #submenu-items>
-      <SubmenuItem href="/examples/templates/blank">Blank Page</SubmenuItem>
-      <SubmenuItem href="/examples/templates/table">Basic Table</SubmenuItem>
-      <SubmenuItem href="/examples/templates/filter-table">Table with Filter</SubmenuItem>
-      <SubmenuItem href="/examples/templates/upload">Upload</SubmenuItem>
-    </template>
-    </MenuItem>
-
-    <MenuItem prefix-url="/examples/components">
-    <template #icon>
-      <i class="ki-filled ki-abstract-25 text-lg"></i>
-    </template>
-    <template #title>
-      Components
-    </template>
-    <template #submenu-items>
-      <SubmenuItem href="/examples/components/accordion">Accordion</SubmenuItem>
-      <SubmenuItem href="/examples/components/avatar">Avatar</SubmenuItem>
-      <SubmenuItem href="/examples/components/badge">Badge</SubmenuItem>
-      <SubmenuItem href="/examples/components/button">Button</SubmenuItem>
-      <SubmenuItem href="/examples/components/button-group">Button Group</SubmenuItem>
-      <SubmenuItem href="/examples/components/card">Card</SubmenuItem>
-      <SubmenuItem href="/examples/components/collapse">Collapse</SubmenuItem>
-      <SubmenuItem href="/examples/components/container">Container</SubmenuItem>
-      <SubmenuItem href="/examples/components/dismiss">Dismiss</SubmenuItem>
-      <SubmenuItem href="/examples/components/drawer">Drawer</SubmenuItem>
-      <SubmenuItem href="/examples/components/dropdown">Dropdown</SubmenuItem>
-      <SubmenuItem href="/examples/components/modal">Modal</SubmenuItem>
-      <SubmenuItem href="/examples/components/progress">Progress</SubmenuItem>
-      <SubmenuItem href="/examples/components/rating">Rating</SubmenuItem>
-      <SubmenuItem href="/examples/components/reparent">Reparent</SubmenuItem>
-      <SubmenuItem href="/examples/components/scrollable">Scrollable</SubmenuItem>
-      <SubmenuItem href="/examples/components/table">Table</SubmenuItem>
-      <SubmenuItem href="/examples/components/theme">Theme</SubmenuItem>
-      <SubmenuItem href="/examples/components/toggle">Toggle</SubmenuItem>
-      <SubmenuItem href="/examples/components/tooltip">Tooltip</SubmenuItem>
+      <SubmenuItem href="/dashboard">Default Dashboard</SubmenuItem>
     </template>
     </MenuItem>
 
@@ -102,7 +35,7 @@ if (user.value && user.value.role) {
 
     <GroupMenuItem title="Sidebar Role User" />
 
-    <MenuItem prefix-url="/examples/dashboard">
+    <MenuItem prefix-url="/dashboard">
     <template #icon>
       <i class="ki-filled ki-element-11 text-lg"></i>
     </template>
@@ -110,22 +43,7 @@ if (user.value && user.value.role) {
       Dashboards
     </template>
     <template #submenu-items>
-      <SubmenuItem href="/examples/dashboard">Default Dashboard</SubmenuItem>
-    </template>
-    </MenuItem>
-
-    <GroupMenuItem title="Examples" />
-
-    <MenuItem prefix-url="/examples/crud">
-    <template #icon>
-      <i class="ki-filled ki-menu text-lg"></i>
-    </template>
-    <template #title>
-      CRUD
-    </template>
-    <template #submenu-items>
-      <SubmenuItem href="/examples/crud/index">Index</SubmenuItem>
-      <SubmenuItem href="/examples/crud/create">Create</SubmenuItem>
+      <SubmenuItem href="/dashboard">Default Dashboard</SubmenuItem>
     </template>
     </MenuItem>
 
@@ -137,7 +55,7 @@ if (user.value && user.value.role) {
 
     <GroupMenuItem title="Sidebar Role Lain" />
 
-    <MenuItem prefix-url="/examples/dashboard">
+    <MenuItem prefix-url="/dashboard">
     <template #icon>
       <i class="ki-filled ki-element-11 text-lg"></i>
     </template>
@@ -145,7 +63,7 @@ if (user.value && user.value.role) {
       Dashboards
     </template>
     <template #submenu-items>
-      <SubmenuItem href="/examples/dashboard">Default Dashboard</SubmenuItem>
+      <SubmenuItem href="/dashboard">Default Dashboard</SubmenuItem>
     </template>
     </MenuItem>
 

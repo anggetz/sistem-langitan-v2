@@ -25,6 +25,7 @@ class MetronicDemoController extends Controller
 
     public function dashboard()
     {
+        Inertia::share('useDemoSidebar', true);
         return Inertia::render('MetronicDemo/Dashboard');
     }
 
