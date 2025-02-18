@@ -7,7 +7,7 @@ import SearchModal from '@/LayoutComponents/Topbar/SearchModal.vue';
 </script>
 
 <template>
-    <AuthenticatedLayout>
+    <AuthenticatedLayout :use-megamenu="true" :use-breadcrumbs="false">
 
         <ContainerFixed>
             <PageHeader title="Dashboard" sub-title="Central Hub for Personal Customization">
