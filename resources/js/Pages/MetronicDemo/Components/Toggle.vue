@@ -1,10 +1,13 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import ContainerFixed from '@/LayoutComponents/ContainerFixed.vue';
+import Breadcrumbs from "@/LayoutComponents/Breadcrumbs.vue";
 </script>
 
 <template>
   <AuthenticatedLayout>
+
+    <Breadcrumbs content="Metronic Demo > Components > Toggle" />
 
     <ContainerFixed>
       <div class="flex flex-col gap-1.5 mb-5">

@@ -30,7 +30,7 @@ import GroupMenuItem from './GroupMenuItem.vue'
       CRUD
     </template>
     <template #submenu-items>
-      <SubmenuItem href="/metronic-demo/crud/index">Index</SubmenuItem>
+      <SubmenuItem href="/metronic-demo/crud">Index</SubmenuItem>
       <SubmenuItem href="/metronic-demo/crud/create">Create</SubmenuItem>
     </template>
     </MenuItem>

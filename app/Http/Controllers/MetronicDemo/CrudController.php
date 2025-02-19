@@ -4,6 +4,7 @@ namespace App\Http\Controllers\MetronicDemo;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class CrudController extends Controller
 {
@@ -12,7 +13,8 @@ class CrudController extends Controller
      */
     public function index()
     {
-        //
+        Inertia::share('useDemoSidebar', true);
+        return Inertia::render('MetronicDemo/Crud/Index');
     }
 
     /**
@@ -20,7 +22,8 @@ class CrudController extends Controller
      */
     public function create()
     {
-        //
+        Inertia::share('useDemoSidebar', true);
+        return Inertia::render('MetronicDemo/Crud/Create');
     }
 
     /**
