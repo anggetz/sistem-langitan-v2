@@ -2,6 +2,16 @@
 
 Proyek Laravel 11 + InertiaJS (Vue) + Metronic Theme.
 
+## Please don't use the `template` branch !
+
+Branch `template` hanya untuk mengupdate template. Development tetap menggunakan branch:
+
+- `main` : Production / Staging
+- `develop` : Development
+- `feature/*` : Pengerjaan fitur
+- `hotfix/*` : Bug fixing critical yang terjadi di production
+- `bugfix/*` : Bug fixing non-critidal yang terjadi develop / production
+
 ## Setup Development
 
 ### Requirements
