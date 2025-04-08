@@ -1,72 +1,63 @@
-# Laravel + InertiaJS (Vue) + Metronic Theme
+# Laravel 10 + Inertia + Metronic Theme
 
-Proyek Laravel 11 + InertiaJS (Vue) + Metronic Theme.
+<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
-## Please don't use the `template` branch !
+## Requirements
 
-Branch `template` hanya untuk mengupdate template. Development tetap menggunakan branch:
+- PHP 8.1
+- [Composer](https://getcomposer.org)
+- [Node LTS](https://nodejs.org)
 
-- `main` : Production / Staging
-- `develop` : Development
-- `feature/*` : Pengerjaan fitur
-- `hotfix/*` : Bug fixing critical yang terjadi di production
-- `bugfix/*` : Bug fixing non-critidal yang terjadi develop / production
-
-## Setup Development
-
-### Requirements
-
-- Node LTS
-- PHP 8.2
-- Composer
-
-### Step
+## Development Setup
 
 1. Install Node modules
-   ```
-   $ npm i
+   ```shell
+   npm i
    ```
 
 2. Install Composer vendors
-   ```
-   $ composer install
-   ```
-
-3. Setup .env
-   ```
-   $ composer run post-root-package-install
-   ```
-   or copy file `.env.example` to `.env`.
-
-4. Create App Key
-   ```
-   $ php artisan key:generate
+   ```shell
+   composer install
    ```
 
-5. Build Metronic theme assets.
-   
-   a. Delete `type` on line 3 from `package.json`:
-      ```
-      {
-        ...
-        "type": "module",
-        ...
-      }
-      ```
-   b. Run:
-      ```
-      $ npm run metronic:build
-      ```
-   c. Restore `type` line:
-      ```
-      {
-        ...
-        "type": "module",
-        ...
-      }
-      ```
+3. Run development tools
+   ```shell
+   npm run dev
+   php artisan serve
+   ```
+   or (conccurently version)
+   ```shell
+   npm run start
+   ```
 
-6. Run development server
-   ```
-   $ composer run dev
-   ```
+## Documentation
+
+### Breadcrumbs
+
+Breadcrumbs dibuild secara otomatis, apabila ingin merubah breadcrumb, assign variabel `breadcrumbs` pada saat merender Vue page
+
+```php
+class MyController extends Controller
+{
+    public function show(): Response
+    {
+        return Inertia::render('Page', [
+            'breadcrumbs' => [
+                ['Dashboard', '/dashboard'],
+                ['Page', '/dashboard'],
+                ['New Data / Update']
+            ]
+        ]);
+    }
+}
+```
+
+### Role, Menu & Sub-Menu
+
+Menu pada Sidebar di-render dari data session `auth.role`. Variabel `role` di-assign ke session setelah login dan di-destroy
+setelah logout.
+
+```
+Hirarki:
+$user->role->menu[]->submenu[]
+```

@@ -1,12 +1,11 @@
-<script setup lang="ts">
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+<script setup>
 import { Head } from '@inertiajs/vue3';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 </script>
 
 <template>
+  <Head title="Dashboard" />
   <AuthenticatedLayout>
-
-    <Head title="Dashboard" />
 
   </AuthenticatedLayout>
 </template>

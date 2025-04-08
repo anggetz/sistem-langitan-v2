@@ -1,46 +1,36 @@
 <script setup>
-import {onMounted, provide, ref} from 'vue';
-import Sidebar from '@/LayoutComponents/Sidebar.vue';
-import Header from '@/LayoutComponents/Header.vue';
-import Footer from '@/LayoutComponents/Footer.vue';
-import KTDom from "../../metronic/core/helpers/dom.js";
-import KTComponents from '@/../metronic/core/index';
-import KTLayout from '@/../metronic/app/layouts/demo1.js';
-
-const breadcrumbItems = ref(['Default Breadcrumb Item'])
-
-const props = defineProps({
-  'useMegamenu': {
-    type: Boolean,
-    default: false,
-  },
-  'useBreadcrumbs': {
-    type: Boolean,
-    default: true,
-  },
-})
-
-provide('useMegamenu', props.useMegamenu)
-provide('useBreadcrumbs', props.useBreadcrumbs)
-provide('breadcrumbItems', breadcrumbItems)
+import { nextTick, onMounted } from 'vue';
+import Sidebar from '@/Layouts/Sidebar.vue';
+import Header from '@/Layouts/Header.vue';
+import KTComponent from '../../metronic/core/index'; // Import all components, if will use specific component please use single import
+import KTLayout from '../../metronic/app/layouts/demo1.js';
 
 onMounted(() => {
-  KTDom.ready(() => {
-    KTComponents.init()
-    KTLayout.init()
-  })
+    nextTick(() => {
+        KTComponent.init();
+        KTLayout.init();
+    });
 });
 </script>
 
 <template>
+
+  <div class="flex grow">
+
     <Sidebar />
-    <!-- Wrapper -->
+
+    <!-- Wrappper -->
     <div class="wrapper flex grow flex-col">
-        <Header />
-        <main class="grow content pt-5" id="content" role="content">
-            <slot />
-        </main>
-        <Footer />
+
+      <Header />
+
+      <slot />
+
     </div>
     <!-- End of Wrapper -->
+
+  </div>
+
+  <portal-target name="modal"></portal-target>
+
 </template>
