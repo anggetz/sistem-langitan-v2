@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Providers\RouteServiceProvider;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -17,7 +18,7 @@ class HandleInertiaRequests extends Middleware
     /**
      * Determine the current asset version.
      */
-    public function version(Request $request): ?string
+    public function version(Request $request): string|null
     {
         return parent::version($request);
     }
@@ -29,11 +30,39 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $role = session('role');
+        $menus = session('menus');
+
+        // Auto build breadcrumbs array
+        $breadcrumbs = [
+            ['Home', RouteServiceProvider::HOME],
+        ];
+
+        // /role/menu-1/sub-menu-1
+        //   0     1      2
+        // Find path from url
+        foreach ($menus as $menu) {
+            if ($request->segment(2) == $menu['path']) {
+                $breadcrumbs[] = [$menu['name']];
+                foreach ($menu['subMenus'] as $subMenu) {
+                    if ($request->segment(3) == $subMenu['path']) {
+                        $breadcrumbs[] = [$subMenu['name'], '/' . $role['prefix_url'] . '/' . $menu['path'] . '/' . $subMenu['path']];
+                        break;
+                    }
+                }
+                break;
+            }
+        }
+
         return [
             ...parent::share($request),
             'auth' => [
                 'user' => $request->user(),
+                'home_url' => RouteServiceProvider::HOME,
+                'role' => session('role') ?? null,
+                'menus' => session('menus') ?? null,
             ],
+            'breadcrumbs' => $breadcrumbs,
         ];
     }
 }

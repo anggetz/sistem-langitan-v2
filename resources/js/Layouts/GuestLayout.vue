@@ -1,16 +1,21 @@
-<template>
-  <!-- Page -->
-  <div class="flex items-center justify-center grow bg-center bg-no-repeat page-bg">
-    <slot />
-  </div>
-  <!-- End of Page -->
-</template>
+<script setup>
+import { onMounted } from 'vue';
+import { KTTogglePassword } from '@/../metronic/core/components/toggle-password';
+
+onMounted(() => {
+    KTTogglePassword.init();
+});
+</script>
 
 <style>
-  .page-bg {
+.page-bg {
     background-image: url('assets/media/images/2600x1200/bg-10.png');
-  }
-  .dark .page-bg {
+}
+.dark .page-bg {
     background-image: url('assets/media/images/2600x1200/bg-10-dark.png');
-  }
+}
 </style>
+
+<template>
+    <slot />
+</template>

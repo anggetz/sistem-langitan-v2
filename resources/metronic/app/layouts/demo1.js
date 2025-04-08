@@ -60,6 +60,8 @@ class KTLayout {
 	}
 }
 
+// HTML Initialization not needed in Vue
+//
 // KTDom.ready(() => {
 // 	KTLayout.init();
 // });

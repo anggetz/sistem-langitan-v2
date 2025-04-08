@@ -1,7 +1,7 @@
 /* eslint-disable max-len */
 import plugin from 'tailwindcss/plugin';
 
-export default plugin(({config, addBase, addComponents, addVariant, e}) => {  
+export default plugin(({config, addBase, addComponents, addVariant, e}) => {
   // Menu
   addComponents({
     '.menu': {
@@ -230,8 +230,8 @@ export default plugin(({config, addBase, addComponents, addVariant, e}) => {
         return `.menu-link:focus .${e(`menu-link-focus${separator}${className}`)}`;
       });
     },
-  ]); 
-  
+  ]);
+
   // DataTable
   addVariant('datatable-loading', [
     ({modifySelectors, separator}) => {
@@ -392,7 +392,7 @@ export default plugin(({config, addBase, addComponents, addVariant, e}) => {
       });
     }
   ]);
-  
+
   // Collapse
   addVariant('collapse-active', [
     ({modifySelectors, separator}) => {
@@ -517,7 +517,7 @@ export default plugin(({config, addBase, addComponents, addVariant, e}) => {
       });
     },
   ]);
-  
+
   addVariant('stepper-between', [
     ({modifySelectors, separator}) => {
       modifySelectors(({className}) => {

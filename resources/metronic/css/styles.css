@@ -1,7 +1,18 @@
+/* Keenicons */
+@import '../vendors/keenicons/duotone/style.css';
+@import '../vendors/keenicons/filled/style.css';
+@import '../vendors/keenicons/solid/style.css';
+@import '../vendors/keenicons/outline/style.css';
+
 /* Tailwind core */
 @import "tailwindcss/base";
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
 
 /* Demos */
-@import "demos/demo1";
+@import "demos/demo1.css";
+
+#app {
+    display: flex;
+    flex-grow: 1;
+}

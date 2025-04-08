@@ -130,6 +130,6 @@ window.KTComponents = KTComponents;
 
 export default KTComponents;
 
-// KTDom.ready(() => {
-// 	KTComponents.init();
-// });
+KTDom.ready(() => {
+	KTComponents.init();
+});
