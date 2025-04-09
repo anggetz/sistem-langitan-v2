@@ -1,10 +1,10 @@
-# Laravel 10 + Inertia + Metronic Theme
+# Laravel 12 + Inertia Vue + Metronic Theme
 
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
 ## Requirements
 
-- PHP 8.1
+- PHP 8.2
 - [Composer](https://getcomposer.org)
 - [Node LTS](https://nodejs.org)
 
@@ -22,12 +22,7 @@
 
 3. Run development tools
    ```shell
-   npm run dev
-   php artisan serve
-   ```
-   or (conccurently version)
-   ```shell
-   npm run start
+   composer run dev
    ```
 
 ## Documentation

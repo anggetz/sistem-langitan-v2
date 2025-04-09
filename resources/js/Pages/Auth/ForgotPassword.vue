@@ -1,5 +1,5 @@
 <script setup>
-import { Head, useForm } from '@inertiajs/vue3';
+import { Head, Link, useForm } from '@inertiajs/vue3';
 import GuestLayout from '@/Layouts/GuestLayout.vue';
 import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
@@ -49,6 +49,16 @@ const submit = () => {
         <i class="ki-filled ki-black-right">
         </i>
       </PrimaryButton>
+      <div class="text-center mb-2.5">
+        <div class="flex items-center justify-center">
+          <span class="text-2sm text-gray-700 me-1.5">
+            Already have an Account ?
+          </span>
+          <Link class="text-2sm link" :href="route('login')">
+            Sign In
+          </Link>
+        </div>
+      </div>
       </form>
     </div>
     </div>

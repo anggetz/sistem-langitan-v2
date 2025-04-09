@@ -2,7 +2,6 @@
 
 namespace App\Http\Middleware;
 
-use App\Providers\RouteServiceProvider;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -18,7 +17,7 @@ class HandleInertiaRequests extends Middleware
     /**
      * Determine the current asset version.
      */
-    public function version(Request $request): string|null
+    public function version(Request $request): ?string
     {
         return parent::version($request);
     }
@@ -30,12 +29,12 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
-        $role = session('role');
-        $menus = session('menus');
+        $role = session('role') ?? [];
+        $menus = session('menus') ?? [];
 
         // Auto build breadcrumbs array
         $breadcrumbs = [
-            ['Home', RouteServiceProvider::HOME],
+            ['Home', route('dashboard')],
         ];
 
         // /role/menu-1/sub-menu-1
@@ -58,7 +57,7 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'auth' => [
                 'user' => $request->user(),
-                'home_url' => RouteServiceProvider::HOME,
+                'home_url' => route('dashboard'),
                 'role' => session('role') ?? null,
                 'menus' => session('menus') ?? null,
             ],
