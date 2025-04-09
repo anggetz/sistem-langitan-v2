@@ -1,5 +1,5 @@
 <script setup>
-import { Head, useForm } from '@inertiajs/vue3';
+import { Head, useForm, Link } from '@inertiajs/vue3';
 import GuestLayout from '@/Layouts/GuestLayout.vue';
 import Checkbox from '@/Components/Checkbox.vue';
 import InputError from '@/Components/InputError.vue';
@@ -42,9 +42,9 @@ const submit = () => {
         <span class="text-2sm text-gray-700 me-1.5">
           Need an account?
         </span>
-        <a class="text-2sm link" :href="route('register')">
+        <Link class="text-2sm link" :href="route('register')">
           Sign up
-        </a>
+        </Link>
         </div>
       </div>
       <div class="grid grid-cols-2 gap-2.5">
@@ -80,9 +80,9 @@ const submit = () => {
       <div class="flex flex-col gap-1">
         <div class="flex items-center justify-between gap-1">
         <InputLabel>Password</InputLabel>
-        <a class="text-2sm link shrink-0" :href="route('password.request')">
+        <Link class="text-2sm link shrink-0" :href="route('password.request')">
           Forgot Password?
-        </a>
+        </Link>
         </div>
         <div class="input" data-toggle-password="true">
         <input name="password" placeholder="Enter Password" type="password" v-model="form.password"/>

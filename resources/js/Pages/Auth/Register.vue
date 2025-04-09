@@ -1,5 +1,5 @@
 <script setup>
-import { Head, useForm } from '@inertiajs/vue3';
+import { Head, useForm, Link } from '@inertiajs/vue3';
 import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
@@ -33,9 +33,9 @@ const submit = () => {
           <span class="text-2sm text-gray-700 me-1.5">
             Already have an Account ?
           </span>
-          <a class="text-2sm link" :href="route('login')">
+          <Link class="text-2sm link" :href="route('login')">
             Sign In
-          </a>
+          </Link>
           </div>
         </div>
         <div class="grid grid-cols-2 gap-2.5">
@@ -71,14 +71,13 @@ const submit = () => {
         <div class="flex flex-col gap-1">
           <InputLabel>Password</InputLabel>
           <div class="input" data-toggle-password="true">
-          <input name="user_password" placeholder="Enter Password" type="password" v-model="form.password">
+          <input name="user_password" placeholder="Enter Password" type="password" v-model="form.password"/>
             <button class="btn btn-icon" data-toggle-password-trigger="true" type="button">
             <i class="ki-filled ki-eye text-gray-500 toggle-password-active:hidden">
             </i>
             <i class="ki-filled ki-eye-slash text-gray-500 hidden toggle-password-active:block">
             </i>
             </button>
-          </input>
           </div>
           <InputError :message="form.errors.password" />
         </div>
