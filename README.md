@@ -85,7 +85,7 @@ use App\Http\Controllers\Pendidikan\SemesterController;
 Route::group(['prefix' => 'pendidikan', 'middleware' => 'role:' . Role::PENDIDIKAN], function () {
 
     // Route yg perlu ditambahkan
-    Route::resource('/semester', [SemesterController::class]);
+    Route::resource('/semester', SemesterController::class);
 
 });
 ```
