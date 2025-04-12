@@ -56,11 +56,16 @@ class Pengguna extends Authenticatable implements JWTSubject
     {
         $pt = pt();
 
-        $folderFoto = ($this->id_role == Role::MAHASISWA) ? 'foto_mhs' : 'foto_pegawai';
-        $extention = ($this->id_role == Role::MAHASISWA) ? '.jpg' : '.JPG';
+        if ($this->id_role == Role::MAHASISWA) {
+            $fotoPath = config('app.foto_mahasiswa_path');
+            $extension = config('app.foto_mahasiswa_ext');
+        }
+        else {
+            $fotoPath = config('app.foto_pegawai_path');
+            $extension = config('app.foto_pegawai_ext');
+        }
 
-        $url = 'https://' . $pt->http_host . '/' . $folderFoto . '/' . strtolower($pt->nama_singkat) . '/' . $this->username . $extention;
-        return $url;
+        return url($fotoPath . '/' . $this->username . '.' . $extension);
     }
 
     // role

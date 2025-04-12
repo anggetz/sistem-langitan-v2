@@ -15,7 +15,21 @@ return [
 
     'name' => env('APP_NAME', 'Laravel'),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Sistem Langitan Configurations
+    |--------------------------------------------------------------------------
+    |
+    | Daftar setting yang ada disini untuk kebutuhan Sistem Langitan
+    |
+    */
+
     'id_perguruan_tinggi_default' => env('APP_ID_PERGURUAN_TINGGI_DEFAULT'),
+
+    'foto_mahasiswa_path' => env('FOTO_MAHASISWA_PATH', 'foto_mhs'),
+    'foto_mahasiswa_ext' => env('FOTO_MAHASISWA_EXT', 'jpg'),
+    'foto_pegawai_path' => env('FOTO_PEGAWAI_PATH', 'foto_pegawai'),
+    'foto_pegawai_ext' => env('FOTO_PEGAWAI_EXT', 'JPG'),
 
     /*
     |--------------------------------------------------------------------------
