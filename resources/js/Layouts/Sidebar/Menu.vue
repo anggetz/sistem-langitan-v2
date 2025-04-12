@@ -4,7 +4,7 @@ import { usePage } from "@inertiajs/vue3";
 
 const props = defineProps(['menu'])
 const role = usePage().props.auth.role
-const menuShow = usePage().url.startsWith('/' + role.prefix_url + '/' + props.menu.path)
+const menuShow = usePage().url.startsWith('/' + role.prefix_url + '/' + props.menu.nm_modul)
 </script>
 
 <template>
@@ -23,8 +23,7 @@ const menuShow = usePage().url.startsWith('/' + role.prefix_url + '/' + props.me
       </span>
     </div>
     <div class="menu-accordion gap-0.5 ps-[10px] relative before:absolute before:start-[20px] before:top-0 before:bottom-0 before:border-s before:border-gray-200">
-      <SubMenu :href="menu.nm_modul+'/'+submenu.nm_menu" v-for="submenu in menu.menu_aktif" 
-      :key="submenu.id_menu">
+      <SubMenu v-for="subMenu in menu.menu_v2_aktif" :sub-menu="subMenu" :menu="menu" :role="role">
         {{ submenu.title }}
       </SubMenu>
     </div>

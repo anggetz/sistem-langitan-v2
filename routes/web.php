@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -27,11 +28,11 @@ Route::get('/', function () {
 
 Route::get('/dashboard', function () {
 
-    // Manual breadcrumbs
+    $user = Auth::user();
+
     $breadcrumbs = [
-        ['Akademik', '/mahasiswa/akademik'],
-        ['Kartu Hasil Studi', '/mahasiswa/akademik/khs'],
-        ['Genap 2020/2021', '/mahasiswa/akademik/khs?id_sem=200']
+        [$user->role->nm_role],
+        ['Home', '/dashboard']
     ];
 
     return Inertia::render('Dashboard', ['breadcrumbs' => $breadcrumbs]);
@@ -45,6 +46,7 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
+require __DIR__.'/mahasiswa.php';
 
 // Demo purpose only !
 require __DIR__.'/role-demo.php';

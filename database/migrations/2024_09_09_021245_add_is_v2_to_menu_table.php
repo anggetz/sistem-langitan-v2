@@ -11,9 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('modul', function (Blueprint $table) {
+        Schema::table('menu', function (Blueprint $table) {
             $table->boolean('is_v2')->nullable()->default(false);
-            $table->string('icon')->nullable();
         });
     }
 
@@ -24,7 +23,6 @@ return new class extends Migration
     {
         Schema::table('modul', function (Blueprint $table) {
             $table->dropColumn('is_v2');
-            $table->dropColumn('icon');
         });
     }
 };

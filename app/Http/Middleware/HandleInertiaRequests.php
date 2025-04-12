@@ -33,38 +33,34 @@ class HandleInertiaRequests extends Middleware
     {
         $role = session('role') ?? [];
 
-        // Auto build breadcrumbs array
-        $breadcrumbs = [
-            ['Home', route('dashboard')],
-        ];
-
-        // /role/menu-1/sub-menu-1
-        //   0     1      2
-        // Find path from url
-        // foreach ($menus as $menu) {
-        //     if ($request->segment(2) == $menu['path']) {
-        //         $breadcrumbs[] = [$menu['name']];
-        //         foreach ($menu['subMenus'] as $subMenu) {
-        //             if ($request->segment(3) == $subMenu['path']) {
-        //                 $breadcrumbs[] = [$subMenu['name'], '/' . $role['prefix_url'] . '/' . $menu['path'] . '/' . $subMenu['path']];
-        //                 break;
-        //             }
-        //         }
-        //         break;
-        //     }
-        // }
-
         $user = Auth::user();
         $cacheTime = 3600 * 24 * 30; // 30 days
 
         $menus = $user ? cache()->remember("menu_{$user->id_role}", $cacheTime, function () use ($user) {
-            return Modul::with('menuAktif')
-                ->aktif()
+            return Modul::with('menuV2Aktif')
                 ->v2()
+                ->aktif()
                 ->where('id_role', $user->id_role)
                 ->get();
         }) : [];
 
+        // Auto build breadcrumbs array
+        $breadcrumbs = $role ? [
+            [$user->role->nm_role],
+        ] : [];
+
+        foreach ($menus as $menu) {
+            if ($request->segment(2) == $menu->nm_modul) {
+                $breadcrumbs[] = [$menu->title];
+                foreach ($menu->menuV2Aktif as $subMenu) {
+                    if ($request->segment(3) == $subMenu->nm_menu) {
+                        $breadcrumbs[] = [$subMenu->title, '/' . $role->prefix_url . '/' . $menu->nm_modul . '/' . $subMenu->nm_menu];
+                        break;
+                    }
+                }
+                break;
+            }
+        }
 
         return [
             ...parent::share($request),
