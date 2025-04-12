@@ -25,7 +25,15 @@ const auth = computed(() => usePage().props.auth)
 
         <div class="menu-separator"></div>
 
-        <MenuLink :href="route('logout')" method="post">Logout</MenuLink>
+        <div class="menu-item pt-2.25 pb-px">
+          <span class="menu-heading uppercase text-2sm font-medium text-gray-500 ps-[10px] pe-[10px]">
+            Akun
+          </span>
+        </div>
+
+        <MenuLink :href="route('profile.edit')" icon="ki-filled ki-setting-2">Setting</MenuLink>
+
+        <MenuLink :href="route('logout')" method="post" icon="ki-filled ki-lock" text-color="text-red">Logout</MenuLink>
 
       </div>
       <!-- End of Sidebar Menu -->
@@ -33,3 +41,11 @@ const auth = computed(() => usePage().props.auth)
   </div>
   <!-- End of Sidebar Content -->
 </template>
+
+<style scoped>
+.menu-separator {
+  border-bottom: var(--tw-dropdown-border);
+  margin-top: 0.625rem;
+  margin-bottom: 0.625rem;
+}
+</style>

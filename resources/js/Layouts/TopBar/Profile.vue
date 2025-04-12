@@ -44,11 +44,11 @@ if (auth.user.join_table === '1') {
                     <div class="menu-item">
                         <Link class="menu-link" :href="route('profile.edit')">
                             <span class="menu-icon">
-                                <i class="ki-filled ki-profile-circle">
+                                <i class="ki-filled ki-setting-2">
                                 </i>
                             </span>
                             <span class="menu-title">
-                                My Profile
+                                Setting Akun
                             </span>
                         </Link>
                     </div>
