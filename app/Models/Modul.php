@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Menu;
 use App\Models\Role;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
@@ -28,9 +29,9 @@ class Modul extends Model
     }
 
     // menu aktif
-    public function menuAktif()
+    public function menuV2Aktif()
     {
-        return $this->menu()->aktif();
+        return $this->menu()->v2()->aktif();
     }
 
     // scope active

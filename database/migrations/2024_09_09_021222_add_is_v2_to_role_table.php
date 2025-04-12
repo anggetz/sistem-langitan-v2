@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::table('role', function (Blueprint $table) {
             $table->boolean('is_v2')->nullable()->default(false);
+            $table->string('prefix_url')->nullable();
         });
     }
 
@@ -23,6 +24,7 @@ return new class extends Migration
     {
         Schema::table('role', function (Blueprint $table) {
             $table->dropColumn('is_v2');
+            $table->dropColumn('prefix_url');
         });
     }
 };

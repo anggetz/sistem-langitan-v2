@@ -25,6 +25,11 @@ class Menu extends Model
         return $query->where('akses', 1);
     }
 
+    public function scopeV2($query)
+    {
+        return $query->where('is_v2', 1);
+    }
+
      // global scope urutan
      protected static function booted()
      {

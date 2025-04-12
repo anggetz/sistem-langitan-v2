@@ -2,14 +2,12 @@
 
 use App\Models\Role;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Session;
+use Inertia\Inertia;
 
-Route::group(
-        ['prefix' => 'mahasiswa', 'middleware' => 'role:' . Role::MAHASISWA],
-        function () {
-                Route::get('/', function () {
+Route::group(['prefix' => 'mahasiswa', 'middleware' => 'role:' . Role::MAHASISWA], function () {
 
-                        return view('welcome');
-                });
-        }
-);
+    // Handle default
+    Route::get('/{menu}/{subMenu}', function ($menu, $subMenu) {
+        return Inertia::render('Dashboard');
+    });
+});
