@@ -15,6 +15,8 @@ return [
 
     'name' => env('APP_NAME', 'Laravel'),
 
+    'id_perguruan_tinggi_default' => env('APP_ID_PERGURUAN_TINGGI_DEFAULT', '1'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Environment

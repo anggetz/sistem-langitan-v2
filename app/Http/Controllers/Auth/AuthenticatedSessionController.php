@@ -2,17 +2,31 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Http\Controllers\Controller;
-use App\Http\Requests\Auth\LoginRequest;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Inertia\Response;
+use Illuminate\Http\Request;
+use App\Services\Auth\AuthService;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Route;
+use App\Http\Requests\Auth\LoginRequest;
+use App\Http\Requests\Auth\LoginSessionRequest;
 
 class AuthenticatedSessionController extends Controller
 {
+    public function __construct(protected AuthService $authService)
+    {
+        
+    }
+
+    // index 
+    public function index(LoginSessionRequest $request)
+    {
+        $this->authService->authenticate($request);
+        return redirect()->intended(route('dashboard', absolute: false));
+
+    }
     /**
      * Display the login view.
      */
@@ -29,12 +43,11 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request): RedirectResponse
     {
-        $request->authenticate();
-
-        $request->session()->regenerate();
+        // $request->authenticate();
+        $this->authService->authenticate($request);
 
         // Dummy Role, Menu, & Sub-Menu
-        $role = ['name' => 'Role Name', 'prefix_url' => 'role'];
+        // $role = ['name' => 'Role Name', 'prefix_url' => 'role'];
 
         $menus = collect([
             ['name' => 'Menu 1', 'path' => 'menu-1', 'icon' => 'ki-filled ki-abstract-1', 'subMenus' => [
@@ -54,7 +67,8 @@ class AuthenticatedSessionController extends Controller
             ]],
         ]);
 
-        session()->put('role', $role);
+
+        session()->put('role', Auth::user()->role);
         session()->put('menus', $menus);
 
         return redirect()->intended(route('dashboard', absolute: false));
