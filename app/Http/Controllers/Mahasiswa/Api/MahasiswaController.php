@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Mahasiswa;
+namespace App\Http\Controllers\Mahasiswa\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UpdateMahasiswaRequest;

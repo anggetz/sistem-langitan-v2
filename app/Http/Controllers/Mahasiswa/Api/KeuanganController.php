@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Mahasiswa;
+namespace App\Http\Controllers\Mahasiswa\Api;
 
 use App\Models\Message;
 use Illuminate\Http\Request;

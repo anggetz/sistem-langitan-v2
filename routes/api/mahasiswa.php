@@ -4,10 +4,10 @@ use App\Models\Role;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Session;
 use App\Http\Controllers\PenggunaController;
-use App\Http\Controllers\Mahasiswa\BerandaController;
-use App\Http\Controllers\Mahasiswa\AkademikController;
-use App\Http\Controllers\Mahasiswa\KeuanganController;
-use App\Http\Controllers\Mahasiswa\MahasiswaController;
+use App\Http\Controllers\Mahasiswa\Api\BerandaController;
+use App\Http\Controllers\Mahasiswa\Api\AkademikController;
+use App\Http\Controllers\Mahasiswa\Api\KeuanganController;
+use App\Http\Controllers\Mahasiswa\Api\MahasiswaController;
 
 
 Route::group(['prefix' => 'mahasiswa', 'middleware' => 'role:' . Role::MAHASISWA], function () {
