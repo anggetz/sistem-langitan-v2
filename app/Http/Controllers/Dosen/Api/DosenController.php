@@ -16,7 +16,11 @@ class DosenController extends Controller
             $user = \App\Models\Pengguna::with([
                 'dosen',
                 'dosen.penghargaan',
-                'dosen.pengampuMk.kelas_mk',
+                'dosen.pengampuMk.kelas_mk' => function ($query) {
+                    $query->whereHas('semester', function ($q) {
+                        $q->where('status_aktif_semester', 'True');
+                    });
+                },
                 // 'dosen.prestasi',
                 'kotaLahir'
             ])->find(auth()->id());
@@ -37,12 +41,16 @@ class DosenController extends Controller
                 'alamat'         => $dosen->alamat_rumah_dosen,
                 'no_hp'          => $dosen->mobile_dosen,
                 'status_dosen'   => $dosen->status_dosen,
-                'pengampu_mk' => $dosen->pengampuMk->map(function ($item) {
+                'pengampu_mk'    => $dosen->pengampuMk->filter(function ($item) {
+                    return $item->kelas_mk
+                        && $item->kelas_mk->semester
+                        && $item->kelas_mk->semester->status_aktif_semester;
+                })->map(function ($item) {
                     $mataKuliah = $item->kelas_mk->mataKuliah;
                     return [
-                        'nama_mk'     =>  $mataKuliah->nm_mata_kuliah,
+                        'nama_mk' => $mataKuliah->nm_mata_kuliah ?? '-',
                     ];
-                }),
+                })->values(),
                 'penghargaan'    => $dosen->penghargaan,
             ];
 
