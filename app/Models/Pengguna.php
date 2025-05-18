@@ -89,6 +89,11 @@ class Pengguna extends Authenticatable implements JWTSubject
         return $this->belongsTo(PerguruanTinggi::class, 'id_perguruan_tinggi', 'id_perguruan_tinggi');
     }
 
+    public function kotaLahir()
+    {
+        return $this->belongsTo(Kota::class, 'id_kota', 'tempat_lahir');
+    }
+
     public function getJWTIdentifier()
     {
         return $this->getKey();
@@ -102,7 +107,7 @@ class Pengguna extends Authenticatable implements JWTSubject
     protected static function booted()
     {
         static::addGlobalScope('byResolvedPT', function (Builder $builder) {
-            $builder->where('id_perguruan_tinggi', pt()->id_perguruan_tinggi);
+            // $builder->where('id_perguruan_tinggi', pt()->id_perguruan_tinggi);
         });
     }
 }

@@ -1,13 +1,12 @@
 <?php
 
+use App\Http\Controllers\Dosen\Api\DosenController;
 use App\Models\Role;
 use Illuminate\Support\Facades\Route;
 
 Route::group(
         ['prefix' => 'dosen', 'middleware' => 'role:' . Role::DOSEN],
         function () {
-                Route::get('/', function () {
-                        return "Dosen API";
-                });
+            Route::get('profile', [DosenController::class, 'profile']);
         }
 );
