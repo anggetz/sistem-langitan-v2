@@ -107,7 +107,7 @@ class Pengguna extends Authenticatable implements JWTSubject
     protected static function booted()
     {
         static::addGlobalScope('byResolvedPT', function (Builder $builder) {
-            // $builder->where('id_perguruan_tinggi', pt()->id_perguruan_tinggi);
+            $builder->where('id_perguruan_tinggi', pt()->id_perguruan_tinggi);
         });
     }
 }
