@@ -23,6 +23,14 @@ class Dosen extends Model
         return $this->hasMany(DosenPenghargaan::class,"id_dosen","id_dosen");
     }
 
+    public function penelitian(){
+        return $this->hasMany(Penelitian::class,"id_peneliti","id_dosen");
+    }
+
+    public function departemen(){
+        return $this->belongsTo(DosenDepartemen::class,"id_dosen","id_dosen");
+    }
+
     public function pengguna(){
         return $this->belongsTo(Pengguna::class,"id_pengguna","id_pengguna");
     }

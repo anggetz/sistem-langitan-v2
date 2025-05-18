@@ -8,5 +8,7 @@ Route::group(
         ['prefix' => 'dosen', 'middleware' => 'role:' . Role::DOSEN],
         function () {
             Route::get('profile', [DosenController::class, 'profile']);
+            Route::put('profile', [DosenController::class, 'EditProfile']);
+            Route::post('profile-photo', [DosenController::class, 'EditPhotoProfile']);
         }
 );
