@@ -54,6 +54,12 @@ class PengambilanMk extends Model
         return $this->belongsTo(KelasMk::class, "id_kelas_mk", "id_kelas_mk");
     }
 
+    public function activePresensiKelas()
+    {
+        return $this->belongsTo(PresensiKelas::class, "id_kelas_mk", "id_kelas_mk")
+             ->whereRaw("tgl_entry >= SYSDATE - (5 / 1440)");
+    }
+
     public function jadwalKelasMk()
     {
         return $this->kelas_mk()
