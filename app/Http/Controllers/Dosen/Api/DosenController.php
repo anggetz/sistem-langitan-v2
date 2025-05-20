@@ -39,7 +39,7 @@ class DosenController extends Controller
             $data = [
                 'id'             => $user->id_pengguna,
                 'id_dosen'        => $dosen->id_dosen,
-                'nama_lengkap'   => $user->nm_asli,
+                'nama_lengkap'   => $user->nama_lengkap,
                 'nip'            => $dosen->nip_dosen,
                 'foto'           => $user->foto_pengguna,
                 'tempat_lahir'   => $user->kotaLahir->nm_kota ?? '-',
@@ -84,7 +84,7 @@ class DosenController extends Controller
     {
         try {
             $request->validate([
-                'nm_asli' => 'required|string|max:255',
+                'nm_pengguna' => 'required|string|max:255',
                 'no_hp' => 'required|string|max:15',
                 'alamat_rumah_dosen' => 'required|string|max:255',
                 "kota_lahir" => 'required|exists:kota,id_kota',
@@ -99,7 +99,7 @@ class DosenController extends Controller
 
             $dosen = $user->dosen;
 
-            $user->nm_asli = $request->input('nm_asli');
+            $user->nm_pengguna = $request->input('nm_pengguna');
             $dosen->mobile_dosen = $request->input('no_hp');
             $dosen->alamat_rumah_dosen = $request->input('alamat_rumah_dosen');
             $user->id_kota_lahir = $request->input('kota_lahir');

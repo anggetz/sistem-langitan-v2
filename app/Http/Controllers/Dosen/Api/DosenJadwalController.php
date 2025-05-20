@@ -43,6 +43,7 @@ class DosenJadwalController extends Controller
                 return [
                     'nama_mk' => $mataKuliah->nm_mata_kuliah ?? '-',
                     'hari' => $jadwalKelas->nama_hari,
+                    'id_kelas_mk' => $item->kelas_mk->id_kelas_mk,
                     'id_jadwal_hari' => $jadwalKelas->id_jadwal_hari,
                     'jam_mulai' => $jadwalJam->jam_mulai . ":" . $jadwalJam->menit_mulai,
                     'jam_selesai' => $jadwalJam->jam_selesai . ":" . $jadwalJam->menit_selesai,
@@ -61,6 +62,7 @@ class DosenJadwalController extends Controller
                     return $items->map(function ($item) {
                         return [
                             'nama_mk' => $item['nama_mk'],
+                            'id_kelas_mk' => $item['id_kelas_mk'],
                             'ruangan' => $item['ruangan'],
                             'gedung' => $item['gedung'],
                             'jadwal' => [
@@ -115,6 +117,7 @@ class DosenJadwalController extends Controller
                 $gedung = $ruangan->gedung;
                 return [
                     'nama_mk' => $mataKuliah->nm_mata_kuliah ?? '-',
+                    'id_kelas_mk' => $item->kelas_mk->id_kelas_mk,
                     'hari' => $jadwalKelas->nama_hari,
                     'id_jadwal_hari' => $jadwalKelas->id_jadwal_hari,
                     'jam_mulai' => $jadwalJam->jam_mulai . ":" . $jadwalJam->menit_mulai,
@@ -133,6 +136,7 @@ class DosenJadwalController extends Controller
                 ->map(function ($items) {
                     return $items->map(function ($item) {
                         return [
+                            'id_kelas_mk' => $item['id_kelas_mk'],
                             'nama_mk' => $item['nama_mk'],
                             'ruangan' => $item['ruangan'],
                             'gedung' => $item['gedung'],
