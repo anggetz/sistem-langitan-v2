@@ -49,6 +49,10 @@ class KelasMk extends Model
         return $this->hasOne(JadwalKelas::class,"id_kelas_mk","id_kelas_mk");
     }
 
+    public function listMahasiswa(){
+        return $this->hasMany(PengambilanMk::class,"id_kelas_mk","id_kelas_mk");
+    }
+
     public function presensiKelas(){
         return $this->hasMany(PresensiKelas::class,'id_kelas_mk','id_kelas_mk');
     }
