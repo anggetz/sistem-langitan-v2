@@ -89,6 +89,11 @@ class Pengguna extends Authenticatable implements JWTSubject
         return $this->belongsTo(PerguruanTinggi::class, 'id_perguruan_tinggi', 'id_perguruan_tinggi');
     }
 
+    public function kotaLahir()
+    {
+        return $this->belongsTo(Kota::class, 'id_kota_lahir', 'id_kota');
+    }
+
     public function getJWTIdentifier()
     {
         return $this->getKey();

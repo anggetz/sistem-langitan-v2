@@ -29,6 +29,10 @@ class KelasMk extends Model
         return $this->belongsTo(NamaKelas::class,"no_kelas_mk","id_nama_kelas");
     }
 
+    public function semester(){
+        return $this->belongsTo(Semester::class,"id_semester","id_semester");
+    }
+
     public function pengampuMk(){
         return $this->hasOne(PengampuMk::class,"id_kelas_mk","id_kelas_mk");
     }
