@@ -10,4 +10,8 @@ class Ruangan extends Model
     use HasFactory;
     protected $table = 'ruangan';
     protected $primaryKey = 'id_ruangan';
+
+    public function gedung(){
+        return $this->belongsTo(Gedung::class,"id_gedung","id_gedung");
+    }
 }
