@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Facades\Cache;
 
 class Semester extends Model
 {
@@ -15,8 +16,14 @@ class Semester extends Model
 
     public static function aktif()
     {
-        return self::where("STATUS_AKTIF_SEMESTER", "True")
-            ->orderBY("ID_SEMESTER", "DESC")->first();
+        $semesterAktif = Cache::get("semester_aktif", null);
+        if ($semesterAktif == null ) {
+            $semesterAktif = self::where("STATUS_AKTIF_SEMESTER", "True")
+                    ->orderBY("ID_SEMESTER", "DESC")->first();
+            Cache::put("semester_aktif", $semesterAktif, 30);
+        }
+
+        return $semesterAktif;
     }
 
     public function scopeSemesterAktif($query)

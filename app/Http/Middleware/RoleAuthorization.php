@@ -19,7 +19,7 @@ class RoleAuthorization
     public function handle(Request $request, Closure $next, ...$roles)
     {
 
-        $guard = $request->expectsJson() ? 'api' : 'web';
+        $guard = $request->expectsJson() || $request->is('api/*') ? 'api' : 'web';
 
         $user = Auth::guard($guard)->user();
 
@@ -28,9 +28,9 @@ class RoleAuthorization
         }
 
         // Jika request API, kembalikan response JSON, jika bukan arahkan ke login
-        return $request->expectsJson()
+        return $request->expectsJson() || $request->is('api/*')
             ? response()->json(['error' => 'Unauthorized'], 403)
             : redirect()->route('login');
-   
+
     }
 }

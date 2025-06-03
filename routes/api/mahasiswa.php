@@ -8,7 +8,7 @@ use App\Http\Controllers\Mahasiswa\Api\BerandaController;
 use App\Http\Controllers\Mahasiswa\Api\AkademikController;
 use App\Http\Controllers\Mahasiswa\Api\KeuanganController;
 use App\Http\Controllers\Mahasiswa\Api\MahasiswaController;
-
+use App\Http\Controllers\Mahasiswa\Api\MahasiswaKrsController;
 
 Route::group(['prefix' => 'mahasiswa', 'middleware' => 'role:' . Role::MAHASISWA], function () {
     Route::get('me', [PenggunaController::class, 'me']);
@@ -45,6 +45,15 @@ Route::group(['prefix' => 'mahasiswa', 'middleware' => 'role:' . Role::MAHASISWA
             Route::get('riwayat/{tagihanMhs}/detail', 'riwayatDetail');
             Route::get('riwayat/{tagihanMhs}/cetak', 'riwayatDetailCetak');
             Route::get('informasi', 'informasi');
+        }
+    );
+
+    Route::group(
+        ['prefix' => 'krs', 'controller' => MahasiswaKrsController::class],
+        function () {
+            Route::get('check-krs-schedule', 'CheckKRSScheduleOnCurrentSemester');
+            Route::get('list_mk', 'listMataKuliahByActiveSemesterAndProdi');
+            Route::post('take_krs', 'takeCourse');
         }
     );
 });

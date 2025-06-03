@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Dosen\Api\DosenController;
 use App\Http\Controllers\Dosen\Api\DosenJadwalController;
+use App\Http\Controllers\Dosen\Api\DosenKrsController;
 use App\Http\Controllers\Dosen\Api\DosenPresensiController;
 use App\Models\Role;
 use Illuminate\Support\Facades\Route;
@@ -19,5 +20,13 @@ Route::group(
 
             Route::get('mahasiswa/kelas/{id_kelas}', [DosenPresensiController::class, 'MahasiswaKelas']);
             Route::put('mahasiswa/{id_kelas}/presensi/{id_presensi}', [DosenPresensiController::class, 'MahasiswaInOut']);
+
+            Route::group(
+                ['prefix' => 'krs', 'controller' => DosenKrsController::class],
+                function () {
+                    Route::post('approve_course', 'approveKprsMk');
+                    Route::get('list_course_approval', 'listCourseApproval');
+                }
+    );
         }
 );

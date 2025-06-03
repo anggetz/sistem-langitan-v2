@@ -1,0 +1,308 @@
+<?php
+
+namespace App\Services\Mahasiswa;
+
+use App\Models\DosenWali;
+use App\Models\JadwalKegiatanSemester;
+use App\Models\Kegiatan;
+use App\Models\KelasMk;
+use App\Models\PengambilanMk;
+use App\Models\PengambilanMkKprs;
+use App\Models\Semester;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
+
+class KrsService
+{
+    const CODE = "KRS";
+
+    public function ValidateKRSScheduleByActiveSemester()
+    {
+
+        // get krs kegiatan id
+        $kegiatan = Kegiatan::where('kode_kegiatan', self::CODE)
+            ->first();
+
+        if (!$kegiatan) {
+            throw new \Exception("Kegiatan with code " . self::CODE . " not found.");
+        }
+
+        // get active semester
+        $semesterAktif = Semester::aktif();
+        if (!$semesterAktif) {
+            throw new \Exception("No active semester found.");
+        }
+
+        $jadwalKegiatanSemester = JadwalKegiatanSemester::where('id_kegiatan', $kegiatan->id_kegiatan)
+            ->where('id_semester', $semesterAktif->id_semester)
+            ->where('tgl_mulai_jks', '<=', Carbon::now()->timezone(env('APP_TIMEZONE')))
+            ->where('tgl_selesai_jks', '>=', Carbon::now()->timezone(env('APP_TIMEZONE')))
+            ->first();
+
+        if (!$jadwalKegiatanSemester) {
+            throw new \Exception("No active schedule found for the KRS activity in the current semester.");
+        }
+
+        return true; // Placeholder for actual validation logic
+    }
+
+    public function listMataKuliahByActiveSemesterAndProdi($id_program_studi)
+    {
+
+        $page = request()->get('page', 1);
+        $perPage = request()->get('per_page', 10);
+        $offset = ($page - 1) * $perPage;
+
+        $semesterAktif = Semester::aktif();
+        if (!$semesterAktif) {
+            throw new \Exception("No active semester found.");
+        }
+
+        $kelasMk = KelasMk::select([
+            'id_kelas_mk',
+            'kapasitas_kelas_mk',
+            'no_kelas_mk',
+            'id_mata_kuliah',
+            'terisi_kelas_mk',
+        ])
+            ->where('id_semester', $semesterAktif->id_semester)
+            ->where('id_program_studi', $id_program_studi)
+            ->with([
+                'nama',
+                'mataKuliah' => function ($query) {
+                    $query->select(['id_mata_kuliah', 'nm_mata_kuliah', 'kd_mata_kuliah', 'kredit_tatap_muka']);
+                },
+                'pengampuMk' => function ($query) {
+                    $query->select(['id_pengampu_mk', 'id_dosen', 'id_kelas_mk'])
+                        ->with(['dosen' => function ($q) {
+                            $q->with(['pengguna' => function ($q2) {
+                                $q2->select(['id_pengguna', DB::raw("gelar_depan || ' ' || nm_pengguna || ' ' || gelar_belakang as nama_lengkap")]);
+                            }])->select(['id_dosen', 'id_pengguna']);
+                        }]);
+                },
+                'jadwalKelas' => function ($query) {
+                    $query
+                        ->with(['ruangan' => function ($q) {
+                            $q->select(['id_ruangan', 'nm_ruangan']);
+                        }, 'jadwalJam' => function ($q) {
+                            $q->select(['id_jadwal_jam', DB::raw('jam_mulai || \':\' || menit_mulai as waktu_mulai'), DB::raw('jam_selesai || \':\' || menit_selesai as waktu_selesai')]);
+                        }])
+                        ->select(['id_jadwal_jam', 'id_ruangan', 'id_kelas_mk']);
+                },
+
+            ])
+            ->limit($perPage)
+            ->offset($offset)
+            ->get()->map(function ($item) {
+                $mataKuliah = $item->mataKuliah;
+                $pengampu = $item->pengampuMk->first();
+                $dosen = $pengampu->dosen ?? null;
+                $pengguna = $dosen?->pengguna;
+
+                $jadwal = $item->jadwalKelas;
+                $ruangan = $jadwal?->ruangan;
+                $jam = $jadwal?->jadwalJam;
+
+                $pengambilanMkKprs = PengambilanMkKprs::where('id_kelas_mk', $item->id_kelas_mk)
+                    ->where('id_mhs', auth()->user()->mahasiswa->id_mhs)
+                    ->where('id_semester', Semester::aktif()->id_semester)
+                    ->first();
+
+                return [
+                    'id_kelas_mk' => $item->id_kelas_mk,
+                    'kapasitas_kelas_mk' => $item->kapasitas_kelas_mk,
+                    'no_kelas_mk' => $item->no_kelas_mk,
+                    'id_mata_kuliah' => $item->id_mata_kuliah,
+                    'terisi_kelas_mk' => PengambilanMkKprs::where('id_kelas_mk', $item->id_kelas_mk)
+                        ->where('id_semester', Semester::aktif()->id_semester)
+                        ->where('status_apv_pengambilan_mk', 1)
+                        ->count(),
+
+                    'nama_kelas' => $item->nama->nama_kelas ?? '',
+                    'nm_mata_kuliah' => $mataKuliah->nm_mata_kuliah ?? '',
+                    'kd_mata_kuliah' => $mataKuliah->kd_mata_kuliah ?? '',
+                    'sks' => $mataKuliah->kredit_mata_kuliah ?? 0,
+
+                    'nama_dosen' => $pengguna->nama_lengkap ?? '',
+                    'id_dosen' => $dosen?->id_dosen ?? null,
+
+                    'nama_ruangan' => $ruangan->nm_ruangan ?? '',
+                    'waktu_mulai' => $jam->waktu_mulai ?? '',
+                    'waktu_selesai' => $jam->waktu_selesai ?? '',
+                    'sudah_diambil' => $pengambilanMkKprs ? true : false,
+                    'telah_disetujui' => $pengambilanMkKprs && $pengambilanMkKprs->status_apv_pengambilan_mk == 1 ? true : false,
+                ];
+            });;
+
+
+
+        // Assuming there's a method to get courses by semester
+        return $kelasMk;
+    }
+
+    public function takeCourse($id_kelas_mks = [])
+    {
+
+        $semesterAktif = Semester::aktif();
+        if (!$semesterAktif) {
+            throw new \Exception("No active semester found.");
+        }
+
+        DB::beginTransaction();
+
+        foreach ($id_kelas_mks as $id_kelas_mk) {
+            $pengambilanMkKprs = PengambilanMkKprs::where('id_kelas_mk', $id_kelas_mks)
+                ->where('id_mhs', auth()->user()->mahasiswa->id_mhs)
+                ->where('id_semester', $semesterAktif->id_semester)
+                ->first();
+
+            if ($pengambilanMkKprs) {
+                throw new \Exception("You have already taken this course.");
+            }
+
+
+            $pengambilanMkKprs = new PengambilanMkKprs();
+            $pengambilanMkKprs->id_kelas_mk = $id_kelas_mk;
+            $pengambilanMkKprs->id_mhs = auth()->user()->mahasiswa->id_mhs;
+            $pengambilanMkKprs->id_semester = $semesterAktif->id_semester;
+            $pengambilanMkKprs->status_apv_pengambilan_mk = 0; // Not approved yet
+            $pengambilanMkKprs->save();
+        }
+
+        DB::commit();
+
+        return true;
+    }
+
+    public function approveKprsMk($id_pengambilan_mk_kprs)
+    {
+        DB::beginTransaction();
+
+        $pengambilanMkKprs = PengambilanMkKprs::whereIn('id_pengambilan_mk_kprs', $id_pengambilan_mk_kprs)
+            ->get();
+        if ($pengambilanMkKprs->isEmpty()) {
+            throw new \Exception("No courses found for approval.");
+        }
+
+        foreach ($pengambilanMkKprs as $item) {
+            $item->status_apv_pengambilan_mk = 1; // Set to approved
+            $item->save();
+
+            // save to penambilan mk
+            // check if exist to prevent double
+            $isExist = PengambilanMk::where('id_kelas_mk', $item->id_kelas_mk)
+                ->where('id_mhs', $item->id_mhs)
+                ->where('id_semester', $item->id_semester)
+                ->exists();
+
+            if (!$isExist) {
+                $pengambilanMk = new PengambilanMk();
+                $pengambilanMk->id_kelas_mk = $item->id_kelas_mk;
+                $pengambilanMk->id_mhs = $item->id_mhs;
+                $pengambilanMk->id_semester = $item->id_semester;
+                $pengambilanMk->status_apv_pengambilan_mk = $item->status_apv_pengambilan_mk;
+                $pengambilanMk->status_pengambilan_mk = 1;
+                $pengambilanMk->save();
+            }
+        }
+
+        DB::commit();
+
+        return true;
+    }
+
+    public function listCourse($id_dosen)
+    {
+        $page = request()->get('page', 1);
+        $perPage = request()->get('per_page', 10);
+        $offset = ($page - 1) * $perPage;
+
+        $semesterAktif = Semester::aktif();
+        if (!$semesterAktif) {
+            throw new \Exception("No active semester found.");
+        }
+
+        $anakWaliMhses = DosenWali::where('id_dosen', $id_dosen)
+            ->where('id_semester', $semesterAktif->id_semester)->get();
+
+        $idMahasiswa = [];
+        foreach ($anakWaliMhses as $anakWaliMhs) {
+            # code...
+            array_push($idMahasiswa, $anakWaliMhs->id_mhs);
+        }
+
+        // get pengambilan mk kprs
+        $pengambilanMkKprs = PengambilanMkKprs::whereIn('id_mhs', $idMahasiswa)
+            ->where('id_semester', $semesterAktif->id_semester)
+            ->with([
+                'kelasMk' => function ($q) {
+                    $q->select([
+                        'id_kelas_mk',
+                        'no_kelas_mk',
+                        'id_mata_kuliah'
+                    ])
+                        ->with([
+                            'mataKuliah' => function ($q2) {
+                                $q2->select('id_mata_kuliah', 'nm_mata_kuliah', 'kredit_tatap_muka');
+                            },
+                            'nama' => function ($q2) {
+                                $q2->select('id_nama_kelas', 'nama_kelas');
+                            },
+                            'jadwalKelas' => function ($query) {
+                                $query
+                                    ->with(['ruangan' => function ($q) {
+                                        $q->select(['id_ruangan', 'nm_ruangan']);
+                                    }, 'jadwalJam' => function ($q) {
+                                        $q->select(['id_jadwal_jam', DB::raw('jam_mulai || \':\' || menit_mulai as waktu_mulai'), DB::raw('jam_selesai || \':\' || menit_selesai as waktu_selesai')]);
+                                    }])
+                                    ->select(['id_jadwal_jam', 'id_ruangan', 'id_kelas_mk']);
+                            },
+                        ]);
+                },
+                'mahasiswa' => function ($q2) {
+                    $q2->select([
+                        'id_mhs',
+                        'id_pengguna'
+                    ])
+                        ->with([
+                            'pengguna' => function ($q3) {
+                                $q3->select([
+                                    'id_pengguna',
+                                    'nm_pengguna'
+                                ]);
+                            }
+                        ]);
+                }
+            ])
+            ->limit($perPage)
+            ->offset($offset)
+            ->get()
+            ->map(function ($item) {
+
+                $kelasMk = $item->kelasMk;
+
+                $jadwal = $kelasMk->jadwalKelas;
+                $ruangan = $jadwal?->ruangan;
+                $jam = $jadwal?->jadwalJam;
+
+                return [
+                    'id_pengambilan_mk_kprs' => $item->id_pengambilan_mk_kprs,
+                    'id_mhs' => $item->id_mhs,
+                    'id_semester' => $item->id_semester,
+                    'nm_mahasiswa' => optional($item->mahasiswa->pengguna)->nm_pengguna,
+                    'id_kelas_mk' => optional($item->kelasMk)->id_kelas_mk,
+                    'no_kelas_mk' => optional($item->kelasMk)->no_kelas_mk,
+                    'nama_ruangan' => $ruangan->nm_ruangan ?? '',
+                    'waktu_mulai' => $jam->waktu_mulai ?? '',
+                    'waktu_selesai' => $jam->waktu_selesai ?? '',
+                    'status_approval' => $item->status_apv_pengambilan_mk,
+                    'id_mata_kuliah' => optional($item->kelasMk)->id_mata_kuliah,
+                    'nm_mata_kuliah' => optional($item->kelasMk->mataKuliah)->nm_mata_kuliah,
+                    'kredit_tatap_muka' => optional($item->kelasMk->mataKuliah)->kredit_tatap_muka,
+                    'nama_kelas' => optional($item->kelasMk->nama)->nama_kelas,
+                ];
+            });;
+
+        return $pengambilanMkKprs;
+    }
+}
