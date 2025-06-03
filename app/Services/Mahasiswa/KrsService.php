@@ -8,6 +8,7 @@ use App\Models\Kegiatan;
 use App\Models\KelasMk;
 use App\Models\PengambilanMk;
 use App\Models\PengambilanMkKprs;
+use App\Models\PengampuMk;
 use App\Models\Semester;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -95,7 +96,7 @@ class KrsService
             ->offset($offset)
             ->get()->map(function ($item) {
                 $mataKuliah = $item->mataKuliah;
-                $pengampu = $item->pengampuMk->first();
+                $pengampu = !empty($item->pengampuMk) ? $item->pengampuMk->first() : new PengampuMk();
                 $dosen = $pengampu->dosen ?? null;
                 $pengguna = $dosen?->pengguna;
 
