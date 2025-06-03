@@ -9,6 +9,7 @@ use App\Http\Controllers\Mahasiswa\Api\AkademikController;
 use App\Http\Controllers\Mahasiswa\Api\KeuanganController;
 use App\Http\Controllers\Mahasiswa\Api\MahasiswaController;
 use App\Http\Controllers\Mahasiswa\Api\MahasiswaKrsController;
+use App\Http\Controllers\Mahasiswa\Api\MahasiswaQrPresensiController;
 
 Route::group(['prefix' => 'mahasiswa', 'middleware' => 'role:' . Role::MAHASISWA], function () {
     Route::get('me', [PenggunaController::class, 'me']);
@@ -54,6 +55,11 @@ Route::group(['prefix' => 'mahasiswa', 'middleware' => 'role:' . Role::MAHASISWA
             Route::get('check-krs-schedule', 'CheckKRSScheduleOnCurrentSemester');
             Route::get('list_mk', 'listMataKuliahByActiveSemesterAndProdi');
             Route::post('take_krs', 'takeCourse');
+        });
+    Route::group(
+        ['prefix' => 'presensi', 'controller' => MahasiswaQrPresensiController::class],
+        function () {
+            Route::post('qrPresensi', 'qrPresensi');
         }
     );
 });
