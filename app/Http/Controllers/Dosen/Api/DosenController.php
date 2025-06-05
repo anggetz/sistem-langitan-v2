@@ -17,19 +17,19 @@ class DosenController extends Controller
     /**
      * this dev only password please coment this function in production
      */
-    public function resetPasswordDev() {
-        try {
-            $pengguna = Pengguna::where('username', '0706045501')->first();
-            if ($pengguna) {
+    // public function resetPasswordDev() {
+    //     try {
+    //         $pengguna = Pengguna::where('username', '0706045501')->first();
+    //         if ($pengguna) {
 
-                $pengguna->password_hash = sha1('12345678');
-                $pengguna->save();
-            }
-            return response()->json(['message' => 'Password reset successfully']);
-        } catch (\Exception $e) {
-            return response()->json(['message' => 'Error resetting password: ' . $e->getMessage()], 500);
-        }
-    }
+    //             $pengguna->password_hash = sha1('12345678');
+    //             $pengguna->save();
+    //         }
+    //         return response()->json(['message' => 'Password reset successfully']);
+    //     } catch (\Exception $e) {
+    //         return response()->json(['message' => 'Error resetting password: ' . $e->getMessage()], 500);
+    //     }
+    // }
 
     public function profile()
     {
