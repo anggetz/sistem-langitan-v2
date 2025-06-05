@@ -15,7 +15,7 @@ Route::group(
             Route::get('profile', [DosenController::class, 'profile']);
             Route::put('profile', [DosenController::class, 'EditProfile']);
             // this dev only password please coment this function in production
-            Route::get('resetpassworddev', [DosenController::class, 'resetPasswordDev']);
+            // Route::get('resetpassworddev', [DosenController::class, 'resetPasswordDev']);
 
             Route::post('profile-photo', [DosenController::class, 'EditPhotoProfile']);
 
