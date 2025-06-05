@@ -282,9 +282,16 @@ class KrsService
 
                 $kelasMk = $item->kelasMk;
 
-                $jadwal = $kelasMk->jadwalKelas;
-                $ruangan = $jadwal?->ruangan;
-                $jam = $jadwal?->jadwalJam;
+                if (!empty($kelasMk)) {
+                    $jadwal = $kelasMk->jadwalKelas;
+                    $ruangan = $jadwal?->ruangan;
+                    $jam = $jadwal?->jadwalJam;
+                } else {
+                    $ruangan = '-';
+                    $jam = '-';
+                    $jadwal = '-';
+                }
+
 
                 return [
                     'id_pengambilan_mk_kprs' => $item->id_pengambilan_mk_kprs,
@@ -298,9 +305,9 @@ class KrsService
                     'waktu_selesai' => $jam->waktu_selesai ?? '',
                     'status_approval' => $item->status_apv_pengambilan_mk,
                     'id_mata_kuliah' => optional($item->kelasMk)->id_mata_kuliah,
-                    'nm_mata_kuliah' => optional($item->kelasMk->mataKuliah)->nm_mata_kuliah,
-                    'kredit_tatap_muka' => optional($item->kelasMk->mataKuliah)->kredit_tatap_muka,
-                    'nama_kelas' => optional($item->kelasMk->nama)->nama_kelas,
+                    'nm_mata_kuliah' => !empty($mataKuliah) ? optional($item->kelasMk->mataKuliah)->nm_mata_kuliah : '-',
+                    'kredit_tatap_muka' => !empty($mataKuliah) ? optional($item->kelasMk->mataKuliah)->kredit_tatap_muka : '-',
+                    'nama_kelas' => !empty($mataKuliah) ? optional($item->kelasMk->nama)->nama_kelas : '-',
                 ];
             });;
 
