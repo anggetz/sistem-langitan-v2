@@ -158,7 +158,7 @@ class DosenController extends Controller
                 }
 
                 $path = $request->file('foto_pengguna')->store('photos', 'public');
-                $user->foto_pengguna = $path;
+                $user->foto_pengguna = asset('storage/' . $path);
             }
 
             $user->save();
