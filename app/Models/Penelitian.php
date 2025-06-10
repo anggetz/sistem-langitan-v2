@@ -28,6 +28,8 @@ class Penelitian extends Model
         'id_penelitian_sumber_dana',
         'penelitian_bidang_lain',
         'is_proposal',
+        'nama_file',
+        'id_peneliti',
     ];
 
     public function penelitianSkim()
