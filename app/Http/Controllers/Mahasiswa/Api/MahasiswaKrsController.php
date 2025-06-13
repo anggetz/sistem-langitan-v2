@@ -68,7 +68,7 @@ class MahasiswaKrsController extends Controller
 
             return response()->json([
                 'message' => 'Course registered successfully.',
-                'data' => $result
+                'status' => $result,
             ], 201);
         } catch (\Exception $e) {
             return response()->json([
