@@ -3,6 +3,7 @@
 use App\Http\Controllers\Dosen\Api\DosenController;
 use App\Http\Controllers\Dosen\Api\DosenJadwalController;
 use App\Http\Controllers\Dosen\Api\DosenKrsController;
+use App\Http\Controllers\Dosen\Api\DosenPenelitianApprovalController;
 use App\Http\Controllers\Dosen\Api\DosenPenelitianController;
 use App\Http\Controllers\Dosen\Api\DosenPenelitianMasterController;
 use App\Http\Controllers\Dosen\Api\DosenPresensiController;
@@ -43,6 +44,16 @@ Route::group(
                 Route::post('/{id}', 'Create');
                 Route::get('/{id}', 'Show');
                 Route::delete('/{id}', 'Delete');
+            }
+        );
+
+        Route::group(
+            ['prefix' => 'penelitian_approval', 'controller' => DosenPenelitianApprovalController::class],
+            function () {
+                Route::post('approval_prodi', 'approvalProdi');
+                Route::post('approval_dekan', 'approvalDekan');
+                Route::post('approval_akademik', 'approvalAkademik');
+                Route::post('approval_lppm', 'approvalLPPM');
             }
         );
 
