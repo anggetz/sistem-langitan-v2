@@ -3,35 +3,70 @@
 use App\Http\Controllers\Dosen\Api\DosenController;
 use App\Http\Controllers\Dosen\Api\DosenJadwalController;
 use App\Http\Controllers\Dosen\Api\DosenKrsController;
+use App\Http\Controllers\Dosen\Api\DosenPenelitianApprovalController;
+use App\Http\Controllers\Dosen\Api\DosenPenelitianController;
+use App\Http\Controllers\Dosen\Api\DosenPenelitianMasterController;
 use App\Http\Controllers\Dosen\Api\DosenPresensiController;
 use App\Http\Controllers\Dosen\Api\DosenQrController;
 use App\Models\Role;
 use Illuminate\Support\Facades\Route;
 
 Route::group(
-        ['prefix' => 'dosen', 'middleware' => 'role:' . Role::DOSEN],
-        function () {
+    ['prefix' => 'dosen', 'middleware' => 'role:' . Role::DOSEN],
+    function () {
 
-            Route::get('profile', [DosenController::class, 'profile']);
-            Route::put('profile', [DosenController::class, 'EditProfile']);
-            // this dev only password please coment this function in production
-            // Route::get('resetpassworddev', [DosenController::class, 'resetPasswordDev']);
+        Route::get('profile', [DosenController::class, 'profile']);
+        Route::put('profile', [DosenController::class, 'EditProfile']);
+        // this dev only password please coment this function in production
+        // Route::get('resetpassworddev', [DosenController::class, 'resetPasswordDev']);
 
-            Route::post('profile-photo', [DosenController::class, 'EditPhotoProfile']);
+        Route::post('profile-photo', [DosenController::class, 'EditPhotoProfile']);
 
-            Route::get('jadwal', [DosenJadwalController::class, 'Jadwal']);
-            Route::get('jadwal-hari-ini', [DosenJadwalController::class, 'JadwalHariIni']);
+        Route::get('jadwal', [DosenJadwalController::class, 'Jadwal']);
+        Route::get('jadwal-hari-ini', [DosenJadwalController::class, 'JadwalHariIni']);
 
-            Route::get('mahasiswa/kelas/{id_kelas}', [DosenPresensiController::class, 'MahasiswaKelas']);
-            Route::put('mahasiswa/{id_kelas}/presensi/{id_presensi}', [DosenPresensiController::class, 'MahasiswaInOut']);
+        Route::get('mahasiswa/kelas/{id_kelas}', [DosenPresensiController::class, 'MahasiswaKelas']);
+        Route::put('mahasiswa/{id_kelas}/presensi/{id_presensi}', [DosenPresensiController::class, 'MahasiswaInOut']);
 
-            Route::group(
-                ['prefix' => 'krs', 'controller' => DosenKrsController::class],
-                function () {
-                    Route::post('approve_course', 'approveKprsMk');
-                    Route::get('list_course_approval', 'listCourseApproval');
-                }
-    );
-            Route::post('qr-presensi/{id_presensi}', [DosenQrController::class, 'GenerateQR']);
-        }
+        Route::group(
+            ['prefix' => 'krs', 'controller' => DosenKrsController::class],
+            function () {
+                Route::post('approve_course', 'approveKprsMk');
+                Route::get('list_course_approval', 'listCourseApproval');
+            }
+        );
+
+        Route::group(
+            ['prefix' => 'penelitian', 'controller' => DosenPenelitianController::class],
+            function () {
+                Route::get('/', 'Index');
+                Route::post('/', 'Create');
+                Route::post('/{id}', 'Create');
+                Route::get('/{id}', 'Show');
+                Route::delete('/{id}', 'Delete');
+            }
+        );
+
+        Route::group(
+            ['prefix' => 'penelitian_approval', 'controller' => DosenPenelitianApprovalController::class],
+            function () {
+                Route::post('approval_prodi', 'approvalProdi');
+                Route::post('approval_dekan', 'approvalDekan');
+                Route::post('approval_akademik', 'approvalAkademik');
+                Route::post('approval_lppm', 'approvalLPPM');
+            }
+        );
+
+        Route::group(
+            ['prefix' => 'penelitian_master', 'controller' => DosenPenelitianMasterController::class],
+            function () {
+                Route::get('/skim', 'GetSkim');
+                Route::get('/bidang', 'GetBidang');
+                Route::get('/bidang-ilmu', 'GetBidangIlmu');
+                Route::get('/sumber-dana', 'GetSumberDana');
+            }
+        );
+
+        Route::post('qr-presensi/{id_presensi}', [DosenQrController::class, 'GenerateQR']);
+    }
 );
