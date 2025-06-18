@@ -6,6 +6,8 @@ use App\Models\PerguruanTinggi;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BeritaController;
 use App\Http\Controllers\Auth\Api\AuthController;
+use App\Http\Controllers\KegiatanAkdEksController;
+use App\Http\Controllers\KegiatanKelompokController;
 
 Route::get('/', function () {
     return "Laravel Version : " . app()->version();
@@ -54,6 +56,22 @@ Route::group(['middleware' => 'auth.token'], function () {
         Route::get('/', function (Request $request) {
             return $request->user();
         });
+    });
+
+    Route::group(['prefix' => '/master/kegiatan_akd_eks', 'controller' => KegiatanAkdEksController::class], function () {
+        Route::get('/', 'Get');
+        Route::get('/{id}', 'GetById');
+        Route::post('/', 'Create');
+        Route::put('/{id}', 'UpdateKegiatan');
+        Route::delete('/{id}', 'DeleteKegiatan');
+    });
+
+    Route::group(['prefix' => '/master/kegiatan_kelompok_akd_eks', 'controller' => KegiatanKelompokController::class], function () {
+        Route::get('/', 'Get');
+        Route::get('/{id}', 'GetById');
+        Route::post('/', 'Create');
+        Route::put('/{id}', 'UpdateKegiatan');
+        Route::delete('/{id}', 'DeleteKegiatan');
     });
 
     require_once(__DIR__ . "/api/mahasiswa.php");
