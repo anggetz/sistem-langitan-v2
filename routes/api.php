@@ -77,9 +77,15 @@ Route::group(['middleware' => 'auth.token'], function () {
 
     require_once(__DIR__ . "/api/mahasiswa.php");
     require_once(__DIR__ . "/api/dosen.php");
+
 });
 
-
+Route::fallback(function () {
+    return response()->json([
+        'message' => 'API Route Not Found. Please check the endpoint and HTTP method.',
+        'status' => 404
+    ], 404);
+})->name('api.fallback.404');
 
 
 

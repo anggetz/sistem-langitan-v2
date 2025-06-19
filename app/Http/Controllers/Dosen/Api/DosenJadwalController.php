@@ -3,7 +3,10 @@
 namespace App\Http\Controllers\Dosen\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Gedung;
+use App\Models\JadwalJam;
 use App\Models\Message;
+use App\Models\Ruangan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -37,14 +40,14 @@ class DosenJadwalController extends Controller
             })->map(function ($item) {
                 $mataKuliah = $item->kelas_mk->mataKuliah;
                 $jadwalKelas = $item->kelas_mk->jadwalKelas;
-                $jadwalJam = $jadwalKelas->jadwalJam;
-                $ruangan = $jadwalKelas->ruangan;
-                $gedung = $ruangan->gedung;
+                $jadwalJam = $jadwalKelas->jadwalJam ?? new JadwalJam();
+                $ruangan = $jadwalKelas->ruangan ?? new Ruangan();
+                $gedung = $ruangan->gedung ?? new Gedung();
                 return [
                     'nama_mk' => $mataKuliah->nm_mata_kuliah ?? '-',
-                    'hari' => $jadwalKelas->nama_hari,
-                    'id_kelas_mk' => $item->kelas_mk->id_kelas_mk,
-                    'id_jadwal_hari' => $jadwalKelas->id_jadwal_hari,
+                    'hari' => $jadwalKelas->nama_hari ?? '-',
+                    'id_kelas_mk' => $item->kelas_mk->id_kelas_mk ?? 0,
+                    'id_jadwal_hari' => $jadwalKelas->id_jadwal_hari ?? 0,
                     'jam_mulai' => $jadwalJam->jam_mulai . ":" . $jadwalJam->menit_mulai,
                     'jam_selesai' => $jadwalJam->jam_selesai . ":" . $jadwalJam->menit_selesai,
                     'jam_mulai_ord' => $jadwalJam->jam_mulai * 100 + $jadwalJam->menit_mulai,
@@ -113,8 +116,8 @@ class DosenJadwalController extends Controller
                 $mataKuliah = $item->kelas_mk->mataKuliah;
                 $jadwalKelas = $item->kelas_mk->jadwalKelas;
                 $jadwalJam = $jadwalKelas->jadwalJam;
-                $ruangan = $jadwalKelas->ruangan;
-                $gedung = $ruangan->gedung;
+                $ruangan = $jadwalKelas->ruangan ?? new Ruangan();
+                $gedung = $ruangan->gedung ?? new Gedung();
                 return [
                     'nama_mk' => $mataKuliah->nm_mata_kuliah ?? '-',
                     'id_kelas_mk' => $item->kelas_mk->id_kelas_mk,
@@ -154,7 +157,7 @@ class DosenJadwalController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'error',
-                'message' => $e->getMessage()
+                'message' => $e->getMessage() . ' ' . $e->getLine()
             ]);
         }
     }
