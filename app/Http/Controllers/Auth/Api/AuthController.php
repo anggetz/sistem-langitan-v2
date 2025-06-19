@@ -26,38 +26,38 @@ class AuthController extends Controller
     public function login(LoginRequest $request)
     {
 
-        return $this->authService->authenticate($request);
+        return  $this->authService->authenticate($request);
 
 
         // $perguruanTinggi = pt();
         // $credentials = $request->credentials();
-    
+
         // $pengguna = Pengguna::where([
         //     'id_perguruan_tinggi' => $perguruanTinggi->id_perguruan_tinggi,
         //     'username'             => $credentials['username']
         // ])->first();
-    
+
         // if (!$pengguna) {
         //     return $this->sendFailedResponse('Username atau Password tidak sesuai', 401);
         // }
-    
+
         // if (!$this->isValidPassword($pengguna, $perguruanTinggi, $credentials['hashed_password'])) {
         //     return $this->sendFailedResponse('Username atau Password tidak sesuai', 401);
         // }
-    
+
         // if ($pengguna->password_must_change == 1) {
         //     return $this->sendFailedResponse('Password harus diganti', 400);
         // }
-    
+
         // $token = auth()->guard('api')->login($pengguna);
-    
+
         // return response()->json([
         //     'status'     => Message::OK,
         //     'token'      => $token,
         //     'expired_at' => auth()->guard('api')->factory()->getTTL() * 60,
         // ]);
     }
-    
+
 
     public function destroy()
     {
