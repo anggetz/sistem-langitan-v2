@@ -12,12 +12,29 @@ use App\Models\PresensiMhs;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
-
+use Exception;
 use Illuminate\Support\Facades\Storage;
 
 class DosenPresensiController extends Controller
 {
     public function __construct() {}
+
+    public function listMateriMk(Request $request, $id_kelas_mk)
+    {
+        try {
+            $materiMks = MateriMk::where('id_kelas_mk', $id_kelas_mk)->get();
+            return response()->json([
+                'status' => true,
+                'data' => $materiMks
+            ]);
+        } catch (\Exception $err) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Gagal mengambil materi mk',
+                'error' => $err->getMessage()
+            ]);
+        }
+    }
 
     public function createPresensi(Request $request)
     {

@@ -29,6 +29,8 @@ Route::group(
 
         Route::post('buat_presensi', [DosenPresensiController::class, 'createPresensi']);
 
+        Route::get('list_materi_mk/{id_kelas_mk}', [DosenPresensiController::class, 'listMateriMk']);
+
         Route::put('mahasiswa/{id_kelas}/presensi/{id_presensi}', [DosenPresensiController::class, 'MahasiswaInOut']);
 
         Route::group(
