@@ -26,6 +26,9 @@ Route::group(
         Route::get('jadwal-hari-ini', [DosenJadwalController::class, 'JadwalHariIni']);
 
         Route::get('mahasiswa/kelas/{id_kelas}', [DosenPresensiController::class, 'MahasiswaKelas']);
+
+        Route::post('buat_presensi', [DosenPresensiController::class, 'createPresensi']);
+
         Route::put('mahasiswa/{id_kelas}/presensi/{id_presensi}', [DosenPresensiController::class, 'MahasiswaInOut']);
 
         Route::group(
