@@ -70,3 +70,5 @@ Route::group(
         Route::post('qr-presensi/{id_presensi}', [DosenQrController::class, 'GenerateQR']);
     }
 );
+
+

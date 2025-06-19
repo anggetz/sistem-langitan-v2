@@ -82,10 +82,8 @@ Route::group(['middleware' => 'auth.token'], function () {
 
 Route::fallback(function () {
     return response()->json([
-        'message' => 'API Route Not Found. Please check the endpoint and HTTP method.',
-        'status' => 404
+        'success' => false,
+        'message' => 'Endpoint tidak ditemukan.',
+        'code' => 404,
     ], 404);
-})->name('api.fallback.404');
-
-
-
+});
