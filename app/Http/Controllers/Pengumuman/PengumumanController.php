@@ -1,10 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Pengumuman;
 
-use App\Models\KegiatanAkdEks;
-use App\Models\Message;
-use App\Models\Pengguna;
+use App\Http\Controllers\Controller;
 use App\Models\Pengumuman;
 use Exception;
 use Illuminate\Http\Request;
@@ -22,7 +20,7 @@ class PengumumanController extends Controller
             $total = Pengumuman::count();
             $pengumumans = Pengumuman::offset($offset)
                 ->limit($perPage)
-                ->all();
+                ->get();
 
 
             $json = [
@@ -52,8 +50,9 @@ class PengumumanController extends Controller
             ]);
 
             $pengumuman = new Pengumuman($data);
+            $pengumuman->save();
 
-            return response()->json(['message' => 'Pengumuman berhasil dibuat', 'data' => $pengumuman], 201);
+            return response()->json(['message' => 'Pengumuman berhasil dibuat', 'data' => $pengumuman, 'status' => true], 201);
         } catch (Exception $err) {
             return response()->json([
                 'status' => 'error',
@@ -62,7 +61,7 @@ class PengumumanController extends Controller
         }
     }
 
-    public function update(Request $request, $id)
+    public function Update(Request $request, $id)
     {
         try {
             $data = $request->validate([
@@ -71,15 +70,15 @@ class PengumumanController extends Controller
                 'tanggal_expired' => 'nullable|date'
             ]);
 
-            $pengumuman = Pengumuman::where('id_pengumuman', $id)->first();
+            $pengumuman = Pengumuman::find((int)$id);
 
-            if (!$pengumuman) {
-                return response()->json(['message' => 'Pengumuman tidak ditemukan'], 404);
+            if (empty($pengumuman)) {
+                return response()->json(['status' => 'error', 'message' => 'Pengumuman tidak ditemukan'], 404);
             }
 
             $pengumuman->update($data);
 
-            return response()->json(['message' => 'Pengumuman berhasil diupdate', 'data' => $pengumuman], 200);
+            return response()->json(['message' => 'Pengumuman berhasil diupdate', 'data' => $pengumuman, 'status' => true], 200);
         } catch (\Exception $err) {
             return response()->json([
                 'status' => 'error',
@@ -88,18 +87,18 @@ class PengumumanController extends Controller
         }
     }
 
-    public function delete($id)
+    public function Delete($id)
     {
         try {
             $pengumuman = Pengumuman::where('id_pengumuman', $id)->first();
 
             if (!$pengumuman) {
-                return response()->json(['message' => 'Pengumuman tidak ditemukan'], 404);
+                return response()->json(['status' => 'error', 'message' => 'Pengumuman tidak ditemukan'], 404);
             }
 
             $pengumuman->delete();
 
-            return response()->json(['message' => 'Pengumuman berhasil dihapus'], 200);
+            return response()->json(['status' => true, 'message' => 'Pengumuman berhasil dihapus'], 200);
         } catch (\Exception $err) {
             return response()->json([
                 'status' => 'error',
@@ -109,7 +108,7 @@ class PengumumanController extends Controller
     }
 
 
-    public function getOne($id)
+    public function GetById($id)
     {
         try {
             $pengumuman = Pengumuman::where('id_pengumuman', $id)->first();
@@ -118,7 +117,7 @@ class PengumumanController extends Controller
                 return response()->json(['message' => 'Pengumuman tidak ditemukan'], 404);
             }
 
-            return response()->json(['data' => $pengumuman], 200);
+            return response()->json(['data' => $pengumuman, 'status' => true], 200);
         } catch (\Exception $err) {
             return response()->json([
                 'status' => 'error',
