@@ -60,17 +60,6 @@ class PengambilanMk extends Model
              ->whereRaw("tgl_entry >= SYSDATE - (5 / 1440)");
     }
 
-    public function jadwalKelasMk()
-    {
-        return $this->kelas_mk()
-            ->select(["id_kelas_mk", "id_semester", "no_kelas_mk", "id_mata_kuliah"])
-            ->with([
-                "pengampu_mk.pengguna:nm_pengguna",
-                "jadwal_kelas.jadwal_jam:id_jadwal_jam,nm_jadwal_jam",
-                "jadwal_kelas.ruangan:id_ruangan,nm_ruangan"
-            ]);
-    }
-
     public function namaKelas()
     {
         return $this->belongsToThrough(
