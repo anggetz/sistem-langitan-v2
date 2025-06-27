@@ -24,6 +24,7 @@ Route::group(
 
         Route::get('jadwal', [DosenJadwalController::class, 'Jadwal']);
         Route::get('jadwal-ujian-uts', [DosenJadwalController::class, 'JadwalUjianUTS']);
+        Route::get('jadwal-ujian-uas', [DosenJadwalController::class, 'JadwalUjianUAS']);
         Route::get('jadwal-hari-ini', [DosenJadwalController::class, 'JadwalHariIni']);
 
         Route::get('mahasiswa/kelas/{id_kelas}', [DosenPresensiController::class, 'MahasiswaKelas']);

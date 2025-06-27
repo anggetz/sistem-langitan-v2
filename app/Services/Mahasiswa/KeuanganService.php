@@ -13,10 +13,10 @@ class KeuanganService{
 
     public function __construct()
     {
-        
+
     }
 
-    public function tagihan(){
+    public function tagihan($page, $offset){
         $mahasiswa=Auth::user()->mahasiswa;
         // $mahasiswa->tagihan_mhs()
         //         ->with([
