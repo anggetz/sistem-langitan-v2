@@ -59,7 +59,7 @@ class AkademikController extends Controller
         ],200);
 
     }
-    
+
     public function khs(Request $request){
 
         if($request->has("semester")&&$request->has("mata-kuliah")){
@@ -69,14 +69,14 @@ class AkademikController extends Controller
                 'data'=> $request->get("mata-kuliah")
             ],200);
         }
-        
+
         if($request->has("semester")){
             $data = $this->akademikService->khs($request->get("semester"));
             return response()->json([
                 'status'=>Message::OK,
                 'data'=> $data
             ],200);
-            
+
         }
 
         $semester=auth()->user()->mahasiswa
@@ -123,9 +123,10 @@ class AkademikController extends Controller
             })
             ->orderBy('tgl_ujian','asc')
             ->orderBy('jam_mulai','asc')
-            ->select(['tgl_ujian','jam_mulai','jam_selesai','id_kelas_mk','id_kegiatan'])
+            ->select(['tgl_ujian','jam_mulai','jam_selesai','id_kelas_mk','id_kegiatan', 'id_mhs'])
             ->get();
-        $jadwalUAS = $mhs->jadwal_ujian()->with([
+
+        $jadwalUAS = $mhs->jadwalUjian()->with([
             'kelas:id_kelas_mk,id_mata_kuliah',
             'kelas.mataKuliah:id_mata_kuliah,kd_mata_kuliah,nm_mata_kuliah',
             ])
@@ -135,7 +136,7 @@ class AkademikController extends Controller
             })
             ->orderBy('tgl_ujian','asc')
             ->orderBy('jam_mulai','asc')
-            ->select(['tgl_ujian','jam_mulai','jam_selesai','id_kelas_mk','id_kegiatan'])
+            ->select(['tgl_ujian','jam_mulai','jam_selesai','id_kelas_mk','id_kegiatan', 'id_mhs'])
             ->get();
         return response()->json([
             'status'=>Message::OK,
