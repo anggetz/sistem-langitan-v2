@@ -29,6 +29,10 @@ class KelasMk extends Model
         return $this->belongsTo(NamaKelas::class,"no_kelas_mk","id_nama_kelas");
     }
 
+    public function programStudi(){
+        return $this->belongsTo(ProgramStudi::class,"id_program_studi","id_program_studi");
+    }
+
     public function semester(){
         return $this->belongsTo(Semester::class,"id_semester","id_semester");
     }

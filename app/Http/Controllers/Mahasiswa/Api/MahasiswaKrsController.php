@@ -9,6 +9,7 @@ use App\Services\Mahasiswa\AkademikService;
 use App\Services\Mahasiswa\KeuanganService;
 use App\Http\Resources\Mahasiswa\JadwalKuliahResource;
 use App\Services\Mahasiswa\KrsService as MahasiswaKrsService;
+use Exception;
 use KrsService;
 
 class MahasiswaKrsController extends Controller
@@ -73,6 +74,29 @@ class MahasiswaKrsController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to register course.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+     public function getHistoryKrs(Request $request)
+    {
+        try {
+            $th_semester = $request->get('tahun_semester', null);
+
+            if (empty($th_semester)) {
+                throw new Exception('tahun_semester tidak boleh kosong');
+            }
+
+            $result = (new MahasiswaKrsService())->getHistoryKrsByIdMhs(auth()->user()->mahasiswa->id_mhs, $th_semester);
+
+            return response()->json([
+                'message' => 'Riwayat KRS berhasil didapat.',
+                'status' => $result,
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Gagal mendapatkan riwayat KRS',
                 'error' => $e->getMessage()
             ], 500);
         }

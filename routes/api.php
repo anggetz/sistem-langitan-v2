@@ -8,6 +8,7 @@ use App\Http\Controllers\BeritaController;
 use App\Http\Controllers\Auth\Api\AuthController;
 use App\Http\Controllers\KegiatanAkdEksController;
 use App\Http\Controllers\KegiatanKelompokController;
+use App\Http\Controllers\Pengumuman\PengumumanController;
 use App\Models\Pengguna;
 
 Route::get('/', function () {
@@ -57,6 +58,14 @@ Route::group(['middleware' => 'auth.token'], function () {
         Route::get('/', function (Request $request) {
             return Pengguna::with('role')->where('id_pengguna', $request->user()->id_pengguna)->first();
         });
+    });
+
+    Route::group(['prefix' => '/pengumuman', 'controller' => PengumumanController::class], function () {
+        Route::get('/', 'Index');
+        Route::get('/{id}', 'GetById');
+        Route::post('/', 'Create');
+        Route::put('/{id}', 'Update');
+        Route::delete('/{id}', 'Delete');
     });
 
     Route::group(['prefix' => '/master/kegiatan_akd_eks', 'controller' => KegiatanAkdEksController::class], function () {

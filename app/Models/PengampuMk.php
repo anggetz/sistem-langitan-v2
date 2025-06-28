@@ -24,6 +24,11 @@ class PengampuMk extends Model
         return $this->belongsTo(KelasMk::class, "id_kelas_mk", "id_kelas_mk");
     }
 
+    public function jadwalUjian()
+    {
+        return $this->hasMany(UjianMk::class, "id_kelas_mk", "id_kelas_mk");
+    }
+
     public function dosen()
     {
         return $this->belongsTo(Dosen::class, "id_dosen", "id_dosen");

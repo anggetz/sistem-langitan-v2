@@ -6,7 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\Gedung;
 use App\Models\JadwalJam;
 use App\Models\Message;
+use App\Models\PengampuMk;
 use App\Models\Ruangan;
+use App\Models\Semester;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -155,6 +158,115 @@ class DosenJadwalController extends Controller
                 'data' => $jadwal
             ]);
         } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage() . ' ' . $e->getLine()
+            ]);
+        }
+    }
+
+    public function jadwalUjianUTS(Request $request)
+    {
+        try {
+
+            $id_kelas_mk = $request->input('id_kelas_mk');
+            $page = $request->input('page');
+            $perPage = $request->input('per_page', 10);
+            $offset = ($page - 1) * $perPage;
+
+            $dosen = auth()->user()->dosen;
+
+            $semAktif = Semester::aktif();
+            $jadwal = PengampuMk::with([
+                'jadwalUjian' => function ($q) {
+                    $q->orderBy('tgl_ujian', 'asc')
+                        ->orderBy('jam_mulai', 'asc');
+                },
+                'jadwalUjian.kelas:id_kelas_mk,id_mata_kuliah',
+                'jadwalUjian.kelas.mataKuliah:id_mata_kuliah,kd_mata_kuliah,nm_mata_kuliah',
+            ])
+                ->where('id_dosen', $dosen->id_dosen)
+                ->whereHas('jadwalUjian.kegiatan', function ($q) {
+                    $q->where('kode_kegiatan', 'UTS');
+                })
+                ->whereHas('jadwalUjian', function ($q) use ($semAktif) {
+                    $q->where('id_semester', $semAktif->id_semester);
+                });
+
+            if (!empty($id_kelas_mk)) {
+                $jadwal->where('id_kelas_mk', $id_kelas_mk);
+            }
+
+
+            $total = $jadwal->count();
+
+            $jadwal = $jadwal->select(['id_pengampu_mk', 'id_kelas_mk', 'id_dosen'])
+                ->offset($offset)
+                ->limit($perPage)
+                ->get();
+
+            return response()->json([
+                'status' => Message::OK,
+                'data' => $jadwal,
+                'total' => $total,
+                'page' => $page,
+                'per_page' => $perPage
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage() . ' ' . $e->getLine()
+            ]);
+        }
+    }
+
+    public function jadwalUjianUAS(Request $request)
+    {
+        try {
+
+            $id_kelas_mk = $request->input('id_kelas_mk');
+            $page = $request->input('page');
+            $perPage = $request->input('per_page', 10);
+            $offset = ($page - 1) * $perPage;
+
+            $dosen = auth()->user()->dosen;
+
+            $semAktif = Semester::aktif();
+            $jadwal = PengampuMk::with([
+                'jadwalUjian' => function ($q) {
+                    $q->orderBy('tgl_ujian', 'asc')
+                        ->orderBy('jam_mulai', 'asc');
+                },
+                'jadwalUjian.kelas:id_kelas_mk,id_mata_kuliah',
+                'jadwalUjian.kelas.mataKuliah:id_mata_kuliah,kd_mata_kuliah,nm_mata_kuliah',
+            ])
+                ->where('id_dosen', $dosen->id_dosen)
+                ->whereHas('jadwalUjian.kegiatan', function ($q) {
+                    $q->where('kode_kegiatan', 'UAS');
+                })
+                ->whereHas('jadwalUjian', function ($q) use ($semAktif) {
+                    $q->where('id_semester', $semAktif->id_semester);
+                });
+
+            if (!empty($id_kelas_mk)) {
+                $jadwal->where('id_kelas_mk', $id_kelas_mk);
+            }
+
+            $total = $jadwal->count();
+
+            $jadwal = $jadwal->select(['id_pengampu_mk', 'id_kelas_mk', 'id_dosen'])
+                ->offset($offset)
+                ->limit($perPage)
+                ->get();
+
+            return response()->json([
+                'status' => Message::OK,
+                'data' => $jadwal,
+                'total' => $total,
+                'page' => $page,
+                'per_page' => $perPage
+            ], 200);
+        } catch (Exception $e) {
             return response()->json([
                 'status' => 'error',
                 'message' => $e->getMessage() . ' ' . $e->getLine()
