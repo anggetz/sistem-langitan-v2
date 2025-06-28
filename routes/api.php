@@ -6,6 +6,7 @@ use App\Models\PerguruanTinggi;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BeritaController;
 use App\Http\Controllers\Auth\Api\AuthController;
+use App\Http\Controllers\BeasiswaController;
 use App\Http\Controllers\KegiatanAkdEksController;
 use App\Http\Controllers\KegiatanKelompokController;
 use App\Http\Controllers\Pengumuman\PengumumanController;
@@ -58,6 +59,10 @@ Route::group(['middleware' => 'auth.token'], function () {
         Route::get('/', function (Request $request) {
             return Pengguna::with('role')->where('id_pengguna', $request->user()->id_pengguna)->first();
         });
+    });
+
+    Route::group(['prefix' => '/beasiswa', 'controller' => BeasiswaController::class], function () {
+        Route::get('/', 'Index');
     });
 
     Route::group(['prefix' => '/pengumuman', 'controller' => PengumumanController::class], function () {
