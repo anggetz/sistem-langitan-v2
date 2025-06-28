@@ -54,6 +54,7 @@ Route::group(['prefix' => 'mahasiswa', 'middleware' => 'role:' . Role::MAHASISWA
         function () {
             Route::get('check-krs-schedule', 'CheckKRSScheduleOnCurrentSemester');
             Route::get('list_mk', 'listMataKuliahByActiveSemesterAndProdi');
+            Route::get('riwayat', 'getHistoryKrs');
             Route::post('take_course', 'takeCourse');
         });
 

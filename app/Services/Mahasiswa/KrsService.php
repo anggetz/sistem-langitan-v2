@@ -3,12 +3,16 @@
 namespace App\Services\Mahasiswa;
 
 use App\Models\DosenWali;
+use App\Models\JadwalJam;
 use App\Models\JadwalKegiatanSemester;
+use App\Models\JadwalKelas;
 use App\Models\Kegiatan;
 use App\Models\KelasMk;
+use App\Models\MataKuliah;
 use App\Models\PengambilanMk;
 use App\Models\PengambilanMkKprs;
 use App\Models\PengampuMk;
+use App\Models\ProgramStudi;
 use App\Models\Semester;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -312,5 +316,46 @@ class KrsService
             });;
 
         return $pengambilanMkKprs;
+    }
+
+    public function getHistoryKrsByIdMhs($id_mhs, $th_semester) {
+
+        $q = PengambilanMk::
+            where('id_mhs', $id_mhs)
+            ->with([
+                'kelasMk.programStudi',
+                'kelasMk.mataKuliah',
+                'kelasMk.jadwalKelas',
+                'semester'
+            ]);
+
+        if (!empty($th_semester)) {
+            $q = $q->whereHas('semester', function($q2) use ($th_semester) {
+                $q2->where('thn_akademik_semester', $th_semester);
+            });
+        }
+
+        $data = $q->get()->map(function($item) {
+            $semester = $item->semester ?? new Semester();
+            $kelasMk = $item->kelasMk ?? new KelasMk();
+            $programStudi = $kelasMk->programStudi ?? new ProgramStudi();
+            $mataKuliah = $kelasMk->mataKuliah ?? new MataKuliah();
+            $jadwalKelas = $kelasMk->jadwalKelas ?? new JadwalKelas();
+            $jadwalJam = $jadwalKelas->jadwalJam ?? new JadwalJam();
+            $jadwalHari = $jadwalKelas->nama_hari;
+
+            return [
+                'status' => $item->status_apv_pengambilan_mk,
+                'semester' => $semester->nm_semester,
+                'th_semester' => $semester->thn_akademik_semester,
+                'program_studi' => $programStudi->nm_program_studi,
+                'mata_kuliah' => $mataKuliah->nm_mata_kuliah,
+                'hari' => $jadwalHari,
+                'jam_mulai' => $jadwalJam ? $jadwalJam->jam_mulai . ':' . $jadwalJam->menit_mulai : '-',
+                'jam_selesai' => $jadwalJam ? $jadwalJam->jam_selesai . ':' . $jadwalJam->menit_selesai : '-'
+            ];
+        })->groupBy(['th_semester', 'semester']);
+
+        return $data;
     }
 }
