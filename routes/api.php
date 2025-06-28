@@ -63,6 +63,8 @@ Route::group(['middleware' => 'auth.token'], function () {
 
     Route::group(['prefix' => '/beasiswa', 'controller' => BeasiswaController::class], function () {
         Route::get('/', 'Index');
+        Route::get('/{id}', 'Detail');
+        Route::get('/history/{id}', 'History');
     });
 
     Route::group(['prefix' => '/pengumuman', 'controller' => PengumumanController::class], function () {

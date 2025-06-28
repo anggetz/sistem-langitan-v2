@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
 use App\Models\Beasiswa;
+use App\Models\BeasiswaHistory;
 use App\Models\Message;
 use Exception;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -26,8 +27,8 @@ class BeasiswaController extends Controller
             $offset = ($page - 1) * $limit;
 
             $q = Beasiswa::with([
-                    'GroupBeasiswa'
-                ]);
+                'GroupBeasiswa'
+            ]);
 
             if (!empty($id_group_beasiswa)) {
                 $q = $q->where('id_group_beasiswa', $id_group_beasiswa);
@@ -39,14 +40,13 @@ class BeasiswaController extends Controller
                 ->limit($limit)
                 ->get();
 
-             return response()->json([
+            return response()->json([
                 'status' => Message::OK,
                 'data' => $dataBeasiswa,
                 'total' => $total,
                 'page' => $page,
                 'per_page' => $limit
             ], 200);
-
         } catch (Exception $e) {
             return response()->json([
                 'status' => 'error',
@@ -58,28 +58,65 @@ class BeasiswaController extends Controller
     public function Detail(Request $request, $id)
     {
         try {
-            $id_group_beasiswa = $request->get('id_group_beasiswa');
+
+            $dataBeasiswa = Beasiswa::with([
+                'GroupBeasiswa',
+                'JenisBeasiswa',
+                'PengumumanBeasiswa' => function ($q) {
+                    $q->whereRaw('batas_akhir > SYSDATE');
+                }
+            ])
+                ->where('id_beasiswa', $id)
+                ->first();
+
+            return response()->json([
+                'status' => Message::OK,
+                'data' => $dataBeasiswa,
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage() . ' ' . $e->getLine()
+            ], 500);
+        }
+    }
+
+    public function History(Request $request, $id)
+    {
+        try {
+            $aktif = $request->get('aktif', 'all');
             $limit = $request->get('perPage', 10);
             $page = $request->get('page', 1);
             $offset = ($page - 1) * $limit;
 
-            $query = Beasiswa::with([
-                    'GroupBeasiswa'
-                ])
-                ->offset($offset)
-                ->limit($limit);
+            $dataBeasiswa = BeasiswaHistory::where('id_beasiswa', $id)
+                ->with([
+                    'Mahasiswa.pengguna:id_pengguna,nm_pengguna'
+                ]);
 
-            if (!empty($id_group_beasiswa)) {
-                $query->where('id_group_beasiswa', $id_group_beasiswa);
+            if ($aktif != 'all') {
+                if ($aktif == 'Y') {
+                    $dataBeasiswa->whereRaw(" SYSDATE BETWEEN tgl_mulai and tgl_selesai");
+                    $dataBeasiswa->where("beasiswa_aktif", "1");
+                } else {
+                    $dataBeasiswa->whereRaw(" SYSDATE NOT BETWEEN tgl_mulai and tgl_selesai");
+                    $dataBeasiswa->whereNot("beasiswa_aktif", "1");
+                }
             }
 
-            $dataBeasiswa = $query->get();
+            $total = $dataBeasiswa->count();
 
-             return response()->json([
+            $dataBeasiswa = $dataBeasiswa->limit($limit)
+                ->offset($offset)
+                ->get();
+
+            return response()->json([
                 'status' => Message::OK,
                 'data' => $dataBeasiswa,
+                'total' => $total,
+                'page' => $page,
+                'per_page' => $limit
             ], 200);
-
         } catch (Exception $e) {
             return response()->json([
                 'status' => 'error',
