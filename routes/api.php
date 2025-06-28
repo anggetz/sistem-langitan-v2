@@ -6,6 +6,7 @@ use App\Models\PerguruanTinggi;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BeritaController;
 use App\Http\Controllers\Auth\Api\AuthController;
+use App\Http\Controllers\BeasiswaController;
 use App\Http\Controllers\KegiatanAkdEksController;
 use App\Http\Controllers\KegiatanKelompokController;
 use App\Http\Controllers\Pengumuman\PengumumanController;
@@ -60,6 +61,12 @@ Route::group(['middleware' => 'auth.token'], function () {
         });
     });
 
+    Route::group(['prefix' => '/beasiswa', 'controller' => BeasiswaController::class], function () {
+        Route::get('/', 'Index');
+        Route::get('/{id}', 'Detail');
+        Route::get('/history/{id}', 'History');
+    });
+
     Route::group(['prefix' => '/pengumuman', 'controller' => PengumumanController::class], function () {
         Route::get('/', 'Index');
         Route::get('/{id}', 'GetById');
@@ -85,6 +92,7 @@ Route::group(['middleware' => 'auth.token'], function () {
     });
 
     require_once(__DIR__ . "/api/mahasiswa.php");
+    require_once(__DIR__ . "/api/rektor.php");
     require_once(__DIR__ . "/api/dosen.php");
 
 });

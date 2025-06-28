@@ -56,7 +56,7 @@ class DosenPresensiController extends Controller
                 return response()->json([
                     'status' => false,
                     'message' => 'Kelas tidak ditemukan atau Anda tidak memiliki akses ke kelas ini.'
-                ]);
+                ], 400);
             }
 
             $checkExist = presensiKelas::where('id_kelas_mk', $request->id_kelas_mk)
@@ -69,7 +69,7 @@ class DosenPresensiController extends Controller
                 return response()->json([
                     'status' => false,
                     'message' => 'Presensi untuk kelas ini pada tanggal dan waktu tersebut sudah ada.'
-                ]);
+                ], 400);
             }
 
             // check id materi mk is valid
@@ -82,7 +82,7 @@ class DosenPresensiController extends Controller
                 return response()->json([
                     'status' => false,
                     'message' => 'Materi tidak ditemukan atau tidak terkait dengan kelas ini.'
-                ]);
+                ], 400);
             }
 
             PresensiKelas::create([
