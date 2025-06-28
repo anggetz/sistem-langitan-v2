@@ -92,6 +92,7 @@ Route::group(['middleware' => 'auth.token'], function () {
     });
 
     require_once(__DIR__ . "/api/mahasiswa.php");
+    require_once(__DIR__ . "/api/rektor.php");
     require_once(__DIR__ . "/api/dosen.php");
 
 });
