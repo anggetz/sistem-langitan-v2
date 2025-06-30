@@ -28,7 +28,7 @@ class DosenQrController extends Controller
                 return response()->json([
                     'status' => false,
                     'message' => 'Presensi not found'
-                ], 404);
+                ], 400);
             }
 
             $data =  sha1($presensi->id_presensi_kelas . $presensi->id_kelas_mk . $presensi->id_materi_mk);

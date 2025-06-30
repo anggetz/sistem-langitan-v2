@@ -69,7 +69,7 @@ class MahasiswaKrsController extends Controller
 
             return response()->json([
                 'message' => 'Course registered successfully.',
-                'status' => $result,
+                'data' => $result,
             ], 201);
         } catch (\Exception $e) {
             return response()->json([
@@ -92,7 +92,7 @@ class MahasiswaKrsController extends Controller
 
             return response()->json([
                 'message' => 'Riwayat KRS berhasil didapat.',
-                'status' => $result,
+                'data' => $result,
             ], 201);
         } catch (\Exception $e) {
             return response()->json([
