@@ -27,7 +27,7 @@ Route::group(
         Route::get('jadwal-ujian-uas', [DosenJadwalController::class, 'JadwalUjianUAS']);
         Route::get('jadwal-hari-ini', [DosenJadwalController::class, 'JadwalHariIni']);
 
-        Route::get('mahasiswa/kelas/{id_kelas}', [DosenPresensiController::class, 'MahasiswaKelas']);
+        Route::get('mahasiswa/kelas/{id_kelas}/presensi/{id_presensi}', [DosenPresensiController::class, 'MahasiswaKelas']);
 
         Route::post('buat_presensi', [DosenPresensiController::class, 'createPresensi']);
         Route::get('list_presensi_kelas/{id_kelas_mk}', [DosenPresensiController::class, 'listPresensiKelasByIdKelas']);
