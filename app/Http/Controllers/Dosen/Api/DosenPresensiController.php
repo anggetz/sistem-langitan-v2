@@ -145,10 +145,30 @@ class DosenPresensiController extends Controller
                 'status' => false,
                 'message' => 'Gagal mendapatkan data mahasiswa kelas',
                 'error' => $e->getMessage()
-            ]);
+            ], 500);
         }
     }
 
+    public function listPresensiKelasByIdKelas(Request $request, $id_kelas_mk)
+    {
+        try {
+            $presensiKelas = PresensiKelas::where("id_kelas_mk", $id_kelas_mk)
+                ->orderBy(DB::raw("TO_DATE(TO_CHAR(tgl_presensi_kelas, 'YYYY-MM-DD') || ' ' || waktu_selesai, 'YYYY-MM-DD HH24:MI')"), 'DESC')
+                ->get();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Data Presensi Kelas',
+                'data' => $presensiKelas
+            ]);
+        } catch (Exception $err) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Gagal mendapatkan data presensi kelas',
+                'error' => $err->getMessage()
+            ], 500);
+        }
+    }
 
     public function MahasiswaInOut(Request $request, $id_mahasiswa, $id_presensi)
     {
@@ -157,16 +177,37 @@ class DosenPresensiController extends Controller
                 'kehadiran' => 'required|in:1,0',
             ]);
 
+            // check if inside pengambilanMk;
+
+            $presensiKelas = PresensiKelas::find($id_presensi);
+
+            if (empty($presensiKelas)) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Presensi kelas tidak ditemukan',
+                ], 400);
+            }
+
+            $PengambilanMk = PengambilanMk::where('id_kelas_mk', $presensiKelas->id_kelas_mk)
+                ->where('id_mhs', $id_mahasiswa)
+                ->exists();
+
+            if (!$PengambilanMk) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Mahasiswa tidak mengambil kelas ini',
+                ], 400);
+            }
+
             $presensi = PresensiMhs::with(['mahasiswa', 'presensiKelas'])
                 ->where('id_presensi_kelas', $id_presensi)
                 ->where('id_mhs', $id_mahasiswa)
                 ->first();
 
             if (!$presensi) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Data presensi tidak ditemukan',
-                ]);
+                $presensi = new PresensiMhs();
+                $presensi->id_presensi_kelas = $id_presensi;
+                $presensi->id_mhs = $id_mahasiswa;
             }
 
             $presensi->kehadiran = $request->kehadiran;

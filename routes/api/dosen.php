@@ -30,6 +30,7 @@ Route::group(
         Route::get('mahasiswa/kelas/{id_kelas}', [DosenPresensiController::class, 'MahasiswaKelas']);
 
         Route::post('buat_presensi', [DosenPresensiController::class, 'createPresensi']);
+        Route::get('list_presensi_kelas/{id_kelas_mk}', [DosenPresensiController::class, 'listPresensiKelasByIdKelas']);
 
         Route::get('list_materi_mk/{id_kelas_mk}', [DosenPresensiController::class, 'listMateriMk']);
 
