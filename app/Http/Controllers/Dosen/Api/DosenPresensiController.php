@@ -107,7 +107,7 @@ class DosenPresensiController extends Controller
         }
     }
 
-    public function MahasiswaKelas(Request $request, $id_kelas)
+    public function MahasiswaKelas(Request $request, $id_kelas, $id_presensi)
     {
         try {
             $now = Carbon::now();
@@ -124,10 +124,11 @@ class DosenPresensiController extends Controller
                     }
                 ])
                 ->get()
-                ->map(function ($item) use ($id_kelas) {
+                ->map(function ($item) use ($id_kelas, $id_presensi) {
                     $sudahPresensi = PresensiMhs::where('id_mhs', $item->id_mhs)
-                        ->whereHas('presensiKelas', function ($q) use ($id_kelas) {
+                        ->whereHas('presensiKelas', function ($q) use ($id_kelas, $id_presensi) {
                             $q->where('id_kelas_mk', $id_kelas);
+                            $q->where('id_presensi_kelas', $id_presensi);
                         })
                         ->exists();
 
