@@ -126,6 +126,7 @@ class DosenPresensiController extends Controller
                 ->get()
                 ->map(function ($item) use ($id_kelas, $id_presensi) {
                     $sudahPresensi = PresensiMhs::where('id_mhs', $item->id_mhs)
+                        ->where('kehadiran', '1')
                         ->whereHas('presensiKelas', function ($q) use ($id_kelas, $id_presensi) {
                             $q->where('id_kelas_mk', $id_kelas);
                             $q->where('id_presensi_kelas', $id_presensi);
