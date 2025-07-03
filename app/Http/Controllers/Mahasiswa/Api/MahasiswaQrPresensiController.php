@@ -8,6 +8,7 @@ use App\Models\PengambilanMk;
 use App\Models\PresensiKelas;
 use App\Models\PresensiMhs;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class MahasiswaQrPresensiController extends Controller
 {
@@ -23,8 +24,11 @@ class MahasiswaQrPresensiController extends Controller
                 ], 400);
             }
 
+            DB::beginTransaction();
+
             $presensi = PresensiKelas::where('qr_key', $qr_key)
                 ->where('qr_expired', '>', Carbon::now()->timezone(env("APP_TIMEZONE", "Asia/Jakarta")))
+                ->lockForUpdate()
                 ->first();
 
             if (!$presensi) {
@@ -36,6 +40,7 @@ class MahasiswaQrPresensiController extends Controller
 
             $mhs = Mahasiswa::where('id_pengguna', auth()->user()->id_pengguna)->first();
             if (!$mhs) {
+                DB::rollBack();
                 return response()->json([
                     'status' => false,
                     'message' => 'Mahasiswa not found'
@@ -52,6 +57,7 @@ class MahasiswaQrPresensiController extends Controller
             // dd($presensi->kelasMk->id_semester, $presensi->id_kelas_mk, $mhs->id_mhs, "test");
 
             if (!$pengambilanMk) {
+                DB::rollBack();
                 return response()->json([
                     'status' => false,
                     'message' => 'Anda tidak terdaftar dikelas ini'
@@ -72,12 +78,17 @@ class MahasiswaQrPresensiController extends Controller
             $presensiMhs->kehadiran = 1;
             $presensiMhs->save();
 
+            // auto regenarete the qr
+
+            DB::commit();
+
             return response()->json([
                 'status' => true,
                 'message' => 'QR Presensi berhasil',
             ]);
 
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
                 'status' => false,
                 'message' => `Error mem-validasi qr code`,
