@@ -57,6 +57,7 @@ class DosenController extends Controller
             $data = [
                 'id'             => $user->id_pengguna,
                 'id_dosen'        => $dosen->id_dosen,
+                'nidn'        => $dosen->nidn_dosen,
                 'nama_lengkap'   => $user->nama_lengkap,
                 'nip'            => $dosen->nip_dosen,
                 'foto'           => $user->foto_pengguna,

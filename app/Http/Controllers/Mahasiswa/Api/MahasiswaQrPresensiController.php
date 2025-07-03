@@ -44,7 +44,7 @@ class MahasiswaQrPresensiController extends Controller
 
             // Check if the student is registered in the class
             $pengambilanMk = PengambilanMk::where('id_kelas_mk', $presensi->id_kelas_mk)
-                ->where('id_semester', $presensi->kelasMk->id_semester)
+                // ->where('id_semester', $presensi->kelasMk->id_semester)
                 ->where('id_mhs', $mhs->id_mhs)
                 ->with(['kelasMk'])
                 ->first();
@@ -54,7 +54,7 @@ class MahasiswaQrPresensiController extends Controller
             if (!$pengambilanMk) {
                 return response()->json([
                     'status' => false,
-                    'message' => 'You are not registered in this class'
+                    'message' => 'Anda tidak terdaftar dikelas ini'
                 ], 404);
             }
 
@@ -67,14 +67,6 @@ class MahasiswaQrPresensiController extends Controller
                 $presensiMhs = new PresensiMhs();
                 $presensiMhs->id_presensi_kelas = $presensi->id_presensi_kelas;
                 $presensiMhs->id_mhs = $mhs->id_mhs;
-            } else {
-                // If the student has already marked attendance, return an error
-                if ($presensiMhs->kehadiran == 1) {
-                    return response()->json([
-                        'status' => false,
-                        'message' => 'You have already marked attendance for this class'
-                    ], 400);
-                }
             }
 
             $presensiMhs->kehadiran = 1;
@@ -82,13 +74,13 @@ class MahasiswaQrPresensiController extends Controller
 
             return response()->json([
                 'status' => true,
-                'message' => 'QR Presensi successfully saved',
+                'message' => 'QR Presensi berhasil',
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => `Error validating QR code`,
+                'message' => `Error mem-validasi qr code`,
                 'error' => $e->getMessage()
             ]);
         }
