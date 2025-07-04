@@ -23,6 +23,11 @@ class PengambilanMk extends Model
     //guarded
     protected $guarded = [];
 
+    public function scopeActive($query)
+    {
+        return $query->where("status_hapus", '0');
+    }
+
     public function scopeSemesterAktif($query)
     {
         $idSemester = Semester::aktif();

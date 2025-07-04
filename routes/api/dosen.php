@@ -31,6 +31,8 @@ Route::group(
 
         Route::post('buat_presensi', [DosenPresensiController::class, 'createPresensi']);
         Route::get('list_presensi_kelas/{id_kelas_mk}', [DosenPresensiController::class, 'listPresensiKelasByIdKelas']);
+        Route::put('edit_presensi/{id_presensi_kelas}', [DosenPresensiController::class, 'editPertemuan']);
+        Route::delete('hapus_presensi/{id_presensi_kelas}', [DosenPresensiController::class, 'hapusPertemuan']);
 
         Route::get('list_materi_mk/{id_kelas_mk}', [DosenPresensiController::class, 'listMateriMk']);
 
@@ -76,6 +78,8 @@ Route::group(
         );
 
         Route::post('qr-presensi/{id_presensi}', [DosenQrController::class, 'GenerateQR']);
+        Route::post('qr-presensi/show/{id_presensi}', [DosenQrController::class, 'ShowCurrentQR']);
+        Route::post('qr-presensi/reset/{id_presensi}', [DosenQrController::class, 'ResetQR']);
     }
 );
 

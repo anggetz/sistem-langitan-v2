@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Dosen\Api\DosenQrController;
 use App\Models\Role;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Session;
@@ -58,10 +59,13 @@ Route::group(['prefix' => 'mahasiswa', 'middleware' => 'role:' . Role::MAHASISWA
             Route::post('take_course', 'takeCourse');
         });
 
+    Route::post('qr-presensi/show/{id_presensi}', [DosenQrController::class, 'ShowCurrentQR']);
+
     Route::group(
         ['prefix' => 'presensi', 'controller' => MahasiswaQrPresensiController::class],
         function () {
             Route::post('qrPresensi', 'qrPresensi');
+            Route::get('history/{id_kelas_mk}', 'HistoryAbsenByIdKelas');
         }
     );
 });

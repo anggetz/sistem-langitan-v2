@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Dosen\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Jenjang;
 use App\Models\Message;
 use App\Models\Pengguna;
+use App\Models\ProgramStudi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -39,6 +41,7 @@ class DosenController extends Controller
                 'dosen.penghargaan',
                 'dosen.departemen.departemen',
                 'dosen.penelitian',
+                'dosen.programStudi',
                 'dosen.pengampuMk.kelas_mk' => function ($query) {
                     $query->whereHas('semester', function ($q) {
                         $q->where('status_aktif_semester', 'True');
@@ -54,9 +57,12 @@ class DosenController extends Controller
 
             $dosen = $user->dosen;
 
+            $programStudi = $dosen->programStudi ?? new ProgramStudi();
+
             $data = [
                 'id'             => $user->id_pengguna,
                 'id_dosen'        => $dosen->id_dosen,
+                'nidn'        => $dosen->nidn_dosen,
                 'nama_lengkap'   => $user->nama_lengkap,
                 'nip'            => $dosen->nip_dosen,
                 'foto'           => $user->foto_pengguna,
@@ -66,6 +72,9 @@ class DosenController extends Controller
                 'no_hp'          => $dosen->mobile_dosen,
                 'status_dosen'   => $dosen->status_dosen,
                 'departemen'   => $dosen->departemen->departemen->nm_departemen ?? '-',
+                'program_studi' => $programStudi->nm_program_studi ?? '-',
+                'kode_program_studi' => $programStudi->kode_program_studi ?? '-',
+                'jenjang' => $programStudi->jenjang ?? null,
                 'penelitian'    => $dosen->penelitian->map(function ($item) {
                     return [
                         'judul_penelitian' => $item->judul,

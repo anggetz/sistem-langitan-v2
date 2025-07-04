@@ -156,7 +156,24 @@ class DosenPresensiController extends Controller
         try {
             $presensiKelas = PresensiKelas::where("id_kelas_mk", $id_kelas_mk)
                 ->orderBy(DB::raw("TO_DATE(TO_CHAR(tgl_presensi_kelas, 'YYYY-MM-DD') || ' ' || waktu_selesai, 'YYYY-MM-DD HH24:MI')"), 'DESC')
-                ->get();
+                ->get()
+                ->map(function ($item) use ($id_kelas_mk) {
+                    $totalHadir = PresensiMhs::where('kehadiran', '1')
+                        ->whereHas('presensiKelas', function ($q) use ($id_kelas_mk, $item) {
+                            $q->where('id_kelas_mk', $id_kelas_mk);
+                            $q->where('id_presensi_kelas', $item->id_presensi_kelas);
+                        })
+                        ->count();
+
+                    $totalMhs = PengambilanMk::where('id_kelas_mk', $id_kelas_mk)
+                        ->active()
+                        ->groupBy('id_kelas_mk')
+                        ->count();
+
+                    $item->total_hadir = $totalHadir;
+                    $item->total_absen = $totalMhs - $totalHadir;
+                    return $item;
+                });
 
             return response()->json([
                 'status' => true,
@@ -167,6 +184,120 @@ class DosenPresensiController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Gagal mendapatkan data presensi kelas',
+                'error' => $err->getMessage()
+            ], 500);
+        }
+    }
+
+    public function editPertemuan(Request $request, $id_presensi_kelas)
+    {
+        try {
+            $data = $request->validate([
+                'tgl_presensi_kelas' => 'date|date_format:Y-m-d',
+                'waktu_mulai' => 'string',
+                'waktu_selesai' => 'string',
+                'id_ruangan' => 'integer|exists:ruangan,id_ruangan',
+            ]);
+
+            $now = Carbon::now();
+
+            $presensiKelas = PresensiKelas::where('id_presensi_kelas', $id_presensi_kelas)
+                                            ->first();
+
+            if (empty($presensiKelas)) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Data Presensi Kelas tidak ada',
+                ], 400);
+            }
+
+            $tglPresensiKelasCarbon = Carbon::parse($presensiKelas->tgl_presensi_kelas);
+
+            if ($now > $tglPresensiKelasCarbon->addWeek()) {
+                 return response()->json([
+                    'status' => false,
+                    'message' => 'Presensi tidak boleh di hapus, sudah melebihi 1 minggu',
+                ], 400);
+            }
+
+            // check data integrity
+            $pengampuMk = PengampuMk::where('id_dosen', auth()->user()->dosen->id_dosen)
+                                    ->where('id_kelas_mk', $presensiKelas->id_kelas_mk)
+                                    ->first();
+
+            if (empty($pengampuMk)) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Dosen bukan pengampu mk kelas ini',
+                ], 400);
+            }
+
+            $presensiKelas->fill($data);
+            $presensiKelas->save();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Berhasil ubah data Presensi Kelas',
+                'data' => $presensiKelas
+            ]);
+        } catch (Exception $err) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Gagal ubah presensi kelas',
+                'error' => $err->getMessage()
+            ], 500);
+        }
+    }
+
+    public function hapusPertemuan(Request $request, $id_presensi_kelas)
+    {
+        try {
+
+            $now = Carbon::now();
+
+            $presensiKelas = PresensiKelas::where('id_presensi_kelas', $id_presensi_kelas)
+                                            ->first();
+
+            if (empty($presensiKelas)) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Data Presensi Kelas tidak ada',
+                ], 400);
+            }
+
+            $tglPresensiKelasCarbon = Carbon::parse($presensiKelas->tgl_presensi_kelas);
+
+            if ($now > $tglPresensiKelasCarbon->addWeek()) {
+                 return response()->json([
+                    'status' => false,
+                    'message' => 'Presensi tidak boleh di edit, sudah melebihi 1 minggu',
+                ], 400);
+            }
+
+            // check data integrity
+            $pengampuMk = PengampuMk::where('id_dosen', auth()->user()->dosen->id_dosen)
+                                    ->where('id_kelas_mk', $presensiKelas->id_kelas_mk)
+                                    ->first();
+
+            if (empty($pengampuMk)) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Dosen bukan pengampu mk kelas ini',
+                ], 400);
+            }
+
+
+            $presensiKelas->delete();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Berhasil hapus data Presensi Kelas',
+                'data' => $presensiKelas
+            ]);
+        } catch (Exception $err) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Gagal ubah data presensi kelas',
                 'error' => $err->getMessage()
             ], 500);
         }

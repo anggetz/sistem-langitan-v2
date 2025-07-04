@@ -56,4 +56,70 @@ class DosenQrController extends Controller
             ]);
         }
     }
+
+    public function ShowCurrentQR(Request $request, $id_presensi)
+    {
+        try {
+
+            $presensi = PresensiKelas::find($id_presensi);
+            if (!$presensi) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Presensi not found'
+                ], 400);
+            }
+
+            if ($presensi->qr_key == null) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'QR belum di generate'
+                ], 400);
+            }
+            // Option 1: Direct QR Code Image in view
+            $qrSvg = QrCode::format('svg')->size(200)->generate($presensi->qr_key);
+
+            // Encode agar tidak rusak saat dikirim via JSON
+            $base64Svg = base64_encode($qrSvg);
+
+            return response()->json([
+                'status' => true,
+                'message' => 'QR code generated successfully',
+                'data' => 'data:image/svg+xml;base64,' . $base64Svg
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => `Error generating QR code`,
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
+
+     public function ResetQR(Request $request, $id_presensi)
+    {
+        try {
+
+            $presensi = PresensiKelas::find($id_presensi);
+            if (!$presensi) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Presensi not found'
+                ], 400);
+            }
+
+            $presensi->qr_key = "";
+            $presensi->save();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'QR code resetted successfully',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => `Error reset QR code`,
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
 }
