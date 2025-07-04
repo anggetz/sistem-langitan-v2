@@ -9,6 +9,7 @@ use App\Http\Controllers\Auth\Api\AuthController;
 use App\Http\Controllers\BeasiswaController;
 use App\Http\Controllers\KegiatanAkdEksController;
 use App\Http\Controllers\KegiatanKelompokController;
+use App\Http\Controllers\MasterController;
 use App\Http\Controllers\Pengumuman\PengumumanController;
 use App\Models\Pengguna;
 
@@ -89,6 +90,10 @@ Route::group(['middleware' => 'auth.token'], function () {
         Route::post('/', 'Create');
         Route::put('/{id}', 'UpdateKegiatan');
         Route::delete('/{id}', 'DeleteKegiatan');
+    });
+
+    Route::group(['prefix' => '/master', 'controller' => MasterController::class], function () {
+        Route::get('/ruangan', 'GetRuangan');
     });
 
     require_once(__DIR__ . "/api/mahasiswa.php");
