@@ -78,6 +78,8 @@ Route::group(
         );
 
         Route::post('qr-presensi/{id_presensi}', [DosenQrController::class, 'GenerateQR']);
+        Route::post('qr-presensi/show/{id_presensi}', [DosenQrController::class, 'ShowCurrentQR']);
+        Route::post('qr-presensi/reset/{id_presensi}', [DosenQrController::class, 'ResetQR']);
     }
 );
 

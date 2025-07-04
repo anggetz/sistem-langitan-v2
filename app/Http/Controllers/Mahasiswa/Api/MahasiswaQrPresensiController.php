@@ -8,10 +8,41 @@ use App\Models\PengambilanMk;
 use App\Models\PresensiKelas;
 use App\Models\PresensiMhs;
 use Carbon\Carbon;
+use Exception;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class MahasiswaQrPresensiController extends Controller
 {
+
+    public function HistoryAbsenByIdKelas(Request $request, $id_kelas_mk) {
+        try {
+            $presensiKelas = PresensiKelas::where("id_kelas_mk", $id_kelas_mk)
+                ->orderBy(DB::raw("TO_DATE(TO_CHAR(tgl_presensi_kelas, 'YYYY-MM-DD') || ' ' || waktu_selesai, 'YYYY-MM-DD HH24:MI')"), 'DESC')
+                ->get()
+                ->map(function ($item) use ($id_kelas_mk) {
+                    $sudahPresensi = PresensiMhs::where('id_mhs', auth()->user()->mahasiswa->id_mhs)
+                        ->where('kehadiran', '1')
+                        ->where('id_presensi_kelas', $item->id_presensi_kelas)
+                        ->exists();
+
+                    $item->sudah_presensi = $sudahPresensi;
+                    return $item;
+                });
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Data Presensi Kelas',
+                'data' => $presensiKelas
+            ]);
+        } catch (Exception $err) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Gagal mendapatkan data presensi kelas',
+                'error' => $err->getMessage()
+            ], 500);
+        }
+    }
 
     // qr key dari hasil scan qr code yang di generate oleh dosen
     public function qrPresensi() {
@@ -79,6 +110,9 @@ class MahasiswaQrPresensiController extends Controller
             $presensiMhs->save();
 
             // auto regenarete the qr
+            $presensi->qr_key = sha1($presensi->id_presensi_kelas . $presensi->id_kelas_mk . $presensi->id_materi_mk . uniqid('qr-uniqid'));
+            $presensi->qr_expired = Carbon::now()->timezone(env("APP_TIMEZONE", "Asia/Jakarta"))->addMinutes((int)env('QR_EXPIRED', 5)); // Set QR code expiration time
+            $presensi->save();
 
             DB::commit();
 
