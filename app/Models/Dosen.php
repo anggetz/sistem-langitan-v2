@@ -27,6 +27,10 @@ class Dosen extends Model
         return $this->hasMany(Penelitian::class,"id_peneliti","id_dosen");
     }
 
+    public function programStudi(){
+        return $this->belongsTo(ProgramStudi::class,"id_program_studi","id_program_studi");
+    }
+
     public function departemen(){
         return $this->belongsTo(DosenDepartemen::class,"id_dosen","id_dosen");
     }
