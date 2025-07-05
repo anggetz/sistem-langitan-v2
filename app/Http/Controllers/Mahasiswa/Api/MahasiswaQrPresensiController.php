@@ -107,6 +107,7 @@ class MahasiswaQrPresensiController extends Controller
             }
 
             $presensiMhs->kehadiran = 1;
+            $presensiMhs->qr_flag = 1;
             $presensiMhs->save();
 
             // auto regenarete the qr
