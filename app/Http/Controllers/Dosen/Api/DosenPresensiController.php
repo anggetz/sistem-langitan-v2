@@ -114,7 +114,7 @@ class DosenPresensiController extends Controller
                                 $qPengguna->select('id_pengguna', 'nm_pengguna');
                             }
                         ]);
-                    }
+                    },
                 ])
                 ->get()
                 ->map(function ($item) use ($id_kelas, $id_presensi) {
@@ -147,8 +147,19 @@ class DosenPresensiController extends Controller
     public function listPresensiKelasByIdKelas(Request $request, $id_kelas_mk)
     {
         try {
+
+            $limit = $request->get('perPage', 10);
+            $page = $request->get('page', 1);
+            $offset = ($page - 1) * $limit;
+
             $presensiKelas = PresensiKelas::where("id_kelas_mk", $id_kelas_mk)
                 ->orderBy(DB::raw("TO_DATE(TO_CHAR(tgl_presensi_kelas, 'YYYY-MM-DD') || ' ' || waktu_selesai, 'YYYY-MM-DD HH24:MI')"), 'DESC')
+                ->with(['materiMk']);
+
+            $total = $presensiKelas->count();
+
+            $presensiKelas = $presensiKelas->limit($limit)
+                ->offset($offset)
                 ->get()
                 ->map(function ($item) use ($id_kelas_mk) {
                     $totalHadir = PresensiMhs::where('kehadiran', '1')
@@ -163,6 +174,9 @@ class DosenPresensiController extends Controller
                         ->groupBy('id_kelas_mk')
                         ->count();
 
+                    $dateTglKelasOneWeek = Carbon::parse($item->tgl_presensi_kelas)->addWeek();
+
+                    $item->is_more_than_one_week = $dateTglKelasOneWeek->lt(Carbon::now());
                     $item->total_hadir = $totalHadir;
                     $item->total_absen = $totalMhs - $totalHadir;
                     return $item;
@@ -171,7 +185,10 @@ class DosenPresensiController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => 'Data Presensi Kelas',
-                'data' => $presensiKelas
+                'data' => $presensiKelas,
+                'total' => $total,
+                'page' => $page,
+                'per_page' => $limit
             ]);
         } catch (Exception $err) {
             return response()->json([
