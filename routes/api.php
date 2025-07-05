@@ -94,6 +94,7 @@ Route::group(['middleware' => 'auth.token'], function () {
 
     Route::group(['prefix' => '/master', 'controller' => MasterController::class], function () {
         Route::get('/ruangan', 'GetRuangan');
+        Route::get('/semester', 'GetSemester');
     });
 
     require_once(__DIR__ . "/api/mahasiswa.php");
