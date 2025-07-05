@@ -41,12 +41,13 @@ class MahasiswaQrPresensiController extends Controller
                 ->limit($limit)
                 ->get()
                 ->map(function ($item) use ($id_kelas_mk) {
-                    $sudahPresensi = PresensiMhs::where('id_mhs', auth()->user()->mahasiswa->id_mhs)
+                    $presensiMhs = PresensiMhs::where('id_mhs', auth()->user()->mahasiswa->id_mhs)
                         ->where('kehadiran', '1')
                         ->where('id_presensi_kelas', $item->id_presensi_kelas)
-                        ->exists();
+                        ->first();
 
-                    $item->sudah_presensi = $sudahPresensi;
+                    $item->sudah_presensi = !empty($presensiMhs);
+                    $item->qr_flag = !empty($presensiMhs) ? $presensiMhs->qr_flag : false;
                     return $item;
                 });
 
