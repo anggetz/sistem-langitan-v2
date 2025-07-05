@@ -7,6 +7,7 @@ use App\Models\Mahasiswa;
 use App\Models\PengambilanMk;
 use App\Models\PresensiKelas;
 use App\Models\PresensiMhs;
+use App\Models\Semester;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
@@ -17,8 +18,27 @@ class MahasiswaQrPresensiController extends Controller
 
     public function HistoryAbsenByIdKelas(Request $request, $id_kelas_mk) {
         try {
+            $semester = $request->input('semester', null);
+
+            $limit = $request->get('perPage', 10);
+            $page = $request->get('page', 1);
+            $offset = ($page - 1) * $limit;
+
             $presensiKelas = PresensiKelas::where("id_kelas_mk", $id_kelas_mk)
                 ->orderBy(DB::raw("TO_DATE(TO_CHAR(tgl_presensi_kelas, 'YYYY-MM-DD') || ' ' || waktu_selesai, 'YYYY-MM-DD HH24:MI')"), 'DESC')
+                ->with(['materiMk']);
+
+            if (!empty($semester)) {
+                $presensiKelas->whereHas('kelasMk', function($q) use ($semester) {
+                    $q->where('id_semester', $semester);
+                });
+            }
+
+            $total = $presensiKelas->count();
+
+            $presensiKelas = $presensiKelas
+                ->offset($offset)
+                ->limit($limit)
                 ->get()
                 ->map(function ($item) use ($id_kelas_mk) {
                     $sudahPresensi = PresensiMhs::where('id_mhs', auth()->user()->mahasiswa->id_mhs)
@@ -33,7 +53,10 @@ class MahasiswaQrPresensiController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => 'Data Presensi Kelas',
-                'data' => $presensiKelas
+                'data' => $presensiKelas,
+                'total' => $total,
+                'page' => $page,
+                'per_page' => $limit
             ]);
         } catch (Exception $err) {
             return response()->json([
