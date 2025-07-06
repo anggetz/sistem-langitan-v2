@@ -9,7 +9,7 @@ use Illuminate\Validation\Rule;
 
 class MasterController extends Controller
 {
-     public function GetRuangan(Request $request)
+    public function GetRuangan(Request $request)
     {
         $request->validate([
             'id_ruangan' => [
@@ -42,4 +42,39 @@ class MasterController extends Controller
             'per_page' => $perPage
         ]);
     }
+
+    public function GetSemester(Request $request)
+    {
+        $request->validate([
+            'id_semester' => [
+                'nullable',
+                'integer',
+                Rule::exists('semester', 'id_semester')
+            ]
+        ]);
+
+        $page = $request->input('page') ?? 1;
+        $perPage = $request->input('per_page', 10);
+        $offset = ($page - 1) * $perPage;
+
+
+        $query = \App\Models\Semester::query();
+
+        $total = $query->count();
+
+        $data = $query->take($perPage)->offset($offset)->get();
+
+        if ($request->has('id_semester')) {
+            $query->where('id_semester', $request->input('id_semester'));
+        }
+
+        return response()->json([
+            'status' => Message::OK,
+            'data' => $data,
+            'total' => $total,
+            'page' => $page,
+            'per_page' => $perPage
+        ]);
+    }
 }
+

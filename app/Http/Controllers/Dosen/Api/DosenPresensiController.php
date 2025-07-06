@@ -39,16 +39,22 @@ class DosenPresensiController extends Controller
     public function createPresensi(Request $request)
     {
         try {
-            $request->validate([
+            $input = $request->validate([
                 'tgl_presensi_kelas' => 'required|date_format:Y-m-d',
                 'waktu_mulai' => 'required', // format: HH:mm
                 'waktu_selesai' => 'required', // format: HH:mm
-                'id_materi_mk' => 'required',
+                'materi_mk' => 'required',
                 'id_kelas_mk' => 'required',
             ]);
 
+            $materi = MateriMk::firstOrCreate([
+                'id_kelas_mk' => $input['id_kelas_mk'],
+                'isi_materi_mk' => $input['materi_mk'],
+                //'tgl_materi_mk' => Carbon::now()
+            ]);
+
             // check if kelas is owned by dosen
-            $kelas = PengampuMk::where('id_kelas_mk', $request->id_kelas_mk)
+            $kelas = PengampuMk::where('id_kelas_mk', $input['id_kelas_mk'])
                 ->where('id_dosen', auth()->user()->dosen->id_dosen)
                 ->first();
 
@@ -59,10 +65,10 @@ class DosenPresensiController extends Controller
                 ], 400);
             }
 
-            $checkExist = presensiKelas::where('id_kelas_mk', $request->id_kelas_mk)
-                ->whereDate('tgl_presensi_kelas', $request->tgl_presensi_kelas)
-                ->where('waktu_mulai', $request->waktu_mulai)
-                ->where('waktu_selesai', $request->waktu_selesai)
+            $checkExist = presensiKelas::where('id_kelas_mk', $input['id_kelas_mk'])
+                ->whereDate('tgl_presensi_kelas', $input['tgl_presensi_kelas'])
+                ->where('waktu_mulai', $input['waktu_mulai'])
+                ->where('waktu_selesai', $input['waktu_selesai'])
                 ->exists();
 
             if ($checkExist) {
@@ -72,26 +78,13 @@ class DosenPresensiController extends Controller
                 ], 400);
             }
 
-            // check id materi mk is valid
-
-            $isMateriValid = MateriMk::where('id_materi_mk', $request->id_materi_mk)
-                ->where('id_kelas_mk', $request->id_kelas_mk)
-                ->exists();
-
-            if (!$isMateriValid) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Materi tidak ditemukan atau tidak terkait dengan kelas ini.'
-                ], 400);
-            }
-
             PresensiKelas::create([
-                'id_kelas_mk' => $request->id_kelas_mk,
+                'id_kelas_mk' => $input['id_kelas_mk'],
                 'tgl_entry' => now(),
-                'tgl_presensi_kelas' => $request->tgl_presensi_kelas,
-                'waktu_mulai' => $request->waktu_mulai,
-                'waktu_selesai' => $request->waktu_selesai,
-                'id_materi_mk' => $request->id_materi_mk,
+                'tgl_presensi_kelas' => $input['tgl_presensi_kelas'],
+                'waktu_mulai' => $input['waktu_mulai'],
+                'waktu_selesai' => $input['waktu_selesai'],
+                'id_materi_mk' => $materi->id_materi_mk,
             ]);
 
             return response()->json([
@@ -121,19 +114,20 @@ class DosenPresensiController extends Controller
                                 $qPengguna->select('id_pengguna', 'nm_pengguna');
                             }
                         ]);
-                    }
+                    },
                 ])
                 ->get()
                 ->map(function ($item) use ($id_kelas, $id_presensi) {
-                    $sudahPresensi = PresensiMhs::where('id_mhs', $item->id_mhs)
+                    $presensiMhs = PresensiMhs::where('id_mhs', $item->id_mhs)
                         ->where('kehadiran', '1')
                         ->whereHas('presensiKelas', function ($q) use ($id_kelas, $id_presensi) {
                             $q->where('id_kelas_mk', $id_kelas);
                             $q->where('id_presensi_kelas', $id_presensi);
                         })
-                        ->exists();
+                        ->first();
 
-                    $item->sudah_presensi = $sudahPresensi;
+                    $item->sudah_presensi = !empty($presensiMhs);
+                    $item->qr_flag = !empty($presensiMhs) ? $presensiMhs->qr_flag : false;
                     return $item;
                 });
 
@@ -154,8 +148,19 @@ class DosenPresensiController extends Controller
     public function listPresensiKelasByIdKelas(Request $request, $id_kelas_mk)
     {
         try {
+
+            $limit = $request->get('perPage', 10);
+            $page = $request->get('page', 1);
+            $offset = ($page - 1) * $limit;
+
             $presensiKelas = PresensiKelas::where("id_kelas_mk", $id_kelas_mk)
                 ->orderBy(DB::raw("TO_DATE(TO_CHAR(tgl_presensi_kelas, 'YYYY-MM-DD') || ' ' || waktu_selesai, 'YYYY-MM-DD HH24:MI')"), 'DESC')
+                ->with(['materiMk']);
+
+            $total = $presensiKelas->count();
+
+            $presensiKelas = $presensiKelas->limit($limit)
+                ->offset($offset)
                 ->get()
                 ->map(function ($item) use ($id_kelas_mk) {
                     $totalHadir = PresensiMhs::where('kehadiran', '1')
@@ -170,6 +175,9 @@ class DosenPresensiController extends Controller
                         ->groupBy('id_kelas_mk')
                         ->count();
 
+                    $dateTglKelasOneWeek = Carbon::parse($item->tgl_presensi_kelas)->addWeek();
+
+                    $item->is_more_than_one_week = $dateTglKelasOneWeek->lt(Carbon::now());
                     $item->total_hadir = $totalHadir;
                     $item->total_absen = $totalMhs - $totalHadir;
                     return $item;
@@ -178,7 +186,10 @@ class DosenPresensiController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => 'Data Presensi Kelas',
-                'data' => $presensiKelas
+                'data' => $presensiKelas,
+                'total' => $total,
+                'page' => $page,
+                'per_page' => $limit
             ]);
         } catch (Exception $err) {
             return response()->json([
@@ -216,7 +227,7 @@ class DosenPresensiController extends Controller
             if ($now > $tglPresensiKelasCarbon->addWeek()) {
                  return response()->json([
                     'status' => false,
-                    'message' => 'Presensi tidak boleh di hapus, sudah melebihi 1 minggu',
+                    'message' => 'Presensi tidak boleh di edit, sudah melebihi 1 minggu',
                 ], 400);
             }
 
@@ -270,7 +281,7 @@ class DosenPresensiController extends Controller
             if ($now > $tglPresensiKelasCarbon->addWeek()) {
                  return response()->json([
                     'status' => false,
-                    'message' => 'Presensi tidak boleh di edit, sudah melebihi 1 minggu',
+                    'message' => 'Presensi tidak boleh di hapus, sudah melebihi 1 minggu',
                 ], 400);
             }
 
@@ -297,7 +308,7 @@ class DosenPresensiController extends Controller
         } catch (Exception $err) {
             return response()->json([
                 'status' => false,
-                'message' => 'Gagal ubah data presensi kelas',
+                'message' => 'Gagal hapus data presensi kelas',
                 'error' => $err->getMessage()
             ], 500);
         }

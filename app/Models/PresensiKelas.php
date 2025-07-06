@@ -26,6 +26,12 @@ class PresensiKelas extends Model
         return $this->belongsTo(KelasMk::class, 'id_kelas_mk', 'id_kelas_mk');
     }
 
+    public function materiMk()
+    {
+        return $this->belongsTo(MateriMk::class, 'id_materi_mk', 'id_materi_mk');
+    }
+
+
     public function presensiMhs()
     {
         return $this->hasMany(PresensiMhs::class, 'id_presensi_kelas', 'id_presensi_kelas');

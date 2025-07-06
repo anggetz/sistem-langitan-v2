@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Dosen\Api;
 
+use App\Events\QrGenerateEvent;
 use App\Http\Controllers\Controller;
 use App\Models\Message;
 use App\Models\PengambilanMk;
@@ -10,7 +11,7 @@ use App\Models\PresensiMhs;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
-
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Tymon\JWTAuth\JWT;
@@ -36,6 +37,13 @@ class DosenQrController extends Controller
             $presensi->qr_key = $data;
             $presensi->qr_expired = Carbon::now()->timezone(env("APP_TIMEZONE", "Asia/Jakarta"))->addMinutes((int)env('QR_EXPIRED', 5)); // Set QR code expiration time
             $presensi->save();
+
+            // broadcast the message;
+            event(new QrGenerateEvent($presensi->id_presensi_kelas, $presensi->id_kelas_mk, $presensi->qr_key));
+
+            // masuk queue
+
+            Log::info("triggered event triggerQrGenerator");
 
             // Option 1: Direct QR Code Image in view
             $qrSvg = QrCode::format('svg')->size(200)->generate($data);
@@ -75,6 +83,9 @@ class DosenQrController extends Controller
                     'message' => 'QR belum di generate'
                 ], 400);
             }
+
+            // event(new QrGenerateEvent($presensi->id_presensi_kelas, $presensi->id_kelas_mk));
+
             // Option 1: Direct QR Code Image in view
             $qrSvg = QrCode::format('svg')->size(200)->generate($presensi->qr_key);
 

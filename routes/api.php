@@ -1,5 +1,6 @@
 <?php
 
+use App\Events\QrGenerateEvent;
 use App\Models\Message;
 use Illuminate\Http\Request;
 use App\Models\PerguruanTinggi;
@@ -53,6 +54,19 @@ Route::group([
     Route::post('logout', 'destroy')->middleware("auth");
 });
 
+
+Route::get('/trigger-qr-event-test', function () {
+    // Ganti dengan data id_presensi dan id_kelas_mk yang sesuai
+    $idPresensi = 123; // Contoh ID Presensi
+    $idKelasMk = 456;  // Contoh ID Kelas MK
+
+    // Dispatch event
+    event(new QrGenerateEvent($idPresensi, $idKelasMk));
+
+    return "Event 'QrGenerateEvent' disiarkan ke channel 'qr-generator-0-1' dengan nama event '.test'!";
+});
+
+
 Route::group(['middleware' => 'auth.token'], function () {
 
     Route::group(['prefix' => 'pengguna'], function () {
@@ -94,6 +108,7 @@ Route::group(['middleware' => 'auth.token'], function () {
 
     Route::group(['prefix' => '/master', 'controller' => MasterController::class], function () {
         Route::get('/ruangan', 'GetRuangan');
+        Route::get('/semester', 'GetSemester');
     });
 
     require_once(__DIR__ . "/api/mahasiswa.php");
