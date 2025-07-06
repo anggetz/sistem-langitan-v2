@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Mahasiswa\Api;
 
+use App\Events\QrGenerateEvent;
 use App\Http\Controllers\Controller;
 use App\Models\Mahasiswa;
 use App\Models\PengambilanMk;
@@ -138,6 +139,8 @@ class MahasiswaQrPresensiController extends Controller
             $presensi->qr_key = sha1($presensi->id_presensi_kelas . $presensi->id_kelas_mk . $presensi->id_materi_mk . uniqid('qr-uniqid'));
             $presensi->qr_expired = Carbon::now()->timezone(env("APP_TIMEZONE", "Asia/Jakarta"))->addMinutes((int)env('QR_EXPIRED', 5)); // Set QR code expiration time
             $presensi->save();
+
+            event(new QrGenerateEvent($presensi->id_presensi_kelas, $presensi->id_kelas_mk, $presensi->qr_key));
 
             DB::commit();
 
