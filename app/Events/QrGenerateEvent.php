@@ -38,7 +38,7 @@ class QrGenerateEvent implements ShouldBroadcast // Penting! Implementasikan ini
         // Event ini akan dibroadcast ke channel publik bernama 'qr-generation'
         // Semua client yang subscribe ke 'qr-generation' akan menerimanya.
         return [
-            new Channel('qr-generator-'.$this->id_presensi.'-'.$this->id_kelas_mk),
+            new Channel('qr-generator-'.$this->id_presensi),
         ];
     }
 
