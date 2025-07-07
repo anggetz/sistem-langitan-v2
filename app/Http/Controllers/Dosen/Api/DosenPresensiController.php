@@ -207,7 +207,14 @@ class DosenPresensiController extends Controller
                 'tgl_presensi_kelas' => 'date|date_format:Y-m-d',
                 'waktu_mulai' => 'string',
                 'waktu_selesai' => 'string',
-                'id_ruangan' => 'integer|exists:ruangan,id_ruangan',
+                'id_kelas_mk' => 'integer',
+                'materi_mk' => 'string',
+            ]);
+
+            $materi = MateriMk::firstOrCreate([
+                'id_kelas_mk' => $data['id_kelas_mk'],
+                'isi_materi_mk' => $data['materi_mk'],
+                //'tgl_materi_mk' => Carbon::now()
             ]);
 
             $now = Carbon::now();
@@ -243,6 +250,7 @@ class DosenPresensiController extends Controller
                 ], 400);
             }
 
+            $data['id_materi_mk'] = $materi->id_materi_mk;
             $presensiKelas->fill($data);
             $presensiKelas->save();
 
