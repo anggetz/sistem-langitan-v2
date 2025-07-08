@@ -17,37 +17,37 @@ use Inertia\Inertia;
 |
 */
 
-Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
-    ]);
-});
+// Route::get('/', function () {
+//     return Inertia::render('Welcome', [
+//         'canLogin' => Route::has('login'),
+//         'canRegister' => Route::has('register'),
+//         'laravelVersion' => Application::VERSION,
+//         'phpVersion' => PHP_VERSION,
+//     ]);
+// });
 
-Route::get('/dashboard', function () {
+// Route::get('/dashboard', function () {
 
-    $user = Auth::user();
+//     $user = Auth::user();
 
-    $breadcrumbs = [
-        [$user->role->nm_role],
-        ['Home', '/dashboard']
-    ];
+//     $breadcrumbs = [
+//         [$user->role->nm_role],
+//         ['Home', '/dashboard']
+//     ];
 
-    return Inertia::render('Dashboard', ['breadcrumbs' => $breadcrumbs]);
+//     return Inertia::render('Dashboard', ['breadcrumbs' => $breadcrumbs]);
 
-})->middleware(['auth', 'verified'])->name('dashboard');
+// })->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-});
+// Route::middleware('auth')->group(function () {
+//     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+//     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+//     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+// });
 
-require __DIR__.'/auth.php';
-require __DIR__.'/mahasiswa.php';
+// require __DIR__.'/auth.php';
+// require __DIR__.'/mahasiswa.php';
 
-// Demo purpose only !
-require __DIR__.'/role-demo.php';
-require __DIR__.'/metronic-demo.php';
+// // Demo purpose only !
+// require __DIR__.'/role-demo.php';
+// require __DIR__.'/metronic-demo.php';

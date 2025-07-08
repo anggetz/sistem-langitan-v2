@@ -10,6 +10,15 @@ class PresensiMhs extends Model
     use HasFactory;
     protected $table = 'presensi_mkmhs';
     protected $primaryKey = 'id_presensi_mkmhs';
+    public $timestamps = false;
+
+     protected $fillable = [
+        'id_mhs',
+        'id_presensi_kelas',
+        'kehadiran',
+        'qr_flag',
+    ];
+
 
     public function mahasiswa(){
         return $this->belongsTo(Mahasiswa::class,'id_mhs','id_mhs');

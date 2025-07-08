@@ -29,6 +29,14 @@ class KelasMk extends Model
         return $this->belongsTo(NamaKelas::class,"no_kelas_mk","id_nama_kelas");
     }
 
+    public function programStudi(){
+        return $this->belongsTo(ProgramStudi::class,"id_program_studi","id_program_studi");
+    }
+
+    public function semester(){
+        return $this->belongsTo(Semester::class,"id_semester","id_semester");
+    }
+
     public function pengampuMk(){
         return $this->hasOne(PengampuMk::class,"id_kelas_mk","id_kelas_mk");
     }
@@ -43,6 +51,10 @@ class KelasMk extends Model
 
     public function jadwalKelas(){
         return $this->hasOne(JadwalKelas::class,"id_kelas_mk","id_kelas_mk");
+    }
+
+    public function listMahasiswa(){
+        return $this->hasMany(PengambilanMk::class,"id_kelas_mk","id_kelas_mk");
     }
 
     public function presensiKelas(){

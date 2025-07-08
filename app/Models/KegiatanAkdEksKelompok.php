@@ -8,4 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 class KegiatanAkdEksKelompok extends Model
 {
     use HasFactory;
+
+
 }

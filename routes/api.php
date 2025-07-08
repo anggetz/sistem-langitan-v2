@@ -1,11 +1,18 @@
 <?php
 
+use App\Events\QrGenerateEvent;
 use App\Models\Message;
 use Illuminate\Http\Request;
 use App\Models\PerguruanTinggi;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BeritaController;
 use App\Http\Controllers\Auth\Api\AuthController;
+use App\Http\Controllers\BeasiswaController;
+use App\Http\Controllers\KegiatanAkdEksController;
+use App\Http\Controllers\KegiatanKelompokController;
+use App\Http\Controllers\MasterController;
+use App\Http\Controllers\Pengumuman\PengumumanController;
+use App\Models\Pengguna;
 
 Route::get('/', function () {
     return "Laravel Version : " . app()->version();
@@ -47,15 +54,73 @@ Route::group([
     Route::post('logout', 'destroy')->middleware("auth");
 });
 
+
+Route::get('/trigger-qr-event-test', function () {
+    // Ganti dengan data id_presensi dan id_kelas_mk yang sesuai
+    $idPresensi = 123; // Contoh ID Presensi
+    $idKelasMk = 456;  // Contoh ID Kelas MK
+
+    // Dispatch event
+    event(new QrGenerateEvent($idPresensi, $idKelasMk));
+
+    return "Event 'QrGenerateEvent' disiarkan ke channel 'qr-generator-0-1' dengan nama event '.test'!";
+});
+
+
 Route::group(['middleware' => 'auth.token'], function () {
 
     Route::group(['prefix' => 'pengguna'], function () {
         Route::post('ganti-password', [AuthController::class, 'gantiPassword']);
         Route::get('/', function (Request $request) {
-            return $request->user();
+            return Pengguna::with('role')->where('id_pengguna', $request->user()->id_pengguna)->first();
         });
     });
 
+    Route::group(['prefix' => '/beasiswa', 'controller' => BeasiswaController::class], function () {
+        Route::get('/', 'Index');
+        Route::get('/{id}', 'Detail');
+        Route::get('/history/{id}', 'History');
+    });
+
+    Route::group(['prefix' => '/pengumuman', 'controller' => PengumumanController::class], function () {
+        Route::get('/', 'Index');
+        Route::get('/{id}', 'GetById');
+        Route::post('/', 'Create');
+        Route::put('/{id}', 'Update');
+        Route::delete('/{id}', 'Delete');
+    });
+
+    Route::group(['prefix' => '/master/kegiatan_akd_eks', 'controller' => KegiatanAkdEksController::class], function () {
+        Route::get('/', 'Get');
+        Route::get('/{id}', 'GetById');
+        Route::post('/', 'Create');
+        Route::put('/{id}', 'UpdateKegiatan');
+        Route::delete('/{id}', 'DeleteKegiatan');
+    });
+
+    Route::group(['prefix' => '/master/kegiatan_kelompok_akd_eks', 'controller' => KegiatanKelompokController::class], function () {
+        Route::get('/', 'Get');
+        Route::get('/{id}', 'GetById');
+        Route::post('/', 'Create');
+        Route::put('/{id}', 'UpdateKegiatan');
+        Route::delete('/{id}', 'DeleteKegiatan');
+    });
+
+    Route::group(['prefix' => '/master', 'controller' => MasterController::class], function () {
+        Route::get('/ruangan', 'GetRuangan');
+        Route::get('/semester', 'GetSemester');
+    });
+
     require_once(__DIR__ . "/api/mahasiswa.php");
+    require_once(__DIR__ . "/api/rektor.php");
     require_once(__DIR__ . "/api/dosen.php");
+
+});
+
+Route::fallback(function () {
+    return response()->json([
+        'success' => false,
+        'message' => 'Endpoint tidak ditemukan.',
+        'code' => 404,
+    ], 404);
 });

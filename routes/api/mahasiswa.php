@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Dosen\Api\DosenQrController;
 use App\Models\Role;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Session;
@@ -8,7 +9,8 @@ use App\Http\Controllers\Mahasiswa\Api\BerandaController;
 use App\Http\Controllers\Mahasiswa\Api\AkademikController;
 use App\Http\Controllers\Mahasiswa\Api\KeuanganController;
 use App\Http\Controllers\Mahasiswa\Api\MahasiswaController;
-
+use App\Http\Controllers\Mahasiswa\Api\MahasiswaKrsController;
+use App\Http\Controllers\Mahasiswa\Api\MahasiswaQrPresensiController;
 
 Route::group(['prefix' => 'mahasiswa', 'middleware' => 'role:' . Role::MAHASISWA], function () {
     Route::get('me', [PenggunaController::class, 'me']);
@@ -45,6 +47,25 @@ Route::group(['prefix' => 'mahasiswa', 'middleware' => 'role:' . Role::MAHASISWA
             Route::get('riwayat/{tagihanMhs}/detail', 'riwayatDetail');
             Route::get('riwayat/{tagihanMhs}/cetak', 'riwayatDetailCetak');
             Route::get('informasi', 'informasi');
+        }
+    );
+
+    Route::group(
+        ['prefix' => 'krs', 'controller' => MahasiswaKrsController::class],
+        function () {
+            Route::get('check-krs-schedule', 'CheckKRSScheduleOnCurrentSemester');
+            Route::get('list_mk', 'listMataKuliahByActiveSemesterAndProdi');
+            Route::get('riwayat', 'getHistoryKrs');
+            Route::post('take_course', 'takeCourse');
+        });
+
+    Route::post('qr-presensi/show/{id_presensi}', [DosenQrController::class, 'ShowCurrentQR']);
+
+    Route::group(
+        ['prefix' => 'presensi', 'controller' => MahasiswaQrPresensiController::class],
+        function () {
+            Route::post('qrPresensi', 'qrPresensi');
+            Route::get('history/{id_kelas_mk}', 'HistoryAbsenByIdKelas');
         }
     );
 });

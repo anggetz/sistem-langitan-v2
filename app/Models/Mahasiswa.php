@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Mahasiswa extends Model
 {
     use Blameable;
-    
+
     protected $table = 'mahasiswa';
     protected $primaryKey = 'id_mhs';
     const CREATED_AT = 'created_on';
@@ -18,7 +18,7 @@ class Mahasiswa extends Model
 
     public function getFotoAttribute()
     {
-        $perguruan = $this->perguruan_tinggi()->select('nama_singkat')->first();
+        $perguruan = $this->perguruanTinggi()->select('nama_singkat')->first();
         $url = 'https://langitan.umaha.ac.id/foto_mhs/' . $perguruan->nama_singkat . '/' . $this->nim_mhs . '.jpg';
         return $url;
     }
@@ -160,7 +160,7 @@ class Mahasiswa extends Model
     public function sumberBiaya(){
         return $this->belongsTo(SumberBiaya::class,'sumber_biaya','id_sumber_biaya');
     }
-    
+
     public function asalSekolah(){
         return $this->belongsTo(Sekolah::class,'id_sekolah_asal_mhs','id_sekolah');
     }

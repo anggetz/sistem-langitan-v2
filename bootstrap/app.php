@@ -119,4 +119,9 @@ return Application::configure(basePath: dirname(__DIR__))
         //     }
         //     return parent::render($request, $exception);
         // });
-    })->create();
+    })
+    ->withBroadcasting(
+        __DIR__.'/../routes/channels.php',
+        ['prefix' => 'api'], // Sesuaikan prefix jika Anda menggunakan prefix kustom untuk broadcasting auth
+    )
+    ->create();

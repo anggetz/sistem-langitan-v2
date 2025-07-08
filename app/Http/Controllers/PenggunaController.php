@@ -10,7 +10,7 @@ class PenggunaController extends Controller
 {
     public function me(Request $request)
     {
-        $pengguna = Pengguna::with(['pegawai', 'dosen', 'mahasiswa','agama'])
+        $pengguna = Pengguna::with(['mahasiswa'])
             ->find($request->user("api")->id_pengguna);
 
         if($pengguna->mahasiswa){
@@ -20,7 +20,7 @@ class PenggunaController extends Controller
                 'data_akademik' => $pengguna->mahasiswa->data_akademik,
                 'foto' => $pengguna->mahasiswa->foto,
             ],200);
-    
+
         }
         return response()->json([
             'message' => Message::OK,

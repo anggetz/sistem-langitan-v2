@@ -14,6 +14,7 @@ class Role extends Model
 
     const MAHASISWA = 3;
     const DOSEN = 4;
+    // const REKTOR = 4;
 
     // hasMany modul
     public function modul()
