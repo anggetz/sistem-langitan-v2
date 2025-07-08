@@ -41,14 +41,14 @@ class DosenQrController extends Controller
 
             // broadcast the message;
             // event(new QrGenerateEvent($presensi->id_presensi_kelas, $presensi->id_kelas_mk, $presensi->qr_key));
-            $response = Http::post(env('WS_HOOK_ADDRESS').'/broadcast', [ // Changed endpoint to /broadcast
-                'topic' => 'qr-generator-' . $presensi->id_presensi_kelas, // Use the topic for the specific presensi
-                'message' => json_encode([
-                    'qr_key' => $presensi->qr_key,
-                    'id_presensi_kelas' => $presensi->id_presensi_kelas,
-                    'id_kelas_mk' => $presensi->id_kelas_mk,
-                ]),
-            ]);
+            // $response = Http::post(env('WS_HOOK_ADDRESS').'/broadcast', [ // Changed endpoint to /broadcast
+            //     'topic' => 'qr-generator-' . $presensi->id_presensi_kelas, // Use the topic for the specific presensi
+            //     'message' => json_encode([
+            //         'qr_key' => $presensi->qr_key,
+            //         'id_presensi_kelas' => $presensi->id_presensi_kelas,
+            //         'id_kelas_mk' => $presensi->id_kelas_mk,
+            //     ]),
+            // ]);
 
             // masuk queue
 
