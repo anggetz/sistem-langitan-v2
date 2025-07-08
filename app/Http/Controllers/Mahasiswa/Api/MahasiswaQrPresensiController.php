@@ -13,6 +13,7 @@ use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 
 class MahasiswaQrPresensiController extends Controller
 {
@@ -140,7 +141,12 @@ class MahasiswaQrPresensiController extends Controller
             $presensi->qr_expired = Carbon::now()->timezone(env("APP_TIMEZONE", "Asia/Jakarta"))->addMinutes((int)env('QR_EXPIRED', 5)); // Set QR code expiration time
             $presensi->save();
 
-            event(new QrGenerateEvent($presensi->id_presensi_kelas, $presensi->id_kelas_mk, $presensi->qr_key));
+            // event(new QrGenerateEvent($presensi->id_presensi_kelas, $presensi->id_kelas_mk, $presensi->qr_key));
+            $response = Http::post(env('WS_HOOK_ADDRESS').'/broadcast', [ // Changed endpoint to /broadcast
+                'topic' => 'qr-generator-' . $presensi->id_presensi_kelas, // Use the topic for the specific presensi
+                'message' => 'triggerQrGenerator',
+            ]);
+
 
             DB::commit();
 

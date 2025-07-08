@@ -11,6 +11,7 @@ use App\Models\PresensiMhs;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
@@ -39,7 +40,11 @@ class DosenQrController extends Controller
             $presensi->save();
 
             // broadcast the message;
-            event(new QrGenerateEvent($presensi->id_presensi_kelas, $presensi->id_kelas_mk, $presensi->qr_key));
+            // event(new QrGenerateEvent($presensi->id_presensi_kelas, $presensi->id_kelas_mk, $presensi->qr_key));
+            $response = Http::post(env('WS_HOOK_ADDRESS').'/broadcast', [ // Changed endpoint to /broadcast
+                'topic' => 'qr-generator-' . $presensi->id_presensi_kelas, // Use the topic for the specific presensi
+                'message' => 'triggerQrGenerator',
+            ]);
 
             // masuk queue
 
@@ -106,7 +111,7 @@ class DosenQrController extends Controller
         }
     }
 
-     public function ResetQR(Request $request, $id_presensi)
+    public function ResetQR(Request $request, $id_presensi)
     {
         try {
 
