@@ -23,7 +23,7 @@ class DosenPenilaianController extends Controller
             // check if the kelas mk has komponen
             $dbKomponen = \App\Models\KomponenMk::where('id_kelas_mk', $id_kelas_mk)->get();
 
-            $komponens = explode(',', env('KOMPONEN_MK'));
+            $komponens = explode(',', env('KOMPONEN_MK', 'Aktivitas Partisipatif,Hasil Proyek,Tugas,Quiz,UTS,UAS'));
             $ifNeedRefetch = false;
 
             foreach ($komponens as $index => $komponenMk) {
@@ -144,16 +144,24 @@ class DosenPenilaianController extends Controller
         $page = $request->get('page', 1);
         $offset = ($page - 1) * $limit;
 
+        // id mhs
+        $id_mhs = $request->get('id_mhs', null);
+
         try {
             // get mhs
-            $mhs = \App\Models\PengambilanMk::where('id_kelas_mk', $id_kelas_mk)
-                ->with(['mahasiswa.pengguna:id_pengguna,gelar_depan,nm_pengguna,gelar_belakang'])
-                ->offset($offset)
+            $q = \App\Models\PengambilanMk::where('id_kelas_mk', $id_kelas_mk)
+                ->with(['mahasiswa.pengguna:id_pengguna,gelar_depan,nm_pengguna,gelar_belakang']);
+
+            if ($id_mhs) {
+                $q->where('id_mhs', $id_mhs);
+            }
+
+            $total = $q->count();
+
+            $mhs = $q->offset($offset)
                 ->limit($limit)
-                // ->whereHas('mahasiswa', function ($query) {
-                //     $query->where('id_mhs', 5929);
-                // })
                 ->get();
+
 
             if ($mhs->isEmpty()) {
                 return response()->json([
@@ -193,18 +201,136 @@ class DosenPenilaianController extends Controller
                 return [
                     'nama_mhs' => $pengguna->nama_lengkap,
                     'nim_mhs' => $mahasiswa->nim_mhs ?? '',
-                    'nilai_akhir' => round($nilaiAkhir, 2)
+                    'nilai_akhir' => floor($nilaiAkhir)
                 ];
             });
 
             return response()->json([
                 'status' => Message::OK,
                 'message' => 'Perhitungan nilai akhir berhasil.',
-                'data' => $namaMhsMapped
+                'data' => $namaMhsMapped,
+                'total' => $total,
+                'per_page' => $limit,
+                'page' => $page,
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to approve KRS MK.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function saveNilaiMk(Request $request)
+    {
+        $request->validate([
+            'id_kelas_mk' => 'required|integer',
+            'id_mhs' => 'required|integer',
+            'nm_komponen_mk' => 'required|string',
+            'nilai_besar_mk' => 'required|numeric|min:0|max:100',
+        ]);
+
+        try {
+            // get komponen mk
+            $komponenMk = \App\Models\KomponenMk::where([
+                'id_kelas_mk' => $request->id_kelas_mk,
+                'nm_komponen_mk' => $request->nm_komponen_mk,
+            ])->first();
+
+            if (!$komponenMk) {
+                return response()->json([
+                    'message' => 'Komponen MK tidak ditemukan.',
+                    'error' => 'Komponen MK dengan id_kelas_mk: ' . $request->id_kelas_mk . ' dan nm_komponen_mk: ' . $request->nm_komponen_mk . ' tidak ditemukan.'
+                ], 404);
+            }
+
+            // get pengambilan mk
+            $pengambilanMk = \App\Models\PengambilanMk::where([
+                'id_kelas_mk' => $request->id_kelas_mk,
+                'id_mhs' => $request->id_mhs,
+            ])->first();
+
+            if (!$pengambilanMk) {
+                return response()->json([
+                    'message' => 'Pengambilan MK tidak ditemukan.',
+                    'error' => 'Pengambilan MK dengan id_kelas_mk: ' . $request->id_kelas_mk . ' dan id_mhs: ' . $request->id_mhs . ' tidak ditemukan.'
+                ], 404);
+            }
+
+            // check if nilai already exists
+            $nilaiMk = NilaiMk::where([
+                'id_pengambilan_mk' => $pengambilanMk->id_pengambilan_mk,
+                'id_komponen_mk' => $komponenMk->id_komponen_mk,
+            ])->first();
+
+            if ($nilaiMk) {
+                // update nilai
+                $nilaiMk->besar_nilai_mk = $request->nilai_besar_mk;
+                $nilaiMk->save();
+            } else {
+                // create new nilai
+                $nilaiMk = NilaiMk::create([
+                    'id_pengambilan_mk' => $pengambilanMk->id_pengambilan_mk,
+                    'id_komponen_mk' => $komponenMk->id_komponen_mk,
+                    'besar_nilai_mk' => $request->nilai_besar_mk,
+                ]);
+            }
+
+            return response()->json([
+                'status' => Message::OK,
+                'message' => 'Nilai MK berhasil disimpan.',
+                'data' => $nilaiMk
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to save Nilai MK.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getNilai(Request $request, $id_kelas_mk)
+    {
+        $limit = $request->get('perPage', 10);
+        $page = $request->get('page', 1);
+        $offset = ($page - 1) * $limit;
+
+        // id mhs
+        $id_mhs = $request->get('id_mhs', null);
+
+        try {
+            $nilaiMks = NilaiMk::whereHas('pengambilanMk', function ($query) use ($id_kelas_mk, $id_mhs) {
+                $query->where('id_kelas_mk', $id_kelas_mk);
+                if ($id_mhs) {
+                    $query->where('id_mhs', $id_mhs);
+                }
+            })->with(['pengambilanMk.mahasiswa.pengguna:id_pengguna,gelar_depan,nm_pengguna,gelar_belakang']);
+
+            return response()->json([
+                'status' => Message::OK,
+                'message' => 'Get Nilai successfully.',
+                'data' => $nilaiMks->offset($offset)
+                    ->limit($limit)
+                    ->get()->map(function ($item) {
+                        $pengguna = $item->pengambilanMk->mahasiswa->pengguna ?? new \App\Models\Pengguna();
+                        return [
+                            'id_nilai_mk' => $item->id_nilai_mk,
+                            'nama_mhs' => $pengguna->nama_lengkap,
+                            'nim_mhs' => $item->pengambilanMk->mahasiswa->nim_mhs ?? '',
+                            'id_komponen_mk' => $item->id_komponen_mk,
+                            'nm_komponen_mk' => $item->komponenMk->nm_komponen_mk ?? '',
+                            'besar_nilai_mk' => $item->besar_nilai_mk,
+                        ];
+                    }),
+                'total' => $nilaiMks->count(),
+                'per_page' => $limit,
+                'page' => $page,
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to get Nilai.',
                 'error' => $e->getMessage()
             ], 500);
         }
