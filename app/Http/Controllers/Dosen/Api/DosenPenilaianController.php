@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Dosen\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\KomponenMk;
+use App\Models\Mahasiswa;
 use App\Models\Message;
+use App\Models\NilaiMk;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -136,9 +138,70 @@ class DosenPenilaianController extends Controller
         }
     }
 
-    public function calculatingNilaiMkBasedOnKomponen(Request $request)
+    public function calculatingNilaiAkhir(Request $request, $id_kelas_mk)
     {
+        $limit = $request->get('perPage', 10);
+        $page = $request->get('page', 1);
+        $offset = ($page - 1) * $limit;
+
         try {
+            // get mhs
+            $mhs = \App\Models\PengambilanMk::where('id_kelas_mk', $id_kelas_mk)
+                ->with(['mahasiswa.pengguna:id_pengguna,gelar_depan,nm_pengguna,gelar_belakang'])
+                ->offset($offset)
+                ->limit($limit)
+                // ->whereHas('mahasiswa', function ($query) {
+                //     $query->where('id_mhs', 5929);
+                // })
+                ->get();
+
+            if ($mhs->isEmpty()) {
+                return response()->json([
+                    'status' => Message::FAIL,
+                    'message' => 'Tidak ada mahasiswa yang terdaftar di kelas ini.',
+                ], 404);
+            }
+
+            $komponenFetched = [];
+
+            $namaMhsMapped = $mhs->map(function ($item) use ($id_kelas_mk, $komponenFetched) {
+                $komponen = KomponenMk::where('id_kelas_mk', $id_kelas_mk)->get();
+                $nilaiAkhir = 0;
+
+                $nilaiMks = NilaiMk::selectRaw("
+                    id_komponen_mk, SUM(besar_nilai_mk)/count(id_komponen_mk) as besar_nilai_mk
+                ")->where([
+                    'id_pengambilan_mk' => $item->id_pengambilan_mk,
+                    'id_mhs' => $item->id_mhs,
+                ])->groupBy('id_komponen_mk')->get();
+
+                foreach ($nilaiMks as $nilaiMk) {
+                    if ($komponenFetched[$nilaiMk->id_komponen_mk] ?? null) {
+                        $komponen = $komponenFetched[$nilaiMk->id_komponen_mk];
+                    } else {
+                        $komponen = KomponenMk::find($nilaiMk->id_komponen_mk);
+                        $komponenFetched[$nilaiMk->id_komponen_mk] = $komponen;
+                    }
+                    if ($komponen) {
+                        $nilaiAkhir += $nilaiMk->besar_nilai_mk * ($komponen->persentase_komponen_mk / 100);
+                    }
+                }
+
+                $mahasiswa = $item->mahasiswa ?? new Mahasiswa();
+                $pengguna = $mahasiswa->pengguna ?? new \App\Models\Pengguna();
+
+                return [
+                    'nama_mhs' => $pengguna->nama_lengkap,
+                    'nim_mhs' => $mahasiswa->nim_mhs ?? '',
+                    'nilai_akhir' => round($nilaiAkhir, 2)
+                ];
+            });
+
+            return response()->json([
+                'status' => Message::OK,
+                'message' => 'Perhitungan nilai akhir berhasil.',
+                'data' => $namaMhsMapped
+            ], 200);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to approve KRS MK.',
@@ -146,20 +209,4 @@ class DosenPenilaianController extends Controller
             ], 500);
         }
     }
-
-    // public function listCourseApproval() {
-    //     try {
-    //         $result = (new KrsService())->listCourse(auth()->user()->dosen->id_dosen);
-
-    //         return response()->json([
-    //             'message' => 'Get data successfully.',
-    //             'data' => $result
-    //         ], 200);
-    //     } catch (\Exception $e) {
-    //         return response()->json([
-    //             'message' => 'Failed to get data.',
-    //             'error' => $e->getMessage()
-    //         ], 500);
-    //     }
-    // }
 }
