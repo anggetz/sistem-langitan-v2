@@ -12,6 +12,6 @@ class JadwalKegiatanSemester extends Model
     protected $primaryKey = 'id_jadwal_kegiatan_semester';
 
     public function kegiatan(){
-        return $this->belongsTo(Kegiatan::class,"","");
+        return $this->belongsTo(Kegiatan::class, 'id_kegiatan', 'id_kegiatan');
     }
 }

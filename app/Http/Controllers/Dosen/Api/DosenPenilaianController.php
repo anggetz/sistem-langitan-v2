@@ -7,6 +7,7 @@ use App\Models\KomponenMk;
 use App\Models\Mahasiswa;
 use App\Models\Message;
 use App\Models\NilaiMk;
+use App\Services\Mahasiswa\AkademikService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -231,7 +232,17 @@ class DosenPenilaianController extends Controller
             'mahasiswa.*.nilai_besar_mk' => 'required|numeric|min:0|max:100',
         ]);
 
+        // check if in range penilaian
+        $akademikService = new AkademikService();
+
         try {
+            if (!$akademikService->validateKRSScheduleByActiveSemester()) {
+                return response()->json([
+                    'message' => 'Penilaian tidak dapat dilakukan di luar jadwal penilaian.',
+                    'error' => 'Penilaian tidak dapat dilakukan di luar jadwal penilaian.'
+                ], 400);
+            }
+
             // get komponen mk
             $komponenMk = \App\Models\KomponenMk::where([
                 'id_kelas_mk' => $request->id_kelas_mk,
@@ -246,6 +257,14 @@ class DosenPenilaianController extends Controller
             }
 
             foreach ($request->mahasiswa as $mhs) {
+                // check nilai cant more than 100 and less than 0
+                if ($mhs['nilai_besar_mk'] < 0 || $mhs['nilai_besar_mk'] > 100) {
+                    return response()->json([
+                        'message' => 'Nilai MK harus antara 0 dan 100.',
+                        'error' => 'Nilai MK untuk mahasiswa dengan id_mhs: ' . $mhs['id_mhs'] . ' harus antara 0 dan 100.'
+                    ], 400);
+                }
+
                 // get pengambilan mk
                 $pengambilanMk = \App\Models\PengambilanMk::where([
                     'id_kelas_mk' => $request->id_kelas_mk,
@@ -267,7 +286,7 @@ class DosenPenilaianController extends Controller
 
                 if ($nilaiMk) {
                     // update nilai
-                    $nilaiMk->besar_nilai_mk = $request->nilai_besar_mk;
+                    $nilaiMk->besar_nilai_mk = $mhs['nilai_besar_mk'];
                     $nilaiMk->save();
                 } else {
                     // create new nilai
