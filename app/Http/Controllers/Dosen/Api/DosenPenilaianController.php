@@ -223,11 +223,12 @@ class DosenPenilaianController extends Controller
 
     public function saveNilaiMk(Request $request)
     {
-        $request->validate([
+        $validatedData = $request->validate([
             'id_kelas_mk' => 'required|integer',
-            'id_mhs' => 'required|integer',
             'nm_komponen_mk' => 'required|string',
-            'nilai_besar_mk' => 'required|numeric|min:0|max:100',
+            'mahasiswa' => 'required|array',
+            'mahasiswa.*.id_mhs' => 'required|integer',
+            'mahasiswa.*.nilai_besar_mk' => 'required|numeric|min:0|max:100',
         ]);
 
         try {
@@ -244,42 +245,45 @@ class DosenPenilaianController extends Controller
                 ], 404);
             }
 
-            // get pengambilan mk
-            $pengambilanMk = \App\Models\PengambilanMk::where([
-                'id_kelas_mk' => $request->id_kelas_mk,
-                'id_mhs' => $request->id_mhs,
-            ])->first();
+            foreach ($request->mahasiswa as $mhs) {
+                // get pengambilan mk
+                $pengambilanMk = \App\Models\PengambilanMk::where([
+                    'id_kelas_mk' => $request->id_kelas_mk,
+                    'id_mhs' => $mhs['id_mhs'],
+                ])->first();
 
-            if (!$pengambilanMk) {
-                return response()->json([
-                    'message' => 'Pengambilan MK tidak ditemukan.',
-                    'error' => 'Pengambilan MK dengan id_kelas_mk: ' . $request->id_kelas_mk . ' dan id_mhs: ' . $request->id_mhs . ' tidak ditemukan.'
-                ], 404);
-            }
+                if (!$pengambilanMk) {
+                    return response()->json([
+                        'message' => 'Pengambilan MK tidak ditemukan.',
+                        'error' => 'Pengambilan MK dengan id_kelas_mk: ' . $request->id_kelas_mk . ' dan id_mhs: ' . $mhs['id_mhs'] . ' tidak ditemukan.'
+                    ], 404);
+                }
 
-            // check if nilai already exists
-            $nilaiMk = NilaiMk::where([
-                'id_pengambilan_mk' => $pengambilanMk->id_pengambilan_mk,
-                'id_komponen_mk' => $komponenMk->id_komponen_mk,
-            ])->first();
-
-            if ($nilaiMk) {
-                // update nilai
-                $nilaiMk->besar_nilai_mk = $request->nilai_besar_mk;
-                $nilaiMk->save();
-            } else {
-                // create new nilai
-                $nilaiMk = NilaiMk::create([
+                // check if nilai already exists
+                $nilaiMk = NilaiMk::where([
                     'id_pengambilan_mk' => $pengambilanMk->id_pengambilan_mk,
                     'id_komponen_mk' => $komponenMk->id_komponen_mk,
-                    'besar_nilai_mk' => $request->nilai_besar_mk,
-                ]);
+                ])->first();
+
+                if ($nilaiMk) {
+                    // update nilai
+                    $nilaiMk->besar_nilai_mk = $request->nilai_besar_mk;
+                    $nilaiMk->save();
+                } else {
+                    // create new nilai
+                    $nilaiMk = NilaiMk::create([
+                        'id_pengambilan_mk' => $pengambilanMk->id_pengambilan_mk,
+                        'id_komponen_mk' => $komponenMk->id_komponen_mk,
+                        'besar_nilai_mk' => $mhs['nilai_besar_mk'],
+                    ]);
+                }
+
+
             }
 
             return response()->json([
                 'status' => Message::OK,
                 'message' => 'Nilai MK berhasil disimpan.',
-                'data' => $nilaiMk
             ], 200);
 
         } catch (\Exception $e) {
@@ -298,6 +302,8 @@ class DosenPenilaianController extends Controller
 
         // id mhs
         $id_mhs = $request->get('id_mhs', null);
+        // id komponen
+        $nm_komponen_mk = $request->get('nm_komponen_mk', null);
 
         try {
             $nilaiMks = NilaiMk::whereHas('pengambilanMk', function ($query) use ($id_kelas_mk, $id_mhs) {
@@ -307,6 +313,12 @@ class DosenPenilaianController extends Controller
                 }
             })->with(['pengambilanMk.mahasiswa.pengguna:id_pengguna,gelar_depan,nm_pengguna,gelar_belakang']);
 
+            if ($nm_komponen_mk) {
+                $nilaiMks->whereHas('komponenMk', function ($query) use ($nm_komponen_mk) {
+                    $query->where('nm_komponen_mk',  $nm_komponen_mk);
+                });
+            }
+
             return response()->json([
                 'status' => Message::OK,
                 'message' => 'Get Nilai successfully.',
@@ -315,6 +327,7 @@ class DosenPenilaianController extends Controller
                     ->get()->map(function ($item) {
                         $pengguna = $item->pengambilanMk->mahasiswa->pengguna ?? new \App\Models\Pengguna();
                         return [
+                            'id_mhs' => $item->pengambilanMk->id_mhs,
                             'id_nilai_mk' => $item->id_nilai_mk,
                             'nama_mhs' => $pengguna->nama_lengkap,
                             'nim_mhs' => $item->pengambilanMk->mahasiswa->nim_mhs ?? '',
