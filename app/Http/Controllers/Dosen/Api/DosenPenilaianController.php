@@ -7,6 +7,7 @@ use App\Models\KomponenMk;
 use App\Models\Mahasiswa;
 use App\Models\Message;
 use App\Models\NilaiMk;
+use App\Services\Mahasiswa\AkademikService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -24,7 +25,7 @@ class DosenPenilaianController extends Controller
             $dbKomponen = \App\Models\KomponenMk::where('id_kelas_mk', $id_kelas_mk)->get();
 
             $komponens = explode(',', env('KOMPONEN_MK', 'Aktivitas Partisipatif,Hasil Proyek,Tugas,Quiz,UTS,UAS'));
-            $ifNeedRefetch = false;
+            $temporaryForSaving = [];
 
             foreach ($komponens as $index => $komponenMk) {
                 $ifFound = false;
@@ -36,29 +37,30 @@ class DosenPenilaianController extends Controller
                 }
 
                 if (!$ifFound) {
-                    // if not found then create new komponen
-                    $ifNeedRefetch = true;
-                    \App\Models\KomponenMk::create([
-                        'id_kelas_mk' => $id_kelas_mk,
-                        'nm_komponen_mk' => $komponenMk,
-                        'persentase_komponen_mk' => 0, // default bobot is 0
-                        'urutan_komponen_mk' => $index, // default bobot is 0
-                    ]);
+                    $newKomponen = new KomponenMk();
+                    $newKomponen->id_kelas_mk = $id_kelas_mk;
+                    $newKomponen->nm_komponen_mk = $komponenMk;
+                    $newKomponen->persentase_komponen_mk = 0; // default value
+                    $newKomponen->urutan_komponen_mk = $index;
+                    $temporaryForSaving[] = $newKomponen->toArray();
                 }
             }
 
-            // get the komponen again after adding default komponen
-            if ($ifNeedRefetch) {
-                $dbKomponen = \App\Models\KomponenMk::where('id_kelas_mk', $id_kelas_mk)->get();
+            //saving the temporary komponen bulk insert
+            if (count($temporaryForSaving) > 0) {
+                KomponenMk::insert($temporaryForSaving);
             }
+
+            // merge the komponent from the database and the temporary komponen
+            array_push($temporaryForSaving, ...$dbKomponen->toArray());
 
             return response()->json([
                 'message' => 'Get komponen successfully.',
-                'data' => $dbKomponen
+                'data' => $temporaryForSaving
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Failed to approve KRS MK.',
+                'message' => 'Failed get komponen.',
                 'error' => $e->getMessage()
             ], 500);
         }
@@ -69,7 +71,6 @@ class DosenPenilaianController extends Controller
         try {
             $validatedData = $request->validate([
                 'komponens' => 'required|array',
-                'komponens.*.id_komponen_mk' => 'required|integer',
                 'komponens.*.nm_komponen_mk' => 'required|string|max:255',
                 'komponens.*.persentase_komponen_mk' => 'required|numeric|min:0|max:100',
                 'komponens.*.urutan_komponen_mk' => 'integer'
@@ -91,27 +92,7 @@ class DosenPenilaianController extends Controller
             DB::beginTransaction();
 
             foreach ($validatedData['komponens'] as $komponenData) {
-                $komponen = KomponenMk::where([
-                    'id_kelas_mk' => $id_kelas_mk,
-                    'id_komponen_mk' => $komponenData['id_komponen_mk']
-                ])->first();
-
-                if (!$komponen) {
-                    DB::rollBack();
-                    return response()->json([
-                        'message' => 'Komponen tidak ditemukan.',
-                        'error' => 'Komponen dengan ' . $komponenData['id_komponen_mk'] . ' tidak ditemukan untuk kelas ' . $id_kelas_mk
-                    ], 404);
-                    continue;
-                }
-
-                $komponen->nm_komponen_mk = $komponenData['nm_komponen_mk'];
-                $komponen->persentase_komponen_mk = $komponenData['persentase_komponen_mk'];
-                $komponen->urutan_komponen_mk = $komponenData['urutan_komponen_mk'] ?? 0;
-                $totalProsentase += $komponen->persentase_komponen_mk;
-                $komponen->save();
-
-                $updatedKomponens[] = $komponen;
+                $totalProsentase += $komponenData['persentase_komponen_mk'];
             }
 
             if ($totalProsentase != 100) {
@@ -122,12 +103,21 @@ class DosenPenilaianController extends Controller
                 ], 400);
             }
 
+            KomponenMk::upsert(
+                $validatedData['komponens'],
+                ['nm_komponen_mk'],
+                [
+                    'nm_komponen_mk',
+                    'persentase_komponen_mk',
+                    'urutan_komponen_mk',
+                ]
+            );
+
             DB::commit();
 
             return response()->json([
                 'status' => Message::OK,
                 'message' => 'Update komponen success.',
-                'updated_data' => $updatedKomponens,
             ], 200);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -228,10 +218,20 @@ class DosenPenilaianController extends Controller
             'nm_komponen_mk' => 'required|string',
             'mahasiswa' => 'required|array',
             'mahasiswa.*.id_mhs' => 'required|integer',
-            'mahasiswa.*.nilai_besar_mk' => 'required|numeric|min:0|max:100',
+            'mahasiswa.*.besar_nilai_mk' => 'required|numeric|min:0|max:100',
         ]);
 
+        // check if in range penilaian
+        $akademikService = new AkademikService();
+
         try {
+            if (!$akademikService->validateKRSScheduleByActiveSemester()) {
+                return response()->json([
+                    'message' => 'Penilaian tidak dapat dilakukan di luar jadwal penilaian.',
+                    'error' => 'Penilaian tidak dapat dilakukan di luar jadwal penilaian.'
+                ], 400);
+            }
+
             // get komponen mk
             $komponenMk = \App\Models\KomponenMk::where([
                 'id_kelas_mk' => $request->id_kelas_mk,
@@ -245,47 +245,41 @@ class DosenPenilaianController extends Controller
                 ], 404);
             }
 
-            foreach ($request->mahasiswa as $mhs) {
-                // get pengambilan mk
-                $pengambilanMk = \App\Models\PengambilanMk::where([
-                    'id_kelas_mk' => $request->id_kelas_mk,
-                    'id_mhs' => $mhs['id_mhs'],
-                ])->first();
+            $idsMhs = collect($validatedData['mahasiswa'])->pluck('id_mhs')->toArray();
 
-                if (!$pengambilanMk) {
+            // get pengambilan mk with id mhs and make the map by id_mhs
+            $pengambilanMks = \App\Models\PengambilanMk::where([
+                'id_kelas_mk' => $request->id_kelas_mk,
+            ])->whereIn('id_mhs', $idsMhs)->get()->keyBy('id_mhs');
+
+            // set id pengambilan mk to each mahasiswa
+            $mahasiswa = collect($request->mahasiswa)->map(function ($item) use ($pengambilanMks, $komponenMk) {
+                if (isset($pengambilanMks[$item['id_mhs']])) {
+                    $item['id_pengambilan_mk'] = $pengambilanMks[$item['id_mhs']]->id_pengambilan_mk;
+                    $item['id_komponen_mk'] = $komponenMk->id_komponen_mk;
+                } else {
                     return response()->json([
-                        'message' => 'Pengambilan MK tidak ditemukan.',
-                        'error' => 'Pengambilan MK dengan id_kelas_mk: ' . $request->id_kelas_mk . ' dan id_mhs: ' . $mhs['id_mhs'] . ' tidak ditemukan.'
+                        'message' => 'Mahasiswa dengan id_mhs: ' . $item['id_mhs'] . ' tidak terdaftar di kelas ini.',
+                        'error' => 'Mahasiswa dengan id_mhs: ' . $item['id_mhs'] . ' tidak terdaftar di kelas ini.'
                     ], 404);
                 }
+                return $item;
+            });
 
-                // check if nilai already exists
-                $nilaiMk = NilaiMk::where([
-                    'id_pengambilan_mk' => $pengambilanMk->id_pengambilan_mk,
-                    'id_komponen_mk' => $komponenMk->id_komponen_mk,
-                ])->first();
-
-                if ($nilaiMk) {
-                    // update nilai
-                    $nilaiMk->besar_nilai_mk = $request->nilai_besar_mk;
-                    $nilaiMk->save();
-                } else {
-                    // create new nilai
-                    $nilaiMk = NilaiMk::create([
-                        'id_pengambilan_mk' => $pengambilanMk->id_pengambilan_mk,
-                        'id_komponen_mk' => $komponenMk->id_komponen_mk,
-                        'besar_nilai_mk' => $mhs['nilai_besar_mk'],
-                    ]);
-                }
-
-
-            }
+            // save mahasiswa using upsert
+            // dd($mahasiswa->toArray());
+            NilaiMk::upsert(
+                $mahasiswa->toArray(),
+                ['id_mhs', 'id_pengambilan_mk'],
+                [
+                    'besar_nilai_mk',
+                ]
+            );
 
             return response()->json([
                 'status' => Message::OK,
                 'message' => 'Nilai MK berhasil disimpan.',
             ], 200);
-
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to save Nilai MK.',
@@ -340,7 +334,6 @@ class DosenPenilaianController extends Controller
                 'per_page' => $limit,
                 'page' => $page,
             ], 200);
-
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to get Nilai.',

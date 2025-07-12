@@ -13,11 +13,15 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\JadwalKegiatanSemester;
 use App\Models\Ruangan;
 use Exception;
+use Illuminate\Support\Facades\Log;
 
 class AkademikService
 {
+    protected $CODE_JADWAL_PENILAIAN;
 
-    public function __construct() {}
+    public function __construct() {
+        $this->CODE_JADWAL_PENILAIAN = env('CODE_JADWAL_PENILAIAN', 'Input Nilai');
+    }
 
     public function kalender()
     {
@@ -49,7 +53,7 @@ class AkademikService
                         $q->select('id_kelas_mk');
                         $q->with([
                             'jadwalKelas' => function ($q2) {
-                                $q2->select('id_kelas_mk','id_jadwal_jam', 'id_jadwal_hari', 'id_ruangan');
+                                $q2->select('id_kelas_mk', 'id_jadwal_jam', 'id_jadwal_hari', 'id_ruangan');
                                 $q2->with('jadwalJam:id_jadwal_jam,jam_mulai,menit_mulai,jam_selesai,menit_selesai');
                             }
                         ]);
@@ -74,7 +78,7 @@ class AkademikService
                     if (!empty($kelasMk)) {
                         $jadwalKelas = $kelasMk->jadwalKelas;
 
-                        if(!empty($jadwalKelas)) {
+                        if (!empty($jadwalKelas)) {
                             $jadwalJam = $jadwalKelas->jadwalJam;
                             $jadwalHari = $jadwalKelas->nama_hari;
                             $idJadwalHari = $jadwalKelas->id_jadwal_hari;
@@ -138,5 +142,39 @@ class AkademikService
             ->get(["id_pengambilan_mk", "id_kelas_mk", "id_mhs", "nilai_huruf", "flagnilai", "id_semester"])
             ->map();
         return $data;
+    }
+
+
+    public function ValidateKRSScheduleByActiveSemester()
+    {
+        // get jadwal penilaian current semester in range or not
+        $semesterAktif = Semester::aktif();
+        if (!$semesterAktif) {
+            Log::error("Semester aktif tidak ditemukan.");
+            return false;
+        }
+
+        $jadwalPenilaian = JadwalKegiatanSemester::where('id_semester', $semesterAktif->id_semester)
+            ->where('id_perguruan_tinggi', env('APP_ID_PERGURUAN_TINGGI_DEFAULT', 1))
+            ->whereHas('kegiatan', function ($query) {
+                $query->where('id_perguruan_tinggi', env('APP_ID_PERGURUAN_TINGGI_DEFAULT', 1));
+                $query->where('nm_kegiatan', $this->CODE_JADWAL_PENILAIAN);
+            })
+            ->first();
+
+        if (!$jadwalPenilaian) {
+            Log::error("Jadwal penilaian tidak ditemukan untuk semester aktif: {$semesterAktif->id_semester}.");
+            return false;
+        }
+
+        $currentDate = now();
+        $startDate = $jadwalPenilaian->tgl_mulai_jks;
+        $endDate = $jadwalPenilaian->tgl_selesai_jks;
+
+        if ($currentDate < $startDate || $currentDate > $endDate) {
+            Log::error("Jadwal penilaian tidak valid untuk tanggal saat ini: {$currentDate}. Jadwal penilaian berlaku dari {$startDate} hingga {$endDate}.");
+            return false;
+        }
+        return true;
     }
 }
