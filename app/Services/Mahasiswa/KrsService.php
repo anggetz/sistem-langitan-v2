@@ -94,6 +94,10 @@ class KrsService
                         }])
                         ->select(['id_jadwal_jam', 'id_ruangan', 'id_kelas_mk']);
                 },
+                'pengambilanMkKprs' => function ($query) use ($semesterAktif) {
+                    $query->where('id_mhs', auth()->user()->mahasiswa->id_mhs)
+                        ->where('id_semester', $semesterAktif->id_semester);
+                }
 
             ])
             ->limit($perPage)
@@ -108,20 +112,16 @@ class KrsService
                 $ruangan = $jadwal?->ruangan;
                 $jam = $jadwal?->jadwalJam;
 
-                $pengambilanMkKprs = PengambilanMkKprs::where('id_kelas_mk', $item->id_kelas_mk)
-                    ->where('id_mhs', auth()->user()->mahasiswa->id_mhs)
-                    ->where('id_semester', Semester::aktif()->id_semester)
-                    ->first();
 
                 return [
                     'id_kelas_mk' => $item->id_kelas_mk,
                     'kapasitas_kelas_mk' => $item->kapasitas_kelas_mk,
                     'no_kelas_mk' => $item->no_kelas_mk,
                     'id_mata_kuliah' => $item->id_mata_kuliah,
-                    'terisi_kelas_mk' => PengambilanMkKprs::where('id_kelas_mk', $item->id_kelas_mk)
-                        ->where('id_semester', Semester::aktif()->id_semester)
-                        ->where('status_apv_pengambilan_mk', 1)
-                        ->count(),
+                    // 'terisi_kelas_mk' => PengambilanMkKprs::where('id_kelas_mk', $item->id_kelas_mk)
+                    //     ->where('id_semester', Semester::aktif()->id_semester)
+                    //     ->where('status_apv_pengambilan_mk', 1)
+                    //     ->count(),
 
                     'nama_kelas' => $item->nama->nama_kelas ?? '',
                     'nm_mata_kuliah' => $mataKuliah->nm_mata_kuliah ?? '',
@@ -134,8 +134,8 @@ class KrsService
                     'nama_ruangan' => $ruangan->nm_ruangan ?? '',
                     'waktu_mulai' => $jam->waktu_mulai ?? '',
                     'waktu_selesai' => $jam->waktu_selesai ?? '',
-                    'sudah_diambil' => $pengambilanMkKprs ? true : false,
-                    'telah_disetujui' => $pengambilanMkKprs && $pengambilanMkKprs->status_apv_pengambilan_mk == 1 ? true : false,
+                    'sudah_diambil' => $item->pengambilanMkKprs ? true : false,
+                    'telah_disetujui' => $item->pengambilanMkKprs && $item->pengambilanMkKprs->status_apv_pengambilan_mk == 1 ? true : false,
                 ];
             });;
 
