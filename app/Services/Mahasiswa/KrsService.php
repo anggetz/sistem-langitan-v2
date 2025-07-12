@@ -112,16 +112,12 @@ class KrsService
                 $ruangan = $jadwal?->ruangan;
                 $jam = $jadwal?->jadwalJam;
 
-
+                // TODO: add field for terisi kelasmk
                 return [
                     'id_kelas_mk' => $item->id_kelas_mk,
                     'kapasitas_kelas_mk' => $item->kapasitas_kelas_mk,
                     'no_kelas_mk' => $item->no_kelas_mk,
                     'id_mata_kuliah' => $item->id_mata_kuliah,
-                    // 'terisi_kelas_mk' => PengambilanMkKprs::where('id_kelas_mk', $item->id_kelas_mk)
-                    //     ->where('id_semester', Semester::aktif()->id_semester)
-                    //     ->where('status_apv_pengambilan_mk', 1)
-                    //     ->count(),
 
                     'nama_kelas' => $item->nama->nama_kelas ?? '',
                     'nm_mata_kuliah' => $mataKuliah->nm_mata_kuliah ?? '',
