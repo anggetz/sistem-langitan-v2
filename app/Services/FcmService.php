@@ -16,7 +16,7 @@ class FcmService
     public function __construct()
     {
         // Load credentials from the secure JSON file
-        $credentialsPath = storage_path('app/firebase_credentials.json');
+        $credentialsPath = storage_path('app/'.env('FIREBASE_CREDENTIALS', 'firebase_credentials.json'));
 
         if (!file_exists($credentialsPath)) {
             throw new \Exception("Firebase credentials file not found at: {$credentialsPath}");
