@@ -270,7 +270,7 @@ class DosenPenilaianController extends Controller
             // dd($mahasiswa->toArray());
             NilaiMk::upsert(
                 $mahasiswa->toArray(),
-                ['id_mhs', 'id_pengambilan_mk'],
+                ['id_mhs', 'id_pengambilan_mk','id_komponen_mk'],
                 [
                     'besar_nilai_mk',
                 ]
