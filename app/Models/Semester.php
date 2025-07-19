@@ -26,6 +26,19 @@ class Semester extends Model
         return $semesterAktif;
     }
 
+    public static function prevAktif()
+    {
+        $semesterAktif = self::aktif();
+
+        // Get the previous semester
+        $semesterAktif = self::where("STATUS_AKTIF_SEMESTER", "True")
+            ->where("ID_SEMESTER", "<", $semesterAktif->ID_SEMESTER)
+            ->orderBy("ID_SEMESTER", "DESC")
+            ->first();
+
+        return $semesterAktif;
+    }
+
     public function scopeSemesterAktif($query)
     {
         return $query->where("STATUS_AKTIF_SEMESTER", "True");

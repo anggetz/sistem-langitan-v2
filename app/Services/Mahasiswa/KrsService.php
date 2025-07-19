@@ -14,6 +14,7 @@ use App\Models\PengambilanMkKprs;
 use App\Models\PengampuMk;
 use App\Models\ProgramStudi;
 use App\Models\Semester;
+use App\Models\TagihanMhs;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -314,10 +315,10 @@ class KrsService
         return $pengambilanMkKprs;
     }
 
-    public function getHistoryKrsByIdMhs($id_mhs, $th_semester) {
+    public function getHistoryKrsByIdMhs($id_mhs, $th_semester)
+    {
 
-        $q = PengambilanMk::
-            where('id_mhs', $id_mhs)
+        $q = PengambilanMk::where('id_mhs', $id_mhs)
             ->with([
                 'kelasMk.programStudi',
                 'kelasMk.mataKuliah',
@@ -326,12 +327,12 @@ class KrsService
             ]);
 
         if (!empty($th_semester)) {
-            $q = $q->whereHas('semester', function($q2) use ($th_semester) {
+            $q = $q->whereHas('semester', function ($q2) use ($th_semester) {
                 $q2->where('thn_akademik_semester', $th_semester);
             });
         }
 
-        $data = $q->get()->map(function($item) {
+        $data = $q->get()->map(function ($item) {
             $semester = $item->semester ?? new Semester();
             $kelasMk = $item->kelasMk ?? new KelasMk();
             $programStudi = $kelasMk->programStudi ?? new ProgramStudi();
@@ -353,5 +354,52 @@ class KrsService
         })->groupBy(['th_semester', 'semester']);
 
         return $data;
+    }
+
+    public function validateMahasiswaCanKrsByActiveSemesterAndPrevSemester($id_mhs)
+    {
+        $semesterAktif = Semester::aktif();
+        if (!$semesterAktif) {
+            throw new \Exception("No active semester found.");
+        }
+
+        $krsActiveSemester = $this->getTagihanBySemester($id_mhs, $semesterAktif->id_semester);
+
+        $isTrueActiveSemster = empty($krsActiveSemester); //tidak ada tagihan mhs untuk semester aktif
+
+        if (!empty($krsActiveSemester)) {
+            // check if the total biaya and denda is less than or equal to total terbayar
+            if ($krsActiveSemester->total_besar_biaya + $krsActiveSemester->total_denda_biaya > $krsActiveSemester->total_terbayar_bayar) {
+                return false;
+            }
+            $isTrueActiveSemster = true; // ada tagihan mhs untuk semester aktif
+        }
+
+        $prevSemester = Semester::prevAktif();
+        if (!$prevSemester) {
+            throw new \Exception("No previous semester found.");
+        }
+
+       $prevKrsProdi = $this->getTagihanBySemester($id_mhs, $prevSemester->id_semester);
+
+       $isTruePrevSemester = empty($prevKrsProdi); //tidak ada tagihan mhs untuk semester sebelumnya
+
+        if (!empty($prevKrsProdi)) {
+            // check if the total biaya and denda is less than or equal to total terbayar
+            if ($prevKrsProdi->total_besar_biaya + $prevKrsProdi->total_denda_biaya > $prevKrsProdi->total_terbayar_bayar) {
+                return false;
+            }
+            $isTruePrevSemester = true; // ada tagihan mhs untuk semester sebelumnya
+        }
+
+        return true && $isTrueActiveSemster && $isTruePrevSemester;
+    }
+
+    private function getTagihanBySemester($id_mhs, $id_semester)
+    {
+        return TagihanMhs::where('id_mhs', $id_mhs)
+            ->where('id_perguruan_tinggi', pt()->id_perguruan_tinggi)
+            ->where('id_semester', $id_semester)
+            ->first();
     }
 }
