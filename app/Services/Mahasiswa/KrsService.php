@@ -112,7 +112,6 @@ class KrsService
                 $jadwal = $item->jadwalKelas;
                 $ruangan = $jadwal?->ruangan;
                 $jam = $jadwal?->jadwalJam;
-
                 // TODO: add field for terisi kelasmk
                 return [
                     'id_kelas_mk' => $item->id_kelas_mk,
@@ -131,8 +130,8 @@ class KrsService
                     'nama_ruangan' => $ruangan->nm_ruangan ?? '',
                     'waktu_mulai' => $jam->waktu_mulai ?? '',
                     'waktu_selesai' => $jam->waktu_selesai ?? '',
-                    'sudah_diambil' => $item->pengambilanMkKprs ? true : false,
-                    'telah_disetujui' => $item->pengambilanMkKprs && $item->pengambilanMkKprs->status_apv_pengambilan_mk == 1 ? true : false,
+                    'sudah_diambil' => count($item->pengambilanMkKprs) > 0 ? true : false,
+                    'telah_disetujui' => count($item->pengambilanMkKprs) > 0 ? $item->pengambilanMkKprs[0]->status_apv_pengambilan_mk == 1 : false,
                 ];
             });;
 

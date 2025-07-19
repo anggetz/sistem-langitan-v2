@@ -65,6 +65,13 @@ class MahasiswaKrsController extends Controller
                 'id_kelas_mks' => 'required|array',
             ]);
 
+            // check if mahasiswa can register for KRS
+            if (!(new MahasiswaKrsService())->validateMahasiswaCanKrsByActiveSemesterAndPrevSemester(auth()->user()->mahasiswa->id_mhs)) {
+                return response()->json([
+                    'message' => 'Anda tidak dapat melakukan KRS pada semester ini. Silakan periksa tagihan atau status KRS Anda.',
+                ], 400);
+            }
+
             $result = (new MahasiswaKrsService())->takeCourse($request->id_kelas_mks);
 
             return response()->json([
