@@ -364,6 +364,7 @@ class KrsService
 
         $krsActiveSemester = $this->getTagihanBySemester($id_mhs, $semesterAktif->id_semester);
 
+
         $isTrueActiveSemster = empty($krsActiveSemester); //tidak ada tagihan mhs untuk semester aktif
 
         if (!empty($krsActiveSemester)) {
@@ -397,7 +398,6 @@ class KrsService
     private function getTagihanBySemester($id_mhs, $id_semester)
     {
         return TagihanMhs::where('id_mhs', $id_mhs)
-            ->where('id_perguruan_tinggi', pt()->id_perguruan_tinggi)
             ->where('id_semester', $id_semester)
             ->first();
     }

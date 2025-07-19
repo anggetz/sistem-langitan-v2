@@ -32,7 +32,7 @@ class Semester extends Model
 
         // Get the previous semester
         $semesterAktif = self::where("STATUS_AKTIF_SEMESTER", "True")
-            ->where("ID_SEMESTER", "<", $semesterAktif->ID_SEMESTER)
+            ->whereRaw("TO_NUMBER(ID_SEMESTER) < TO_NUMBER(".(int)$semesterAktif->id_semester.")")
             ->orderBy("ID_SEMESTER", "DESC")
             ->first();
 
