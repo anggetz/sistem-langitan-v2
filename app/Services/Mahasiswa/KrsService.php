@@ -152,7 +152,7 @@ class KrsService
         DB::beginTransaction();
 
         foreach ($id_kelas_mks as $id_kelas_mk) {
-            $pengambilanMkKprs = PengambilanMkKprs::where('id_kelas_mk', $id_kelas_mks)
+            $pengambilanMkKprs = PengambilanMkKprs::where('id_kelas_mk', $id_kelas_mk)
                 ->where('id_mhs', auth()->user()->mahasiswa->id_mhs)
                 ->first();
 
@@ -167,6 +167,37 @@ class KrsService
             $pengambilanMkKprs->id_semester = $semesterAktif->id_semester;
             $pengambilanMkKprs->status_apv_pengambilan_mk = 0; // Not approved yet
             $pengambilanMkKprs->save();
+        }
+
+        DB::commit();
+
+        return true;
+    }
+
+    public function leaveCourse($id_kelas_mks = [])
+    {
+
+        $semesterAktif = Semester::aktif();
+        if (!$semesterAktif) {
+            throw new \Exception("Tidak ada semester aktif yang ditemukan.");
+        }
+
+        DB::beginTransaction();
+
+        foreach ($id_kelas_mks as $id_kelas_mk) {
+            $pengambilanMkKprs = PengambilanMkKprs::where('id_kelas_mk', $id_kelas_mk)
+                ->where('id_mhs', auth()->user()->mahasiswa->id_mhs)
+                ->first();
+
+            if (empty($pengambilanMkKprs)) {
+                throw new \Exception("Tidak ada pengambilan mata kuliah ini atau sudah .");
+            }
+
+            if ($pengambilanMkKprs->status_apv_pengambilan_mk == 1) {
+                throw new \Exception("Anda tidak dapat membatalkan pengambilan mata kuliah yang sudah disetujui.");
+            }
+
+            $pengambilanMkKprs->delete();
         }
 
         DB::commit();
