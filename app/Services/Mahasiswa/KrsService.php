@@ -146,7 +146,7 @@ class KrsService
 
         $semesterAktif = Semester::aktif();
         if (!$semesterAktif) {
-            throw new \Exception("No active semester found.");
+            throw new \Exception("Tidak ada semester aktif yang ditemukan.");
         }
 
         DB::beginTransaction();
@@ -154,11 +154,10 @@ class KrsService
         foreach ($id_kelas_mks as $id_kelas_mk) {
             $pengambilanMkKprs = PengambilanMkKprs::where('id_kelas_mk', $id_kelas_mks)
                 ->where('id_mhs', auth()->user()->mahasiswa->id_mhs)
-                ->where('id_semester', $semesterAktif->id_semester)
                 ->first();
 
             if ($pengambilanMkKprs) {
-                throw new \Exception("You have already taken this course.");
+                throw new \Exception("Anda sudah mengambil mata kuliah ini.");
             }
 
 
@@ -182,7 +181,7 @@ class KrsService
         $pengambilanMkKprs = PengambilanMkKprs::whereIn('id_pengambilan_mk_kprs', $id_pengambilan_mk_kprs)
             ->get();
         if ($pengambilanMkKprs->isEmpty()) {
-            throw new \Exception("No courses found for approval.");
+            throw new \Exception("Tidak ada pengambilan MK KRS yang ditemukan.");
         }
 
         foreach ($pengambilanMkKprs as $item) {
@@ -369,7 +368,7 @@ class KrsService
 
         if (!empty($krsActiveSemester)) {
             // check if the total biaya and denda is less than or equal to total terbayar
-            if ($krsActiveSemester->total_besar_biaya + $krsActiveSemester->total_denda_biaya > $krsActiveSemester->total_terbayar_bayar) {
+            if ($krsActiveSemester->total_besar_biaya + $krsActiveSemester->total_denda_biaya > $krsActiveSemester->total_terbayar) {
                 return false;
             }
             $isTrueActiveSemster = true; // ada tagihan mhs untuk semester aktif
@@ -386,7 +385,7 @@ class KrsService
 
         if (!empty($prevKrsProdi)) {
             // check if the total biaya and denda is less than or equal to total terbayar
-            if ($prevKrsProdi->total_besar_biaya + $prevKrsProdi->total_denda_biaya > $prevKrsProdi->total_terbayar_bayar) {
+            if ($prevKrsProdi->total_besar_biaya + $prevKrsProdi->total_denda_biaya > $prevKrsProdi->total_terbayar) {
                 return false;
             }
             $isTruePrevSemester = true; // ada tagihan mhs untuk semester sebelumnya
