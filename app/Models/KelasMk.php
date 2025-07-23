@@ -42,7 +42,7 @@ class KelasMk extends Model
     }
 
     public function pengampuMk(){
-        return $this->hasOne(PengampuMk::class,"id_kelas_mk","id_kelas_mk");
+        return $this->hasMany(PengampuMk::class,"id_kelas_mk","id_kelas_mk");
     }
 
     public function kurikulumMk(){
@@ -54,7 +54,7 @@ class KelasMk extends Model
     }
 
     public function jadwalKelas(){
-        return $this->hasOne(JadwalKelas::class,"id_kelas_mk","id_kelas_mk");
+        return $this->hasMany(JadwalKelas::class,"id_kelas_mk","id_kelas_mk");
     }
 
     public function listMahasiswa(){
