@@ -21,7 +21,8 @@ class MahasiswaKrsController extends Controller
             $isValid = (new MahasiswaKrsService())->ValidateKRSScheduleByActiveSemester();
             if ($isValid) {
                 return response()->json([
-                    'message' => 'KRS schedule is valid for the current semester.'
+                    'message' => 'KRS schedule is valid for the current semester.',
+                    'data' => true,
                 ], 200);
             } else {
                 return response()->json([
@@ -119,13 +120,13 @@ class MahasiswaKrsController extends Controller
     public function getHistoryKrs(Request $request)
     {
         try {
-            $th_semester = $request->get('tahun_semester', null);
+            $id_semester = $request->get('id_semester', null);
 
-            if (empty($th_semester)) {
-                throw new Exception('tahun_semester tidak boleh kosong');
+            if (empty($id_semester)) {
+                throw new Exception('id_semester tidak boleh kosong');
             }
 
-            $result = (new MahasiswaKrsService())->getHistoryKrsByIdMhs(auth()->user()->mahasiswa->id_mhs, $th_semester);
+            $result = (new MahasiswaKrsService())->getHistoryKrsByIdMhs(auth()->user()->mahasiswa->id_mhs, $id_semester);
 
             return response()->json([
                 'message' => 'Riwayat KRS berhasil didapat.',

@@ -135,7 +135,7 @@ class KrsService
                 $jadwalAll = [];
                 foreach ($jadwal as $jadwalKelas) {
                     $ruangan = !empty($jadwalKelas->ruangan) ? $jadwalKelas->ruangan : new Ruangan();
-                    $jam = !empty($jadwalKelas->jadwalJam)?  $jadwalKelas->jadwalJam : new JadwalJam();
+                    $jam = !empty($jadwalKelas->jadwalJam) ?  $jadwalKelas->jadwalJam : new JadwalJam();
                     $jadwalAll[] = [
                         'nama_ruangan' => $ruangan->nm_ruangan ?? '',
                         'waktu_mulai' => $jam->waktu_mulai ?? '',
@@ -375,7 +375,7 @@ class KrsService
         return $pengambilanMkKprs;
     }
 
-    public function getHistoryKrsByIdMhs($id_mhs, $th_semester)
+    public function getHistoryKrsByIdMhs($id_mhs, $id_semester)
     {
 
         $q = PengambilanMk::where('id_mhs', $id_mhs)
@@ -386,9 +386,9 @@ class KrsService
                 'semester'
             ]);
 
-        if (!empty($th_semester)) {
-            $q = $q->whereHas('semester', function ($q2) use ($th_semester) {
-                $q2->where('thn_akademik_semester', $th_semester);
+        if (!empty($id_semester)) {
+            $q = $q->whereHas('semester', function ($q2) use ($id_semester) {
+                $q2->where('id_semester', $id_semester);
             });
         }
 
@@ -397,9 +397,30 @@ class KrsService
             $kelasMk = $item->kelasMk ?? new KelasMk();
             $programStudi = $kelasMk->programStudi ?? new ProgramStudi();
             $mataKuliah = $kelasMk->mataKuliah ?? new MataKuliah();
-            $jadwalKelas = $kelasMk->jadwalKelas ?? new JadwalKelas();
-            $jadwalJam = $jadwalKelas->jadwalJam ?? new JadwalJam();
-            $jadwalHari = $jadwalKelas->nama_hari;
+
+            $pengampus = [];
+
+            foreach ($kelasMk->pengampuMk as $pengampuMk) {
+                $pengampus[] = [
+                    'id_pengampu_mk' => $pengampuMk->id_pengampu_mk,
+                    'id_dosen' => $pengampuMk->dosen?->id_dosen ?? null,
+                    'nama_dosen' => $pengampuMk->dosen?->pengguna?->nama_lengkap ?? '',
+                ];
+            }
+
+            $jadwal = $kelasMk->jadwalKelas ?? new JadwalKelas();
+            $jadwalAll = [];
+            foreach ($jadwal as $jadwalKelas) {
+                $ruangan = !empty($jadwalKelas->ruangan) ? $jadwalKelas->ruangan : new Ruangan();
+                $jadwalJam = !empty($jadwalKelas->jadwalJam) ? $jadwalKelas->jadwalJam : new JadwalJam();
+                $jadwalAll[] = [
+                    'nama_ruangan' => $ruangan->nm_ruangan ?? '',
+                    'waktu_mulai' => $jadwalJam->waktu_mulai ?? '',
+                    'waktu_selesai' => $jadwalJam->waktu_selesai ?? '',
+                    'id_jadwal_kelas' => $jadwalKelas->id_jadwal_kelas ?? null,
+                    'nama_hari' => $jadwalKelas->nama_hari,
+                ];
+            }
 
             return [
                 'status_apv' => $item->status_apv_pengambilan_mk,
@@ -407,11 +428,10 @@ class KrsService
                 'th_semester' => $semester->thn_akademik_semester,
                 'program_studi' => $programStudi->nm_program_studi,
                 'mata_kuliah' => $mataKuliah->nm_mata_kuliah,
-                'hari' => $jadwalHari,
-                'jam_mulai' => $jadwalJam ? $jadwalJam->jam_mulai . ':' . $jadwalJam->menit_mulai : '-',
-                'jam_selesai' => $jadwalJam ? $jadwalJam->jam_selesai . ':' . $jadwalJam->menit_selesai : '-'
+                'jadwal_kelas' => $jadwalAll,
+                'pengampu_mk' => $pengampus,
             ];
-        })->groupBy(['th_semester', 'semester']);
+        });
 
         return $data;
     }
@@ -441,9 +461,9 @@ class KrsService
             throw new \Exception("No previous semester found.");
         }
 
-       $prevKrsProdi = $this->getTagihanBySemester($id_mhs, $prevSemester->id_semester);
+        $prevKrsProdi = $this->getTagihanBySemester($id_mhs, $prevSemester->id_semester);
 
-       $isTruePrevSemester = empty($prevKrsProdi); //tidak ada tagihan mhs untuk semester sebelumnya
+        $isTruePrevSemester = empty($prevKrsProdi); //tidak ada tagihan mhs untuk semester sebelumnya
 
         if (!empty($prevKrsProdi)) {
             // check if the total biaya and denda is less than or equal to total terbayar
