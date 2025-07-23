@@ -67,7 +67,15 @@ class KrsService
             throw new \Exception("No active semester found.");
         }
 
-        $listMk = KrsProdi::with([
+        $q = KrsProdi::whereHas('kelasMk', function ($query) use ($semesterAktif, $id_program_studi) {
+            $query->where('id_semester', $semesterAktif->id_semester)
+                ->where('id_program_studi', $id_program_studi);
+        });
+
+        // get total count
+        $totalCount = $q->count();
+
+        $q = $q->with([
             'kelasMk' => function ($query) {
                 $query->select([
                     'id_kelas_mk',
@@ -102,10 +110,9 @@ class KrsService
                         },
                     ]);
             }
-        ])->whereHas('kelasMk', function ($query) use ($semesterAktif, $id_program_studi) {
-            $query->where('id_semester', $semesterAktif->id_semester)
-                ->where('id_program_studi', $id_program_studi);
-        })->limit($perPage)
+        ]);
+
+        $listMk = $q->limit($perPage)
             ->offset($offset)
             ->get()->map(function ($item) {
                 $kelasMk = $item->kelasMk ?? new KelasMk();
@@ -156,7 +163,13 @@ class KrsService
                 ];
             });
         // Assuming there's a method to get courses by semester
-        return $listMk;
+        return [
+            'total_count' => $totalCount,
+            'current_page' => $page,
+            'per_page' => $perPage,
+            'data' => $listMk,
+            'total_pages' => ceil($totalCount / $perPage)
+        ];
     }
 
     public function takeCourse($id_kelas_mks = [])

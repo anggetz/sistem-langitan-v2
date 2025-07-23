@@ -42,11 +42,8 @@ class MahasiswaKrsController extends Controller
             // get program studi from authenticated user
             $id_program_studi = auth()->user()->mahasiswa->id_program_studi;
 
-            $mataKuliah = (new MahasiswaKrsService())->listMataKuliahByActiveSemesterAndProdi($id_program_studi);
-            return response()->json([
-                'message' => 'Successfully retrieved data.',
-                'data' => $mataKuliah
-            ], 200);
+            $res = (new MahasiswaKrsService())->listMataKuliahByActiveSemesterAndProdi($id_program_studi);
+            return response()->json($res, 200);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to retrieve data.',
