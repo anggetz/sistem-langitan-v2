@@ -21,7 +21,8 @@ class MahasiswaKrsController extends Controller
             $isValid = (new MahasiswaKrsService())->ValidateKRSScheduleByActiveSemester();
             if ($isValid) {
                 return response()->json([
-                    'message' => 'KRS schedule is valid for the current semester.'
+                    'message' => 'KRS schedule is valid for the current semester.',
+                    'data' => true,
                 ], 200);
             } else {
                 return response()->json([
@@ -42,15 +43,14 @@ class MahasiswaKrsController extends Controller
             // get program studi from authenticated user
             $id_program_studi = auth()->user()->mahasiswa->id_program_studi;
 
-            $mataKuliah = (new MahasiswaKrsService())->listMataKuliahByActiveSemesterAndProdi($id_program_studi);
-            return response()->json([
-                'message' => 'Successfully retrieved data.',
-                'data' => $mataKuliah
-            ], 200);
+            $res = (new MahasiswaKrsService())->listMataKuliahByActiveSemesterAndProdi($id_program_studi);
+            return response()->json($res, 200);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to retrieve data.',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile()
             ], 500);
         }
     }
@@ -65,30 +65,68 @@ class MahasiswaKrsController extends Controller
                 'id_kelas_mks' => 'required|array',
             ]);
 
+            // check if mahasiswa can register for KRS
+            if (!(new MahasiswaKrsService())->validateMahasiswaCanKrsByActiveSemesterAndPrevSemester(auth()->user()->mahasiswa->id_mhs)) {
+                return response()->json([
+                    'message' => 'Anda tidak dapat melakukan KRS pada semester ini. Silakan periksa tagihan atau status KRS Anda.',
+                ], 400);
+            }
+
             $result = (new MahasiswaKrsService())->takeCourse($request->id_kelas_mks);
 
             return response()->json([
-                'message' => 'Course registered successfully.',
+                'message' => 'Berhasil mendaftar mata kuliah.',
                 'data' => $result,
             ], 201);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Failed to register course.',
+                'message' => 'Gagal mendaftar mata kuliah.',
                 'error' => $e->getMessage()
             ], 500);
         }
     }
 
-     public function getHistoryKrs(Request $request)
+    // leave course
+     public function leaveCourse(Request $request)
     {
-        try {
-            $th_semester = $request->get('tahun_semester', null);
+        // Implement logic to handle course registration
 
-            if (empty($th_semester)) {
-                throw new Exception('tahun_semester tidak boleh kosong');
+        try {
+            $validatedData = $request->validate([
+                'id_kelas_mks' => 'required|array',
+            ]);
+
+            // check if mahasiswa can register for KRS
+            if (!(new MahasiswaKrsService())->validateMahasiswaCanKrsByActiveSemesterAndPrevSemester(auth()->user()->mahasiswa->id_mhs)) {
+                return response()->json([
+                    'message' => 'Anda tidak dapat melakukan KRS pada semester ini. Silakan periksa tagihan atau status KRS Anda.',
+                ], 400);
             }
 
-            $result = (new MahasiswaKrsService())->getHistoryKrsByIdMhs(auth()->user()->mahasiswa->id_mhs, $th_semester);
+            $result = (new MahasiswaKrsService())->leaveCourse($request->id_kelas_mks);
+
+            return response()->json([
+                'message' => 'Mata kuliah berhasil dilepas.',
+                'data' => $result,
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Gagal melepas mata kuliah.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getHistoryKrs(Request $request)
+    {
+        try {
+            $id_semester = $request->get('id_semester', null);
+
+            if (empty($id_semester)) {
+                throw new Exception('id_semester tidak boleh kosong');
+            }
+
+            $result = (new MahasiswaKrsService())->getHistoryKrsByIdMhs(auth()->user()->mahasiswa->id_mhs, $id_semester);
 
             return response()->json([
                 'message' => 'Riwayat KRS berhasil didapat.',

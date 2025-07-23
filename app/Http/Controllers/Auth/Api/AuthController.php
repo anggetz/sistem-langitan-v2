@@ -26,7 +26,18 @@ class AuthController extends Controller
     public function login(LoginRequest $request)
     {
 
-        return  $this->authService->authenticate($request);
+        $resAuth = $this->authService->authenticate($request);
+
+        // Convert object to array
+        $data = json_decode(json_encode($resAuth), true)['original'];
+
+        // Rename the key
+        if (isset($data['expired_at'])) {
+            $data['expired_time'] = $data['expired_at'];
+            unset($data['expired_at']);
+        }
+
+        return  $data;
 
 
         // $perguruanTinggi = pt();
