@@ -195,4 +195,20 @@ class AkademikController extends Controller
             ], 500);
         }
     }
+
+    // get semester active group by table pengambilan_mk
+    public function getSemesterActive()
+    {
+        $data = auth()->user()->mahasiswa
+            ->pengambilanMk()
+            ->with("semester:id_semester,nm_semester,tahun_ajaran,status_aktif_semester")
+            ->groupBy("id_semester")
+            ->orderByDesc('id_semester')
+            ->get(["id_semester"]);
+
+        return response()->json([
+            'status' => Message::OK,
+            'data' => $data
+        ], 200);
+    }
 }
