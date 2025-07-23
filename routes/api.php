@@ -14,6 +14,7 @@ use App\Http\Controllers\KegiatanKelompokController;
 use App\Http\Controllers\MasterController;
 use App\Http\Controllers\Pengumuman\PengumumanController;
 use App\Models\Pengguna;
+use App\Models\Semester;
 
 Route::get('/', function () {
     return "Laravel Version : " . app()->version();
@@ -99,6 +100,22 @@ Route::group(['middleware' => 'auth.token'], function () {
     Route::group(['prefix' => '/master', 'controller' => MasterController::class], function () {
         Route::get('/ruangan', 'GetRuangan');
         Route::get('/semester', 'GetSemester');
+    });
+
+    // get active semester
+    Route::get('/semester/aktif', function () {
+        $semester = Semester::aktif();
+        if ($semester) {
+            return response()->json([
+                'status' => Message::OK,
+                'data' => $semester
+            ]);
+        } else {
+            return response()->json([
+                'status' => Message::FAIL,
+                'message' => 'Semester aktif tidak ditemukan.'
+            ], 404);
+        }
     });
 
     require_once(__DIR__ . "/api/mahasiswa.php");
