@@ -62,6 +62,8 @@ Route::group(['prefix' => 'mahasiswa', 'middleware' => 'role:' . Role::MAHASISWA
 
     Route::post('qr-presensi/show/{id_presensi}', [DosenQrController::class, 'ShowCurrentQR']);
 
+    Route::get('semester/aktif', [AkademikController::class, 'getSemesterActive']);
+
     Route::group(
         ['prefix' => 'presensi', 'controller' => MahasiswaQrPresensiController::class],
         function () {

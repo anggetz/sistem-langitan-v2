@@ -20,7 +20,7 @@ class MasterController extends Controller
         ]);
 
         $page = $request->input('page') ?? 1;
-        $perPage = $request->input('per_page', 10);
+        $perPage = $request->input('perPage', 10);
         $offset = ($page - 1) * $perPage;
 
 
@@ -54,7 +54,7 @@ class MasterController extends Controller
         ]);
 
         $page = $request->input('page') ?? 1;
-        $perPage = $request->input('per_page', 10);
+        $perPage = $request->input('perPage', 10);
         $offset = ($page - 1) * $perPage;
 
 
