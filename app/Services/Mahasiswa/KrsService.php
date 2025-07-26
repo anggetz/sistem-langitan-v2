@@ -377,12 +377,31 @@ class KrsService
 
     public function getHistoryKrsByIdMhs($id_mhs, $id_semester)
     {
+        // get dosen wali by id mhs
+        $dosenWali = DosenWali::where('id_mhs', $id_mhs)
+            ->where('id_semester', $id_semester)
+            ->with(['dosen' => function ($q) {
+                $q->select(['id_dosen', 'id_pengguna'])
+                    ->with(['pengguna' => function ($q2) {
+                        $q2->select(['id_pengguna', DB::raw("gelar_depan || ' ' || nm_pengguna || ' ' || gelar_belakang as nama_lengkap")]);
+                    }]);
+            }])
+            ->first();
+
+        // get semester by id semester
+        $semester = Semester::find($id_semester);
+        if (!$semester) {
+            throw new \Exception("Semester with id $id_semester not found.");
+        }
 
         $q = PengambilanMk::where('id_mhs', $id_mhs)
             ->with([
                 'kelasMk.programStudi',
                 'kelasMk.mataKuliah',
                 'kelasMk.jadwalKelas',
+                'kelasMk.jadwalKelas.jadwalJam',
+                'kelasMk.jadwalKelas.ruangan',
+                'kelasMk.jadwalKelas.ruangan.gedung',
                 'semester'
             ]);
 
@@ -412,13 +431,15 @@ class KrsService
             $jadwalAll = [];
             foreach ($jadwal as $jadwalKelas) {
                 $ruangan = !empty($jadwalKelas->ruangan) ? $jadwalKelas->ruangan : new Ruangan();
-                $jadwalJam = !empty($jadwalKelas->jadwalJam) ? $jadwalKelas->jadwalJam : new JadwalJam();
+                $jadwalJam = !empty($jadwalKelas->jadwalJam) ? $jadwalKelas->jadwalJam : new JadwalJam();;
+                $gedung = $ruangan->gedung ?? new Ruangan();
                 $jadwalAll[] = [
                     'nama_ruangan' => $ruangan->nm_ruangan ?? '',
                     'waktu_mulai' => $jadwalJam->waktu_mulai ?? '',
                     'waktu_selesai' => $jadwalJam->waktu_selesai ?? '',
                     'id_jadwal_kelas' => $jadwalKelas->id_jadwal_kelas ?? null,
                     'nama_hari' => $jadwalKelas->nama_hari,
+                    'nama_gedung' => $gedung->nm_gedung ?? '',
                 ];
             }
 
@@ -432,6 +453,18 @@ class KrsService
                 'pengampu_mk' => $pengampus,
             ];
         });
+
+        // populate dosen wali and riwayat krs
+        $data = [
+            'semester' => $semester->nm_semester,
+            'th_semester' => $semester->thn_akademik_semester,
+            'program_studi' => $semester->programStudi?->nm_program_studi,
+            'dosen_wali' => [
+                'id_dosen' => $dosenWali->dosen?->id_dosen ?? null,
+                'nama_dosen' => $dosenWali->dosen?->pengguna?->nama_lengkap ?? '',
+            ],
+            'riwayat_krs' => $data,
+        ];
 
         return $data;
     }
