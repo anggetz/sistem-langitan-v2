@@ -58,6 +58,7 @@ Route::group(['prefix' => 'mahasiswa', 'middleware' => 'role:' . Role::MAHASISWA
             Route::get('riwayat', 'getHistoryKrs');
             Route::post('take_course', 'takeCourse');
             Route::post('leave_course', 'leaveCourse');
+            Route::get('limit_sks', 'getLimitSksPerSemester');
         });
 
     Route::post('qr-presensi/show/{id_presensi}', [DosenQrController::class, 'ShowCurrentQR']);

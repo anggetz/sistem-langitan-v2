@@ -140,5 +140,27 @@ class MahasiswaKrsController extends Controller
         }
     }
 
+    public function getLimitSksPerSemester(Request $request)
+    {
+        try {
+            $semester = Semester::prevAktif();
+            $id_semester = $semester->id_semester;
+
+            $result = (new MahasiswaKrsService())->getLimitSksPerSemester(auth()->user()->mahasiswa->id_mhs, $id_semester);
+
+            return response()->json([
+                'message' => 'Batas maksimal SKS',
+                'data' => [
+                    'beban_sks' => $result,
+                ],
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Gagal mendapatkan maksimal sks',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
 
 }

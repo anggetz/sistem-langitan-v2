@@ -2,6 +2,7 @@
 
 namespace App\Services\Mahasiswa;
 
+use App\Models\BebanSks;
 use App\Models\DosenWali;
 use App\Models\JadwalJam;
 use App\Models\JadwalKegiatanSemester;
@@ -9,6 +10,7 @@ use App\Models\JadwalKelas;
 use App\Models\Kegiatan;
 use App\Models\KelasMk;
 use App\Models\KrsProdi;
+use App\Models\Mahasiswa;
 use App\Models\MataKuliah;
 use App\Models\PengambilanMk;
 use App\Models\PengambilanMkKprs;
@@ -515,4 +517,36 @@ class KrsService
             ->where('id_semester', $id_semester)
             ->first();
     }
+
+    public function getLimitSksPerSemester($id_mhs, $id_semester)
+    {
+        $mahasiswa = Mahasiswa::where('id_mhs', $id_mhs)->whereHas(
+            'historyNilai', function ($query) use ($id_semester) {
+                $query->where('id_semester', $id_semester);
+            }
+        )->first();
+
+        if ($mahasiswa === null) {
+            throw new \Exception("Mahasiswa with id $id_mhs not found or has no history of grades for semester $id_semester.");
+        }
+
+        if ($mahasiswa->historyNilai->isEmpty()) {
+            return 0; // No grades, so no SKS limit
+        }
+
+        $bebanSks = BebanSks::where('ipk_minimum', '<=', $mahasiswa->historyNilai->first()->ipk)
+            ->where('id_program_studi', $mahasiswa->id_program_studi)
+            ->where('id_fakultas', $mahasiswa->programStudi->id_fakultas)
+            ->orderBy('ipk_minimum', 'desc')
+            // ->where('id_semester', $id_semester)
+            ->first();
+
+
+        // get ipk;
+
+        $limitSks = Semester::find($id_semester)->limit_sks ?? 24; // Default to 24 if not set
+        return $limitSks;
+    }
+
+
 }
