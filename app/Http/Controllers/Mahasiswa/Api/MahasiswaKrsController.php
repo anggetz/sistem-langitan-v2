@@ -82,7 +82,7 @@ class MahasiswaKrsController extends Controller
 
             if (!empty($mahasiswaKrsApprovalSign) && $mahasiswaKrsApprovalSign->sign_path) {
                 return response()->json([
-                    'message' => 'Anda tidak dapat mengambil mata kuliah pada semester ini. Silakan hubungi dosen wali Anda.',
+                    'message' => 'Dosen anda sudah menandatangani KRS anda, silakan hubungi dosen anda untuk melakukan perubahan.',
                 ], 400);
             }
 
