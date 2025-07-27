@@ -485,7 +485,7 @@ class KrsService
     {
         $semesterAktif = Semester::aktif();
         if (!$semesterAktif) {
-            throw new \Exception("No active semester found.");
+            throw new \Exception("Tidak ada semester aktif yang ditemukan.");
         }
 
         $krsActiveSemester = $this->getTagihanBySemester($id_mhs, $semesterAktif->id_semester);
@@ -503,7 +503,7 @@ class KrsService
 
         $prevSemester = Semester::prevAktif();
         if (!$prevSemester) {
-            throw new \Exception("No previous semester found.");
+            throw new \Exception("Tidak ada semester sebelumnya yang ditemukan.");
         }
 
         $prevKrsProdi = $this->getTagihanBySemester($id_mhs, $prevSemester->id_semester);
