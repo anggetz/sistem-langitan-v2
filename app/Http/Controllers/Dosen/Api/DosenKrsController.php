@@ -16,12 +16,25 @@ class DosenKrsController extends Controller
 {
     public function __construct() {}
 
-    public function approveKprsMk() {
+    public function approveKprsMk(Request $request) {
+        // define the sign variable
+        $validatedData = [];
+
         try {
             $validatedData = request()->validate([
-                'id_pengambilan_mk_kprs' => 'required|array',
+                'id_pengambilan_mk_kprs' => 'required',
                 'id_mhs' => 'required',
             ]);
+
+            // upload the sign image if exists
+            if ($request->hasFile('sign')) {
+                $file = $request->file('sign');
+                $fileName = 'signatures/' . time() . '_' . $file->getClientOriginalName();
+                Storage::disk('public')->put($fileName, file_get_contents($file));
+                $validatedData['sign'] = $fileName;
+            } else {
+                $validatedData['sign'] = null; // or handle the case where no file is uploaded
+            }
 
             // get semester aktif
             $semesterAktif = Semester::aktif();
@@ -42,6 +55,9 @@ class DosenKrsController extends Controller
                 ], 401);
             }
 
+            // split the id_pengambilan_mk_kprs into an array
+            $validatedData['id_pengambilan_mk_kprs'] = is_array($validatedData['id_pengambilan_mk_kprs']) ? $validatedData['id_pengambilan_mk_kprs'] : explode(',', $validatedData['id_pengambilan_mk_kprs']);
+
             $result = (new KrsService())->approveKprsMk($validatedData['id_pengambilan_mk_kprs']);
 
             return response()->json([
@@ -49,6 +65,11 @@ class DosenKrsController extends Controller
                 'data' => $result
             ], 200);
         } catch (\Exception $e) {
+            // if error remove the uploaded sign image
+            if (isset($validatedData['sign']) && $validatedData['sign']) {
+                Storage::disk('public')->delete($validatedData['sign']);
+            }
+
             return response()->json([
                 'message' => 'Failed to approve KRS MK.',
                 'error' => $e->getMessage()
