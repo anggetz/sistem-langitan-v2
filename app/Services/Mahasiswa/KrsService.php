@@ -41,7 +41,7 @@ class KrsService
         // get active semester
         $semesterAktif = Semester::aktif();
         if (!$semesterAktif) {
-            throw new \Exception("No active semester found.");
+            throw new \Exception("Tidak ada semester aktif yang ditemukan.");
         }
 
         $jadwalKegiatanSemester = JadwalKegiatanSemester::where('id_kegiatan', $kegiatan->id_kegiatan)
@@ -51,7 +51,7 @@ class KrsService
             ->first();
 
         if (!$jadwalKegiatanSemester) {
-            throw new \Exception("No active schedule found for the KRS activity in the current semester.");
+            throw new \Exception("Tidak ada jadwal kegiatan KRS untuk semester aktif.");
         }
 
         return true; // Placeholder for actual validation logic
@@ -66,7 +66,7 @@ class KrsService
 
         $semesterAktif = Semester::aktif();
         if (!$semesterAktif) {
-            throw new \Exception("No active semester found.");
+            throw new \Exception("Semester aktif tidak ditemukan.");
         }
 
         $q = KrsProdi::whereHas('kelasMk', function ($query) use ($semesterAktif, $id_program_studi) {
@@ -181,6 +181,9 @@ class KrsService
         if (!$semesterAktif) {
             throw new \Exception("Tidak ada semester aktif yang ditemukan.");
         }
+
+        // validate kredit semester with limit
+        $this->validatingKreditSemsesterWithLimit(auth()->user()->mahasiswa->id_mhs, $semesterAktif->id_semester);
 
         DB::beginTransaction();
 
@@ -456,11 +459,17 @@ class KrsService
             ];
         });
 
+        // get limit for spefic semester
+        $limitSks = $this->getLimitSksPerSemester($id_mhs, $id_semester - 1);
+        $countKreditSemster = $this->countKreditSemester($id_mhs, $id_semester);
+
         // populate dosen wali and riwayat krs
         $data = [
             'semester' => $semester->nm_semester,
             'th_semester' => $semester->thn_akademik_semester,
             'program_studi' => $semester->programStudi?->nm_program_studi,
+            'limit_sks' => $limitSks,
+            'count_kredit_semester' => $countKreditSemster,
             'dosen_wali' => [
                 'id_dosen' => $dosenWali->dosen?->id_dosen ?? null,
                 'nama_dosen' => $dosenWali->dosen?->pengguna?->nama_lengkap ?? '',
@@ -521,13 +530,14 @@ class KrsService
     public function getLimitSksPerSemester($id_mhs, $id_semester)
     {
         $mahasiswa = Mahasiswa::where('id_mhs', $id_mhs)->whereHas(
-            'historyNilai', function ($query) use ($id_semester) {
+            'historyNilai',
+            function ($query) use ($id_semester) {
                 $query->where('id_semester', $id_semester);
             }
         )->first();
 
         if ($mahasiswa === null) {
-            throw new \Exception("Mahasiswa with id $id_mhs not found or has no history of grades for semester $id_semester.");
+            throw new \Exception("Mahasiswa dengan ID $id_mhs tidak ditemukan atau tidak memiliki riwayat nilai untuk semester $id_semester.");
         }
 
         if ($mahasiswa->historyNilai->isEmpty()) {
@@ -541,12 +551,37 @@ class KrsService
             // ->where('id_semester', $id_semester)
             ->first();
 
-
-        // get ipk;
-
-        $limitSks = Semester::find($id_semester)->limit_sks ?? 24; // Default to 24 if not set
+        $limitSks = (int)$bebanSks->sks_maksimal ?? 0;
         return $limitSks;
     }
 
+    public function countKreditSemester($id_mhs, $id_semester)
+    {
+        $countKreditSemster = 0;
 
+        // get kredit semester from pengambilan mk relation kelas mk
+        PengambilanMk::where('id_mhs', $id_mhs)
+            ->where('id_semester', $id_semester)
+            ->with(['kelasMk' => function ($query) {
+                $query->select('id_kelas_mk', 'kredit_semester');
+            }])
+            ->get()
+            ->each(function ($pengambilanMk) use (&$countKreditSemster) {
+                $countKreditSemster += $pengambilanMk->kelasMk->kredit_semester;
+            });
+        return $countKreditSemster;
+    }
+
+
+    public function validatingKreditSemsesterWithLimit($id_mhs, $id_semester)
+    {
+        $limitSks = $this->getLimitSksPerSemester($id_mhs, $id_semester);
+        $countKreditSemster = $this->countKreditSemester($id_mhs, $id_semester);
+
+        if ($countKreditSemster > $limitSks) {
+            throw new \Exception("Batas maksimal SKS per semester adalah $limitSks SKS. Anda sudah mengambil $countKreditSemster SKS.");
+        }
+
+        return true;
+    }
 }

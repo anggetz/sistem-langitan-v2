@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Services\Mahasiswa\AkademikService;
 use App\Services\Mahasiswa\KeuanganService;
 use App\Http\Resources\Mahasiswa\JadwalKuliahResource;
+use App\Models\PengambilanMk;
 use App\Services\Mahasiswa\KrsService as MahasiswaKrsService;
 use Exception;
 use KrsService;
@@ -148,10 +149,13 @@ class MahasiswaKrsController extends Controller
 
             $result = (new MahasiswaKrsService())->getLimitSksPerSemester(auth()->user()->mahasiswa->id_mhs, $id_semester);
 
+            $countKreditSemster = (new MahasiswaKrsService())->countKreditSemester(auth()->user()->mahasiswa->id_mhs, $id_semester);
+
             return response()->json([
                 'message' => 'Batas maksimal SKS',
                 'data' => [
                     'beban_sks' => $result,
+                    'kredit_semester' => $countKreditSemster,
                 ],
             ], 201);
         } catch (\Exception $e) {
