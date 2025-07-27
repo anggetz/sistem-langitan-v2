@@ -278,7 +278,7 @@ class KrsService
         return true;
     }
 
-    public function listCourse($id_dosen)
+    public function listCourse($id_dosen, $id_mhs = null)
     {
         $page = request()->get('page', 1);
         $perPage = request()->get('per_page', 10);
@@ -299,16 +299,17 @@ class KrsService
         }
 
         // get pengambilan mk kprs
-        $pengambilanMkKprs = PengambilanMkKprs::whereIn('id_mhs', $idMahasiswa)
+        $query = PengambilanMkKprs::whereIn('id_mhs', $idMahasiswa)
             ->where('id_semester', $semesterAktif->id_semester)
             ->with([
                 'kelasMk' => function ($q) {
                     $q->select([
                         'id_kelas_mk',
                         'no_kelas_mk',
-                        'id_mata_kuliah'
+                        'id_mata_kuliah',
                     ])
                         ->with([
+                            'pengampuMk',
                             'mataKuliah' => function ($q2) {
                                 $q2->select('id_mata_kuliah', 'nm_mata_kuliah', 'kredit_tatap_muka');
                             },
@@ -322,7 +323,7 @@ class KrsService
                                     }, 'jadwalJam' => function ($q) {
                                         $q->select(['id_jadwal_jam', DB::raw('jam_mulai || \':\' || menit_mulai as waktu_mulai'), DB::raw('jam_selesai || \':\' || menit_selesai as waktu_selesai')]);
                                     }])
-                                    ->select(['id_jadwal_jam', 'id_ruangan', 'id_kelas_mk']);
+                                    ->select(['id_jadwal_jam', 'id_ruangan', 'id_kelas_mk', 'id_jadwal_kelas', 'id_jadwal_hari']);
                             },
                         ]);
                 },
@@ -340,24 +341,41 @@ class KrsService
                             }
                         ]);
                 }
-            ])
-            ->limit($perPage)
+            ]);
+
+        if (!empty($id_mhs)) {
+            $query = $query->where('id_mhs', $id_mhs);
+        }
+        $pengambilanMkKprs = $query->limit($perPage)
             ->offset($offset)
             ->get()
             ->map(function ($item) {
 
-                $kelasMk = $item->kelasMk;
+                $kelasMk = $item->kelasMk ?? new KelasMk();
+                $jadwal = $kelasMk->jadwalKelas ?? new JadwalKelas();
 
-                if (!empty($kelasMk)) {
-                    $jadwal = $kelasMk->jadwalKelas;
-                    $ruangan = $jadwal?->ruangan;
-                    $jam = $jadwal?->jadwalJam;
-                } else {
-                    $ruangan = '-';
-                    $jam = '-';
-                    $jadwal = '-';
+                $jadwalAll = [];
+
+                foreach ($jadwal as $jadwalKelas) {
+                    $ruangan = !empty($jadwalKelas->ruangan) ? $jadwalKelas->ruangan : new Ruangan();
+                    $jadwalJam = !empty($jadwalKelas->jadwalJam) ? $jadwalKelas->jadwalJam : new JadwalJam();
+                    $jadwalAll[] = [
+                        'nama_ruangan' => $ruangan->nm_ruangan ?? '',
+                        'waktu_mulai' => $jadwalJam->waktu_mulai ?? '',
+                        'waktu_selesai' => $jadwalJam->waktu_selesai ?? '',
+                        'id_jadwal_kelas' => $jadwalKelas->id_jadwal_kelas ?? null,
+                        'nama_hari' => $jadwalKelas->nama_hari,
+                    ];
                 }
 
+                $pengampus = [];
+                foreach ($kelasMk->pengampuMk as $pengampuMk) {
+                    $pengampus[] = [
+                        'id_pengampu_mk' => $pengampuMk->id_pengampu_mk,
+                        'id_dosen' => $pengampuMk->dosen?->id_dosen ?? null,
+                        'nama_dosen' => $pengampuMk->dosen?->pengguna?->nama_lengkap ?? '',
+                    ];
+                }
 
                 return [
                     'id_pengambilan_mk_kprs' => $item->id_pengambilan_mk_kprs,
@@ -366,9 +384,8 @@ class KrsService
                     'nm_mahasiswa' => optional($item->mahasiswa->pengguna)->nm_pengguna,
                     'id_kelas_mk' => optional($item->kelasMk)->id_kelas_mk,
                     'no_kelas_mk' => optional($item->kelasMk)->no_kelas_mk,
-                    'nama_ruangan' => $ruangan->nm_ruangan ?? '',
-                    'waktu_mulai' => $jam->waktu_mulai ?? '',
-                    'waktu_selesai' => $jam->waktu_selesai ?? '',
+                    'jadwal_kelas' => $jadwalAll,
+                    'pengampu_mk' => $pengampus,
                     'status_approval' => $item->status_apv_pengambilan_mk,
                     'id_mata_kuliah' => optional($item->kelasMk)->id_mata_kuliah,
                     'nm_mata_kuliah' => !empty($mataKuliah) ? optional($item->kelasMk->mataKuliah)->nm_mata_kuliah : '-',
