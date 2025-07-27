@@ -11,6 +11,7 @@ use App\Models\Kegiatan;
 use App\Models\KelasMk;
 use App\Models\KrsProdi;
 use App\Models\Mahasiswa;
+use App\Models\MahasiswaKrsApprovalSign;
 use App\Models\MataKuliah;
 use App\Models\PengambilanMk;
 use App\Models\PengambilanMkKprs;
@@ -184,6 +185,7 @@ class KrsService
 
         // validate kredit semester with limit
         $this->validatingKreditSemsesterWithLimit(auth()->user()->mahasiswa->id_mhs, $semesterAktif->id_semester);
+
 
         DB::beginTransaction();
 

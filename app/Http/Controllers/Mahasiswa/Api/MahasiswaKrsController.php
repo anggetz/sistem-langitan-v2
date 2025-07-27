@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Services\Mahasiswa\AkademikService;
 use App\Services\Mahasiswa\KeuanganService;
 use App\Http\Resources\Mahasiswa\JadwalKuliahResource;
+use App\Models\MahasiswaKrsApprovalSign;
 use App\Models\PengambilanMk;
 use App\Services\Mahasiswa\KrsService as MahasiswaKrsService;
 use Exception;
@@ -70,6 +71,18 @@ class MahasiswaKrsController extends Controller
             if (!(new MahasiswaKrsService())->validateMahasiswaCanKrsByActiveSemesterAndPrevSemester(auth()->user()->mahasiswa->id_mhs)) {
                 return response()->json([
                     'message' => 'Anda tidak dapat melakukan KRS pada semester ini. Silakan periksa tagihan atau status KRS Anda.',
+                ], 400);
+            }
+
+
+            // validate if any data in mahasiswa krs approval sign cannot take course
+            $mahasiswaKrsApprovalSign = MahasiswaKrsApprovalSign::where('id_mhs', auth()->user()->mahasiswa->id_mhs)
+                ->where('id_semester', Semester::aktif()->id_semester)
+                ->first();
+
+            if (!empty($mahasiswaKrsApprovalSign) && $mahasiswaKrsApprovalSign->sign_path) {
+                return response()->json([
+                    'message' => 'Anda tidak dapat mengambil mata kuliah pada semester ini. Silakan hubungi dosen wali Anda.',
                 ], 400);
             }
 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Dosen\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\DosenWali;
+use App\Models\MahasiswaKrsApprovalSign;
 use App\Models\Message;
 use App\Models\Semester;
 use App\Services\Mahasiswa\KrsService;
@@ -35,6 +36,19 @@ class DosenKrsController extends Controller
             } else {
                 $validatedData['sign'] = null; // or handle the case where no file is uploaded
             }
+
+
+            // save the sign path to mahasiswa krs apprval sign
+            $mahasiswaKrsApprovalSign = MahasiswaKrsApprovalSign::updateOrCreate(
+                [
+                    'id_mhs' => $validatedData['id_mhs'],
+                    'id_semester' => Semester::aktif()->id_semester,
+                    'id_dosen' => auth()->user()->dosen->id_dosen,
+                ],
+                [
+                    'sign_path' => $validatedData['sign'],
+                ]
+            );
 
             // get semester aktif
             $semesterAktif = Semester::aktif();
