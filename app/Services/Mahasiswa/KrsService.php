@@ -2,6 +2,7 @@
 
 namespace App\Services\Mahasiswa;
 
+use App\Models\BebanSks;
 use App\Models\DosenWali;
 use App\Models\JadwalJam;
 use App\Models\JadwalKegiatanSemester;
@@ -9,6 +10,8 @@ use App\Models\JadwalKelas;
 use App\Models\Kegiatan;
 use App\Models\KelasMk;
 use App\Models\KrsProdi;
+use App\Models\Mahasiswa;
+use App\Models\MahasiswaKrsApprovalSign;
 use App\Models\MataKuliah;
 use App\Models\PengambilanMk;
 use App\Models\PengambilanMkKprs;
@@ -39,7 +42,7 @@ class KrsService
         // get active semester
         $semesterAktif = Semester::aktif();
         if (!$semesterAktif) {
-            throw new \Exception("No active semester found.");
+            throw new \Exception("Tidak ada semester aktif yang ditemukan.");
         }
 
         $jadwalKegiatanSemester = JadwalKegiatanSemester::where('id_kegiatan', $kegiatan->id_kegiatan)
@@ -49,7 +52,7 @@ class KrsService
             ->first();
 
         if (!$jadwalKegiatanSemester) {
-            throw new \Exception("No active schedule found for the KRS activity in the current semester.");
+            throw new \Exception("Tidak ada jadwal kegiatan KRS untuk semester aktif.");
         }
 
         return true; // Placeholder for actual validation logic
@@ -64,7 +67,7 @@ class KrsService
 
         $semesterAktif = Semester::aktif();
         if (!$semesterAktif) {
-            throw new \Exception("No active semester found.");
+            throw new \Exception("Semester aktif tidak ditemukan.");
         }
 
         $q = KrsProdi::whereHas('kelasMk', function ($query) use ($semesterAktif, $id_program_studi) {
@@ -180,6 +183,10 @@ class KrsService
             throw new \Exception("Tidak ada semester aktif yang ditemukan.");
         }
 
+        // validate kredit semester with limit
+        $this->validatingKreditSemsesterWithLimit(auth()->user()->mahasiswa->id_mhs, $semesterAktif->id_semester);
+
+
         DB::beginTransaction();
 
         foreach ($id_kelas_mks as $id_kelas_mk) {
@@ -273,7 +280,7 @@ class KrsService
         return true;
     }
 
-    public function listCourse($id_dosen)
+    public function listCourse($id_dosen, $id_mhs = null)
     {
         $page = request()->get('page', 1);
         $perPage = request()->get('per_page', 10);
@@ -294,16 +301,17 @@ class KrsService
         }
 
         // get pengambilan mk kprs
-        $pengambilanMkKprs = PengambilanMkKprs::whereIn('id_mhs', $idMahasiswa)
+        $query = PengambilanMkKprs::whereIn('id_mhs', $idMahasiswa)
             ->where('id_semester', $semesterAktif->id_semester)
             ->with([
                 'kelasMk' => function ($q) {
                     $q->select([
                         'id_kelas_mk',
                         'no_kelas_mk',
-                        'id_mata_kuliah'
+                        'id_mata_kuliah',
                     ])
                         ->with([
+                            'pengampuMk',
                             'mataKuliah' => function ($q2) {
                                 $q2->select('id_mata_kuliah', 'nm_mata_kuliah', 'kredit_tatap_muka');
                             },
@@ -317,7 +325,7 @@ class KrsService
                                     }, 'jadwalJam' => function ($q) {
                                         $q->select(['id_jadwal_jam', DB::raw('jam_mulai || \':\' || menit_mulai as waktu_mulai'), DB::raw('jam_selesai || \':\' || menit_selesai as waktu_selesai')]);
                                     }])
-                                    ->select(['id_jadwal_jam', 'id_ruangan', 'id_kelas_mk']);
+                                    ->select(['id_jadwal_jam', 'id_ruangan', 'id_kelas_mk', 'id_jadwal_kelas', 'id_jadwal_hari']);
                             },
                         ]);
                 },
@@ -335,24 +343,41 @@ class KrsService
                             }
                         ]);
                 }
-            ])
-            ->limit($perPage)
+            ]);
+
+        if (!empty($id_mhs)) {
+            $query = $query->where('id_mhs', $id_mhs);
+        }
+        $pengambilanMkKprs = $query->limit($perPage)
             ->offset($offset)
             ->get()
             ->map(function ($item) {
 
-                $kelasMk = $item->kelasMk;
+                $kelasMk = $item->kelasMk ?? new KelasMk();
+                $jadwal = $kelasMk->jadwalKelas ?? new JadwalKelas();
 
-                if (!empty($kelasMk)) {
-                    $jadwal = $kelasMk->jadwalKelas;
-                    $ruangan = $jadwal?->ruangan;
-                    $jam = $jadwal?->jadwalJam;
-                } else {
-                    $ruangan = '-';
-                    $jam = '-';
-                    $jadwal = '-';
+                $jadwalAll = [];
+
+                foreach ($jadwal as $jadwalKelas) {
+                    $ruangan = !empty($jadwalKelas->ruangan) ? $jadwalKelas->ruangan : new Ruangan();
+                    $jadwalJam = !empty($jadwalKelas->jadwalJam) ? $jadwalKelas->jadwalJam : new JadwalJam();
+                    $jadwalAll[] = [
+                        'nama_ruangan' => $ruangan->nm_ruangan ?? '',
+                        'waktu_mulai' => $jadwalJam->waktu_mulai ?? '',
+                        'waktu_selesai' => $jadwalJam->waktu_selesai ?? '',
+                        'id_jadwal_kelas' => $jadwalKelas->id_jadwal_kelas ?? null,
+                        'nama_hari' => $jadwalKelas->nama_hari,
+                    ];
                 }
 
+                $pengampus = [];
+                foreach ($kelasMk->pengampuMk as $pengampuMk) {
+                    $pengampus[] = [
+                        'id_pengampu_mk' => $pengampuMk->id_pengampu_mk,
+                        'id_dosen' => $pengampuMk->dosen?->id_dosen ?? null,
+                        'nama_dosen' => $pengampuMk->dosen?->pengguna?->nama_lengkap ?? '',
+                    ];
+                }
 
                 return [
                     'id_pengambilan_mk_kprs' => $item->id_pengambilan_mk_kprs,
@@ -361,9 +386,8 @@ class KrsService
                     'nm_mahasiswa' => optional($item->mahasiswa->pengguna)->nm_pengguna,
                     'id_kelas_mk' => optional($item->kelasMk)->id_kelas_mk,
                     'no_kelas_mk' => optional($item->kelasMk)->no_kelas_mk,
-                    'nama_ruangan' => $ruangan->nm_ruangan ?? '',
-                    'waktu_mulai' => $jam->waktu_mulai ?? '',
-                    'waktu_selesai' => $jam->waktu_selesai ?? '',
+                    'jadwal_kelas' => $jadwalAll,
+                    'pengampu_mk' => $pengampus,
                     'status_approval' => $item->status_apv_pengambilan_mk,
                     'id_mata_kuliah' => optional($item->kelasMk)->id_mata_kuliah,
                     'nm_mata_kuliah' => !empty($mataKuliah) ? optional($item->kelasMk->mataKuliah)->nm_mata_kuliah : '-',
@@ -377,12 +401,31 @@ class KrsService
 
     public function getHistoryKrsByIdMhs($id_mhs, $id_semester)
     {
+        // get dosen wali by id mhs
+        $dosenWali = DosenWali::where('id_mhs', $id_mhs)
+            ->where('id_semester', $id_semester)
+            ->with(['dosen' => function ($q) {
+                $q->select(['id_dosen', 'id_pengguna'])
+                    ->with(['pengguna' => function ($q2) {
+                        $q2->select(['id_pengguna', DB::raw("gelar_depan || ' ' || nm_pengguna || ' ' || gelar_belakang as nama_lengkap")]);
+                    }]);
+            }])
+            ->first();
+
+        // get semester by id semester
+        $semester = Semester::find($id_semester);
+        if (!$semester) {
+            throw new \Exception("Semester with id $id_semester not found.");
+        }
 
         $q = PengambilanMk::where('id_mhs', $id_mhs)
             ->with([
                 'kelasMk.programStudi',
                 'kelasMk.mataKuliah',
                 'kelasMk.jadwalKelas',
+                'kelasMk.jadwalKelas.jadwalJam',
+                'kelasMk.jadwalKelas.ruangan',
+                'kelasMk.jadwalKelas.ruangan.gedung',
                 'semester'
             ]);
 
@@ -412,17 +455,20 @@ class KrsService
             $jadwalAll = [];
             foreach ($jadwal as $jadwalKelas) {
                 $ruangan = !empty($jadwalKelas->ruangan) ? $jadwalKelas->ruangan : new Ruangan();
-                $jadwalJam = !empty($jadwalKelas->jadwalJam) ? $jadwalKelas->jadwalJam : new JadwalJam();
+                $jadwalJam = !empty($jadwalKelas->jadwalJam) ? $jadwalKelas->jadwalJam : new JadwalJam();;
+                $gedung = $ruangan->gedung ?? new Ruangan();
                 $jadwalAll[] = [
                     'nama_ruangan' => $ruangan->nm_ruangan ?? '',
                     'waktu_mulai' => $jadwalJam->waktu_mulai ?? '',
                     'waktu_selesai' => $jadwalJam->waktu_selesai ?? '',
                     'id_jadwal_kelas' => $jadwalKelas->id_jadwal_kelas ?? null,
                     'nama_hari' => $jadwalKelas->nama_hari,
+                    'nama_gedung' => $gedung->nm_gedung ?? '',
                 ];
             }
 
             return [
+                'id_kelas_mk' => $kelasMk->id_kelas_mk,
                 'status_apv' => $item->status_apv_pengambilan_mk,
                 'semester' => $semester->nm_semester,
                 'th_semester' => $semester->thn_akademik_semester,
@@ -433,6 +479,24 @@ class KrsService
             ];
         });
 
+        // get limit for spefic semester
+        $limitSks = $this->getLimitSksPerSemester($id_mhs, $id_semester - 1);
+        $countKreditSemster = $this->countKreditSemester($id_mhs, $id_semester);
+
+        // populate dosen wali and riwayat krs
+        $data = [
+            'semester' => $semester->nm_semester,
+            'th_semester' => $semester->thn_akademik_semester,
+            'program_studi' => $semester->programStudi?->nm_program_studi,
+            'limit_sks' => $limitSks,
+            'count_kredit_semester' => $countKreditSemster,
+            'dosen_wali' => [
+                'id_dosen' => $dosenWali->dosen?->id_dosen ?? null,
+                'nama_dosen' => $dosenWali->dosen?->pengguna?->nama_lengkap ?? '',
+            ],
+            'riwayat_krs' => $data,
+        ];
+
         return $data;
     }
 
@@ -440,7 +504,7 @@ class KrsService
     {
         $semesterAktif = Semester::aktif();
         if (!$semesterAktif) {
-            throw new \Exception("No active semester found.");
+            throw new \Exception("Tidak ada semester aktif yang ditemukan.");
         }
 
         $krsActiveSemester = $this->getTagihanBySemester($id_mhs, $semesterAktif->id_semester);
@@ -458,7 +522,7 @@ class KrsService
 
         $prevSemester = Semester::prevAktif();
         if (!$prevSemester) {
-            throw new \Exception("No previous semester found.");
+            throw new \Exception("Tidak ada semester sebelumnya yang ditemukan.");
         }
 
         $prevKrsProdi = $this->getTagihanBySemester($id_mhs, $prevSemester->id_semester);
@@ -481,5 +545,63 @@ class KrsService
         return TagihanMhs::where('id_mhs', $id_mhs)
             ->where('id_semester', $id_semester)
             ->first();
+    }
+
+    public function getLimitSksPerSemester($id_mhs, $id_semester)
+    {
+        $mahasiswa = Mahasiswa::where('id_mhs', $id_mhs)->whereHas(
+            'historyNilai',
+            function ($query) use ($id_semester) {
+                $query->where('id_semester', $id_semester);
+            }
+        )->first();
+
+        if ($mahasiswa === null) {
+            throw new \Exception("Mahasiswa dengan ID $id_mhs tidak ditemukan atau tidak memiliki riwayat nilai untuk semester $id_semester.");
+        }
+
+        if ($mahasiswa->historyNilai->isEmpty()) {
+            return 0; // No grades, so no SKS limit
+        }
+
+        $bebanSks = BebanSks::where('ipk_minimum', '<=', $mahasiswa->historyNilai->first()->ipk)
+            ->where('id_program_studi', $mahasiswa->id_program_studi)
+            ->where('id_fakultas', $mahasiswa->programStudi->id_fakultas)
+            ->orderBy('ipk_minimum', 'desc')
+            // ->where('id_semester', $id_semester)
+            ->first();
+
+        $limitSks = (int)$bebanSks->sks_maksimal ?? 0;
+        return $limitSks;
+    }
+
+    public function countKreditSemester($id_mhs, $id_semester)
+    {
+        $countKreditSemster = 0;
+
+        // get kredit semester from pengambilan mk relation kelas mk
+        PengambilanMk::where('id_mhs', $id_mhs)
+            ->where('id_semester', $id_semester)
+            ->with(['kelasMk' => function ($query) {
+                $query->select('id_kelas_mk', 'kredit_semester');
+            }])
+            ->get()
+            ->each(function ($pengambilanMk) use (&$countKreditSemster) {
+                $countKreditSemster += $pengambilanMk->kelasMk->kredit_semester;
+            });
+        return $countKreditSemster;
+    }
+
+
+    public function validatingKreditSemsesterWithLimit($id_mhs, $id_semester)
+    {
+        $limitSks = $this->getLimitSksPerSemester($id_mhs, $id_semester);
+        $countKreditSemster = $this->countKreditSemester($id_mhs, $id_semester);
+
+        if ($countKreditSemster > $limitSks) {
+            throw new \Exception("Batas maksimal SKS per semester adalah $limitSks SKS. Anda sudah mengambil $countKreditSemster SKS.");
+        }
+
+        return true;
     }
 }

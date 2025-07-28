@@ -8,6 +8,8 @@ use App\Http\Controllers\Controller;
 use App\Services\Mahasiswa\AkademikService;
 use App\Services\Mahasiswa\KeuanganService;
 use App\Http\Resources\Mahasiswa\JadwalKuliahResource;
+use App\Models\MahasiswaKrsApprovalSign;
+use App\Models\PengambilanMk;
 use App\Services\Mahasiswa\KrsService as MahasiswaKrsService;
 use Exception;
 use KrsService;
@@ -69,6 +71,18 @@ class MahasiswaKrsController extends Controller
             if (!(new MahasiswaKrsService())->validateMahasiswaCanKrsByActiveSemesterAndPrevSemester(auth()->user()->mahasiswa->id_mhs)) {
                 return response()->json([
                     'message' => 'Anda tidak dapat melakukan KRS pada semester ini. Silakan periksa tagihan atau status KRS Anda.',
+                ], 400);
+            }
+
+
+            // validate if any data in mahasiswa krs approval sign cannot take course
+            $mahasiswaKrsApprovalSign = MahasiswaKrsApprovalSign::where('id_mhs', auth()->user()->mahasiswa->id_mhs)
+                ->where('id_semester', Semester::aktif()->id_semester)
+                ->first();
+
+            if (!empty($mahasiswaKrsApprovalSign) && $mahasiswaKrsApprovalSign->sign_path) {
+                return response()->json([
+                    'message' => 'Dosen anda sudah menandatangani KRS anda, silakan hubungi dosen anda untuk melakukan perubahan.',
                 ], 400);
             }
 
@@ -135,6 +149,31 @@ class MahasiswaKrsController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Gagal mendapatkan riwayat KRS',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getLimitSksPerSemester(Request $request)
+    {
+        try {
+            $semester = Semester::prevAktif();
+            $id_semester = $semester->id_semester;
+
+            $result = (new MahasiswaKrsService())->getLimitSksPerSemester(auth()->user()->mahasiswa->id_mhs, $id_semester);
+
+            $countKreditSemster = (new MahasiswaKrsService())->countKreditSemester(auth()->user()->mahasiswa->id_mhs, $id_semester);
+
+            return response()->json([
+                'message' => 'Batas maksimal SKS',
+                'data' => [
+                    'beban_sks' => $result,
+                    'kredit_semester' => $countKreditSemster,
+                ],
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Gagal mendapatkan maksimal sks',
                 'error' => $e->getMessage()
             ], 500);
         }
