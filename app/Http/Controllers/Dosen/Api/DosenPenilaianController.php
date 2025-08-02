@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Dosen\Api;
 use App\Http\Controllers\Controller;
 use App\Models\KomponenMk;
 use App\Models\Mahasiswa;
+use App\Models\MahasiswaStatus;
 use App\Models\Message;
 use App\Models\NilaiMk;
 use App\Services\Mahasiswa\AkademikService;
@@ -257,6 +258,8 @@ class DosenPenilaianController extends Controller
                 if (isset($pengambilanMks[$item['id_mhs']])) {
                     $item['id_pengambilan_mk'] = $pengambilanMks[$item['id_mhs']]->id_pengambilan_mk;
                     $item['id_komponen_mk'] = $komponenMk->id_komponen_mk;
+
+                    // calculating the grade by komponen
                 } else {
                     return response()->json([
                         'message' => 'Mahasiswa dengan id_mhs: ' . $item['id_mhs'] . ' tidak terdaftar di kelas ini.',
@@ -274,6 +277,18 @@ class DosenPenilaianController extends Controller
                 [
                     'besar_nilai_mk',
                 ]
+            );
+
+            // also update the mahasiswa status
+            MahasiswaStatus::upsert(
+                $mahasiswa->map(function ($item) {
+                    return [
+                        'id_mhs' => $item['id_mhs'],
+                        'status' => MahasiswaStatus::STATUS_AKTIF,
+                    ];
+                })->toArray(),
+                ['id_mhs'],
+                ['status']
             );
 
             return response()->json([
