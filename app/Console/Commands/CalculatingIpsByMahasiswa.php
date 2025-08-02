@@ -53,7 +53,6 @@ class CalculatingIpsByMahasiswa extends Command
             ->get()
             ->each(function ($pengambilanMk) use (&$countData, $standarNilai, &$sumTheTotalScore) {
                 // Calculate the IPS
-]
 
                 if (!empty($standarNilai[$pengambilanMk->fd_nilai_huruf])) {
                     $sumTheTotalScore += $standarNilai[$pengambilanMk->fd_nilai_huruf]->nilai_standar_nilai;
