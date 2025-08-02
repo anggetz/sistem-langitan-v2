@@ -10,6 +10,7 @@ use App\Models\Message;
 use App\Models\NilaiMk;
 use App\Services\Mahasiswa\AkademikService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 
 class DosenPenilaianController extends Controller
@@ -280,16 +281,10 @@ class DosenPenilaianController extends Controller
             );
 
             // also update the mahasiswa status
-            MahasiswaStatus::upsert(
-                $mahasiswa->map(function ($item) {
-                    return [
-                        'id_mhs' => $item['id_mhs'],
-                        'status' => MahasiswaStatus::STATUS_AKTIF,
-                    ];
-                })->toArray(),
-                ['id_mhs'],
-                ['status']
-            );
+            // call the command calculate final score using queue
+            Artisan::queue('app:calculating-final-score', [
+                '--id_kelas_mk' => $request->id_kelas_mk,
+            ]);
 
             return response()->json([
                 'status' => Message::OK,

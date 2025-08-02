@@ -6,6 +6,7 @@ use App\Models\NilaiMk;
 use App\Models\PengambilanMk;
 use App\Models\PeraturanNilai;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
 
 class CalculatingFinalScore extends Command
@@ -143,6 +144,17 @@ class CalculatingFinalScore extends Command
             ['id_pengambilan_mk', 'id_mhs'], // Unique keys to check for duplicates
             ['fd_nilai_angka', 'fd_nilai_huruf'] // Columns to update if a duplicate is found
         );
+
+        // call each mhs to recalculate ips and ipk
+        foreach ($totalScoreMhs as $idMhs => $finalScore) {
+            // call the command calculate ips by mahasiswa using queue
+            Log::info("Calculating IPS for Mahasiswa ID: $idMhs");
+
+            Artisan::queue('app:calculating-ips-by-mahasiswa', [
+                '--id_mhs' => $idMhs,
+                '--id_semester' => $finalScore['pengambilan_mk']->id_semester ?? null,
+            ]);
+        }
 
         return 0; // Return zero exit code for success
 

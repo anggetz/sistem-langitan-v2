@@ -29,8 +29,12 @@ class CalculatingIpsByMahasiswa extends Command
      */
     public function handle()
     {
+
+
         $idMhs = $this->option('id_mhs');
         $idSemester = $this->option('id_semester');
+
+        $this->info("Calculating IPS for Mahasiswa ID: $idMhs in Semester ID: $idSemester");
 
         // Validate the argument
         if (!$idSemester) {
