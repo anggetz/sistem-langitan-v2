@@ -39,6 +39,10 @@ class CalculatingFinalScore extends Command
         // get nilai mk based on id_kelas_mk
         $idKelasMk = $this->option('id_kelas_mk');
 
+        if (!$idKelasMk) {
+            return $this->error('The id_kelas_mk option is required.');
+        }
+
         // get the pengaturan nilai
         $peraturanNilai = PeraturanNilai::with('standardNilai')->where('id_perguruan_tinggi', env('APP_ID_PERGURUAN_TINGGI_DEFAULT'))->get();
         // Validate the argument
