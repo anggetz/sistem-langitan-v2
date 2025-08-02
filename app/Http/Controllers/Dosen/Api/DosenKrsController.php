@@ -91,9 +91,11 @@ class DosenKrsController extends Controller
         }
     }
 
-    public function listCourseApproval() {
+    public function listCourseApproval(Request $request) {
         try {
-            $result = (new KrsService())->listCourse(auth()->user()->dosen->id_dosen);
+            $idmhs = $request->query('id_mhs');
+
+            $result = (new KrsService())->listCourse(auth()->user()->dosen->id_dosen, $idmhs);
 
             return response()->json([
                 'message' => 'Get data successfully.',
