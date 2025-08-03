@@ -523,6 +523,7 @@ class KrsService
                 'mata_kuliah' => $mataKuliah->nm_mata_kuliah,
                 'jadwal_kelas' => $jadwalAll,
                 'pengampu_mk' => $pengampus,
+                'sks' => $kelasMk->kredit_semester ?? 0,
             ];
         });
 
