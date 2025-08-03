@@ -65,11 +65,14 @@ class CalculatingIpsByMahasiswa extends Command
                 $countData++;
             });
 
+        // pengambilan mk total sks yang tidak berulang idkelas mk duplicate kita ambil yang akhir
+        // di divide by total sks
         $this->info("Total Data: $countData");
         $this->info("Sum Total Score: $sumTheTotalScore");
 
         // calculte the ipk get the mahassiswa status below the semester
-
+        // TODO: Reivise
+        //
         $mhsStatuses = MahasiswaStatus::where('id_mhs', $idMhs)
             ->where('id_semester', '<', $idSemester)
             ->get();

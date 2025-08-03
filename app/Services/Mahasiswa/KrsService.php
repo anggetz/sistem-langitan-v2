@@ -205,6 +205,8 @@ class KrsService
             $pengambilanMkKprs->id_semester = $semesterAktif->id_semester;
             $pengambilanMkKprs->status_apv_pengambilan_mk = 0; // Not approved yet
             $pengambilanMkKprs->save();
+
+            //TODO: store to new table krs.
         }
 
         DB::commit();
@@ -278,6 +280,51 @@ class KrsService
         DB::commit();
 
         return true;
+    }
+
+    public function listMahasiswaNeedApproval($id_dosen) {
+        $page = request()->get('page', 1);
+        $perPage = request()->get('per_page', 10);
+        $offset = ($page - 1) * $perPage;
+
+        $semesterAktif = Semester::aktif();
+        if (!$semesterAktif) {
+            throw new \Exception("No active semester found.");
+        }
+
+        $dosenWali = DosenWali::where('id_dosen', $id_dosen)
+            ->where('id_semester', $semesterAktif->id_semester)
+            ->pluck('id_mhs');
+
+        $query = PengambilanMkKprs::whereIn('id_mhs', $dosenWali)
+            ->where('id_semester', $semesterAktif->id_semester)
+            // ->where('status_apv_pengambilan_mk', 0) // Only those not approved
+            ->with(['kelasMk.mataKuliah']);
+
+        $totalCount = $query->count();
+
+        $result = $query->limit($perPage)
+            ->offset($offset)
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'id_pengambilan_mk_kprs' => $item->id_pengambilan_mk_kprs,
+                    'id_mhs' => $item->id_mhs,
+                    'nm_mahasiswa' => optional($item->mahasiswa->pengguna)->nm_pengguna,
+                    'id_kelas_mk' => $item->id_kelas_mk,
+                    'no_kelas_mk' => optional($item->kelasMk)->no_kelas_mk,
+                    'nm_mata_kuliah' => optional($item->kelasMk->mataKuliah)->nm_mata_kuliah,
+                    'status_approval' => $item->status_apv_pengambilan_mk,
+                ];
+            });
+
+        return [
+            'total_count' => $totalCount,
+            'current_page' => $page,
+            'per_page' => $perPage,
+            'data' => $result,
+            'total_pages' => ceil($totalCount / $perPage)
+        ];
     }
 
     public function listCourse($id_dosen, $id_mhs = null)
