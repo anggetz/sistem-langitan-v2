@@ -13,6 +13,8 @@ class MahasiswaStatus extends Model
     protected $primaryKey = 'id_mhs_status';
     const CREATED_AT = 'created_on';
     const UPDATED_AT = 'updated_on';
+
+
     // guarded
     protected $guarded = [];
 

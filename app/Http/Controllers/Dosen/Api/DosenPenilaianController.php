@@ -5,10 +5,12 @@ namespace App\Http\Controllers\Dosen\Api;
 use App\Http\Controllers\Controller;
 use App\Models\KomponenMk;
 use App\Models\Mahasiswa;
+use App\Models\MahasiswaStatus;
 use App\Models\Message;
 use App\Models\NilaiMk;
 use App\Services\Mahasiswa\AkademikService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 
 class DosenPenilaianController extends Controller
@@ -257,6 +259,8 @@ class DosenPenilaianController extends Controller
                 if (isset($pengambilanMks[$item['id_mhs']])) {
                     $item['id_pengambilan_mk'] = $pengambilanMks[$item['id_mhs']]->id_pengambilan_mk;
                     $item['id_komponen_mk'] = $komponenMk->id_komponen_mk;
+
+                    // calculating the grade by komponen
                 } else {
                     return response()->json([
                         'message' => 'Mahasiswa dengan id_mhs: ' . $item['id_mhs'] . ' tidak terdaftar di kelas ini.',
@@ -275,6 +279,12 @@ class DosenPenilaianController extends Controller
                     'besar_nilai_mk',
                 ]
             );
+
+            // also update the mahasiswa status
+            // call the command calculate final score using queue
+            Artisan::queue('app:calculating-final-score', [
+                '--id_kelas_mk' => $request->id_kelas_mk,
+            ]);
 
             return response()->json([
                 'status' => Message::OK,

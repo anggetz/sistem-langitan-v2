@@ -91,9 +91,28 @@ class DosenKrsController extends Controller
         }
     }
 
-    public function listCourseApproval() {
+    public function listCourseApproval(Request $request) {
         try {
-            $result = (new KrsService())->listCourse(auth()->user()->dosen->id_dosen);
+            $idmhs = $request->query('id_mhs');
+
+            $result = (new KrsService())->listCourse(auth()->user()->dosen->id_dosen, $idmhs);
+
+            return response()->json([
+                'message' => 'Get data successfully.',
+                'data' => $result
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to get data.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+     public function listStudentNeedApproval(Request $request) {
+        try {
+
+            $result = (new KrsService())->listMahasiswaNeedApproval(auth()->user()->dosen->id_dosen);
 
             return response()->json([
                 'message' => 'Get data successfully.',
