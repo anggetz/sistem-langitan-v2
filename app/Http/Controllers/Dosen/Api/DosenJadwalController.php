@@ -139,6 +139,8 @@ class DosenJadwalController extends Controller
                         'nama_hari' => $jadwal->nama_hari,
                         'jam_mulai' => $jadwal->jadwalJam->jam_mulai . ":" . $jadwal->jadwalJam->menit_mulai,
                         'jam_selesai' => $jadwal->jadwalJam->jam_selesai . ":" . $jadwal->jadwalJam->menit_selesai,
+                        'jam_mulai_ord' => $jadwal->jadwalJam->jam_mulai * 100 +  $jadwal->jadwalJam->menit_mulai,
+                        'jam_selesai_ord' =>  $jadwal->jadwalJam->jam_selesai * 100 +  $jadwal->menit_selesai,
                         'gedung' => $jadwal->ruangan->gedung->nm_gedung ?? '-',
                         'ruangan' => $jadwal->ruangan->nm_ruangan ?? '-',
                     ];
@@ -150,9 +152,34 @@ class DosenJadwalController extends Controller
                 ];
             }));
 
+             $jadwalResponse = [];
+            // make the jadwal as single array
+            $jadwal = $jadwal->map(function ($item) use (&$jadwalResponse) {
+                foreach ($item['jadwalAll'] as $jadwal) {
+                    # code...
+                    array_push($jadwalResponse, [
+                        'nama_mk' => $item['nama_mk'],
+                        'id_kelas_mk' => $item['id_kelas_mk'],
+                        'id_jadwal_hari' => $jadwal['id_jadwal_hari'],
+                        'hari' => $jadwal['nama_hari'],
+                        'jam_mulai' => $jadwal['jam_mulai'],
+                        'jam_selesai' => $jadwal['jam_selesai'],
+                        'jam_mulai_ord' => $jadwal['jam_mulai_ord'],
+                        'jam_selesai_ord' => $jadwal['jam_selesai_ord'],
+                        'gedung' => $jadwal['gedung'],
+                        'ruangan' => $jadwal['ruangan'],
+                    ]);
+                }
+            });
+
             return response()->json([
                 'message' => Message::OK,
-                'data' => $jadwal
+                'data' => collect($jadwalResponse)
+                    ->sortBy([
+                        fn($a, $b) => $a['id_jadwal_hari'] <=> $b['id_jadwal_hari'],
+                        fn($a, $b) => $a['jam_mulai_ord'] <=> $b['jam_selesai_ord'],
+                    ])
+                    ->groupBy('hari')->toArray()
             ]);
         } catch (\Exception $e) {
             return response()->json([
