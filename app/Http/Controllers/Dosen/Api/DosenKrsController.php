@@ -27,13 +27,27 @@ class DosenKrsController extends Controller
     // get list mahasiswa approve krs sign
     public function getApprovedStudent(Request $request) {
         try {
-            $data = MahasiswaKrsApprovalSign::
+            // pagination parameter
+            $limit = $request->get('perPage', 10);
+            $page = $request->get('page', 1);
+            $offset = ($page - 1) * $limit;
+
+
+            $q = MahasiswaKrsApprovalSign::
                 with([
                     'mahasiswa.pengguna',
                     'mahasiswa.programStudi.fakultas',
-                ])
-                ->where('id_dosen', auth()->user()->dosen->id_dosen)
-                ->get()->map(function($krs, $key) {
+                    'mahasiswaStatus'
+                ]);
+
+            $total = $q->count();
+
+            $data = $q->where('id_dosen', auth()->user()->dosen->id_dosen)
+                ->limit($limit)
+                ->offset($offset)
+                ->orderBy('created_at', 'desc')
+                ->get()
+                ->map(function($krs, $key) {
                     $mhs = $krs->Mahasiswa ?? new Mahasiswa();
                     $pengguna = $mhs->Pengguna ?? new Pengguna();
                     $programStudi = $mhs->programStudi ?? new ProgramStudi();
@@ -47,13 +61,20 @@ class DosenKrsController extends Controller
                         'fakultas' => $fakultas->nm_fakultas,
                         'semester' => $krs->semester->nm_semester ?? 'N/A',
                         'ipk' => $mhsStatus->ipk ?? 0,
+                        'limit_sks' => $krs->limit_sks,
+                        'kredit_sks' => $krs->kredit_sks,
                         'ips' => $mhsStatus->ips ?? 0,
                     ];
                 });
 
+
             return response()->json([
                 'message' => 'Get data approved krs successfull',
-                'data' => $data
+                'status' => Message::OK,
+                'data' => $data,
+                'total' => $total,
+                'page' => $page,
+                'per_page' => $limit
             ]);
         } catch (Exception $err) {
             return response()->json([
