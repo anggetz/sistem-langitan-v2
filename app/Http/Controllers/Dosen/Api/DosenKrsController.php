@@ -56,6 +56,7 @@ class DosenKrsController extends Controller
 
 
                     return [
+                        'id' => $krs->id_mahasiswa_krs_approval_sign,
                         'nama_mahasiswa' => $pengguna->nama_lengkap,
                         'program_studi' => $programStudi->nm_program_studi,
                         'fakultas' => $fakultas->nm_fakultas,
@@ -76,6 +77,26 @@ class DosenKrsController extends Controller
                 'page' => $page,
                 'per_page' => $limit
             ]);
+        } catch (Exception $err) {
+            return response()->json([
+                'message' => 'Failed to approve KRS MK.',
+                'error' => $err->getMessage()
+            ], 500);
+        }
+    }
+
+    public function detailApprovalMahasiswa(Request $request, $id) {
+        try {
+            $data = MahasiswaKrsApprovalSign::findOrFail($id);
+            $id_mhs = $data->id_mhs;
+            $id_semester = $data->id_semester;
+
+            $history = (new KrsService())->getHistoryKrsByIdMhs($id_mhs, $id_semester);
+
+            return response()->json([
+                'message' => 'Get data successfully.',
+                'data' => $history
+            ], 200);
         } catch (Exception $err) {
             return response()->json([
                 'message' => 'Failed to approve KRS MK.',
