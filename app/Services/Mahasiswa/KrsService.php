@@ -531,8 +531,15 @@ class KrsService
         $limitSks = $this->getLimitSksPerSemester($id_mhs, $id_semester - 1);
         $countKreditSemster = $this->countKreditSemester($id_mhs, $id_semester);
 
+        $mhs = Mahasiswa::find($id_mhs);
+        if (!$mhs) {
+            throw new \Exception("Mahasiswa with id $id_mhs not found.");
+        }
+
         // populate dosen wali and riwayat krs
         $data = [
+            'nama' => $mhs->pengguna?->nama_lengkap ?? '',
+            'nim' => $mhs->nim ?? '',
             'semester' => $semester->nm_semester,
             'th_semester' => $semester->thn_akademik_semester,
             'program_studi' => $semester->programStudi?->nm_program_studi,
