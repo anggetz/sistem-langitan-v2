@@ -20,5 +20,8 @@ class ProgramStudi extends Model
         return $this->jenjang->nm_jenjang . " " .$this->nm_program_studi;
     }
 
+    public function fakultas() {
+        return $this->belongsTo(Fakultas::class, 'id_fakultas', 'id_fakultas');
+    }
 
 }

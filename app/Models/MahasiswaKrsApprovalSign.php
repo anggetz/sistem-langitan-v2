@@ -20,5 +20,17 @@ class MahasiswaKrsApprovalSign extends Model
         'kredit_sks'
     ];
 
+    public function Mahasiswa() {
+        return $this->belongsTo(Mahasiswa::class, 'id_mhs', 'id_mhs');
+    }
+
+    public function semester() {
+        return $this->belongsTo(Semester::class, 'id_semester', 'id_semester');
+    }
+
+    public function MahasiswaStatus() {
+        return $this->belongsTo(MahasiswaStatus::class, 'id_mhs', 'id_mhs')->where('id_semester', $this->id_semester);
+    }
+
 
 }

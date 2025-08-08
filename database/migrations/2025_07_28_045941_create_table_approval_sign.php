@@ -25,6 +25,10 @@ return new class extends Migration
             $table->string('sign_path')->nullable();
 
             $table->integer('id_dosen')->unsigned();
+
+            $table->integer('limit_sks')->unsigned();
+
+            $table->integer('kredit_sks')->unsigned();
             // foreign to dosen
             $table->foreign('id_dosen')->references('id_dosen')->on('dosen')->onDelete('cascade');
 

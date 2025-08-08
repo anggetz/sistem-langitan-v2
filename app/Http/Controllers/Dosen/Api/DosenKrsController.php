@@ -4,11 +4,17 @@ namespace App\Http\Controllers\Dosen\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\DosenWali;
+use App\Models\Fakultas;
+use App\Models\Mahasiswa;
 use App\Models\MahasiswaKrsApprovalSign;
+use App\Models\MahasiswaStatus;
 use App\Models\Message;
 use App\Models\PengambilanMkKprs;
+use App\Models\Pengguna;
+use App\Models\ProgramStudi;
 use App\Models\Semester;
 use App\Services\Mahasiswa\KrsService;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -17,6 +23,45 @@ use Illuminate\Support\Facades\Storage;
 class DosenKrsController extends Controller
 {
     public function __construct() {}
+
+    // get list mahasiswa approve krs sign
+    public function getApprovedStudent(Request $request) {
+        try {
+            $data = MahasiswaKrsApprovalSign::
+                with([
+                    'mahasiswa.pengguna',
+                    'mahasiswa.programStudi.fakultas',
+                ])
+                ->where('id_dosen', auth()->user()->dosen->id_dosen)
+                ->get()->map(function($krs, $key) {
+                    $mhs = $krs->Mahasiswa ?? new Mahasiswa();
+                    $pengguna = $mhs->Pengguna ?? new Pengguna();
+                    $programStudi = $mhs->programStudi ?? new ProgramStudi();
+                    $fakultas = $programStudi->fakultas ?? new Fakultas();
+                    $mhsStatus = $krs->MahasiswaStatus ?? new MahasiswaStatus();
+
+
+                    return [
+                        'nama_mahasiswa' => $pengguna->nama_lengkap,
+                        'program_studi' => $programStudi->nm_program_studi,
+                        'fakultas' => $fakultas->nm_fakultas,
+                        'semester' => $krs->semester->nm_semester ?? 'N/A',
+                        'ipk' => $mhsStatus->ipk ?? 0,
+                        'ips' => $mhsStatus->ips ?? 0,
+                    ];
+                });
+
+            return response()->json([
+                'message' => 'Get data approved krs successfull',
+                'data' => $data
+            ]);
+        } catch (Exception $err) {
+            return response()->json([
+                'message' => 'Failed to approve KRS MK.',
+                'error' => $err->getMessage()
+            ], 500);
+        }
+    }
 
     public function approveKprsMk(Request $request) {
         // define the sign variable
