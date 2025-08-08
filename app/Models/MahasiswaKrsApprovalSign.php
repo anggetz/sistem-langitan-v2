@@ -15,7 +15,9 @@ class MahasiswaKrsApprovalSign extends Model
         'id_mhs',
         'id_semester',
         'id_dosen',
-        'sign_path'
+        'sign_path',
+        'limit_sks',
+        'kredit_sks'
     ];
 
 

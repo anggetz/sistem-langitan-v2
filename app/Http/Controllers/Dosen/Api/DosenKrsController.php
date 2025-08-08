@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\DosenWali;
 use App\Models\MahasiswaKrsApprovalSign;
 use App\Models\Message;
+use App\Models\PengambilanMkKprs;
 use App\Models\Semester;
 use App\Services\Mahasiswa\KrsService;
 use Illuminate\Http\Request;
@@ -23,7 +24,7 @@ class DosenKrsController extends Controller
 
         try {
             $validatedData = request()->validate([
-                'id_pengambilan_mk_kprs' => 'required',
+                'file' => 'nullable|image|max:2048', // max 2MB
                 'id_mhs' => 'required',
             ]);
 
@@ -37,6 +38,11 @@ class DosenKrsController extends Controller
                 $validatedData['sign'] = null; // or handle the case where no file is uploaded
             }
 
+            DB::beginTransaction();
+
+            // calculate limit sks for this semester
+            $currentKreditSemester = (new KrsService())->countKreditSemester($validatedData['id_mhs'], Semester::aktif()->id_semester);
+            $limitForCurrentSemester = (new KrsService())->getLimitSksPerSemester($validatedData['id_mhs'], Semester::aktif()->id_semester);
 
             // save the sign path to mahasiswa krs apprval sign
             $mahasiswaKrsApprovalSign = MahasiswaKrsApprovalSign::updateOrCreate(
@@ -44,6 +50,8 @@ class DosenKrsController extends Controller
                     'id_mhs' => $validatedData['id_mhs'],
                     'id_semester' => Semester::aktif()->id_semester,
                     'id_dosen' => auth()->user()->dosen->id_dosen,
+                    'limit_sks' => $limitForCurrentSemester,
+                    'kredit_sks' => $currentKreditSemester
                 ],
                 [
                     'sign_path' => $validatedData['sign'],
@@ -70,19 +78,27 @@ class DosenKrsController extends Controller
             }
 
             // split the id_pengambilan_mk_kprs into an array
-            $validatedData['id_pengambilan_mk_kprs'] = is_array($validatedData['id_pengambilan_mk_kprs']) ? $validatedData['id_pengambilan_mk_kprs'] : explode(',', $validatedData['id_pengambilan_mk_kprs']);
+            // $validatedData['id_pengambilan_mk_kprs'] = is_array($validatedData['id_pengambilan_mk_kprs']) ? $validatedData['id_pengambilan_mk_kprs'] : explode(',', $validatedData['id_pengambilan_mk_kprs']);
+            PengambilanMkKprs::
+                where('id_mhs', $validatedData['id_mhs'])
+                ->where('id_semester', $semesterAktif->id_semester)
+                ->update([
+                    'status_apv_pengambilan_mk' => 1
+                ]);
 
-            $result = (new KrsService())->approveKprsMk($validatedData['id_pengambilan_mk_kprs']);
+            DB::commit();
 
             return response()->json([
                 'message' => 'KRS MK approved successfully.',
-                'data' => $result
+                'data' => true,
             ], 200);
         } catch (\Exception $e) {
             // if error remove the uploaded sign image
             if (isset($validatedData['sign']) && $validatedData['sign']) {
                 Storage::disk('public')->delete($validatedData['sign']);
             }
+
+            DB::rollBack();
 
             return response()->json([
                 'message' => 'Failed to approve KRS MK.',
