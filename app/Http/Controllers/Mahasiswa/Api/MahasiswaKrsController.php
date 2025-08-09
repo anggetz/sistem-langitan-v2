@@ -84,7 +84,7 @@ class MahasiswaKrsController extends Controller
                 return response()->json([
                     'message' => 'Dosen anda sudah menandatangani KRS anda, silakan hubungi dosen anda untuk melakukan perubahan.',
                 ], 400);
-            } else {
+            } else if (empty($mahasiswaKrsApprovalSign)) {
                 // create the data
                 // the sign is flag to indicate that the mahasiswa has signed the KRS
                 $mahasiswaKrsApprovalSign = new MahasiswaKrsApprovalSign();
