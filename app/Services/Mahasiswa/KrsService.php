@@ -65,14 +65,20 @@ class KrsService
         $perPage = request()->get('per_page', 10);
         $offset = ($page - 1) * $perPage;
 
+
         $semesterAktif = Semester::aktif();
         if (!$semesterAktif) {
             throw new \Exception("Semester aktif tidak ditemukan.");
         }
 
         $q = KrsProdi::whereHas('kelasMk', function ($query) use ($semesterAktif, $id_program_studi) {
-            $query->where('id_semester', $semesterAktif->id_semester)
-                ->where('id_program_studi', $id_program_studi);
+            $query->where('id_semester', $semesterAktif->id_semester);
+
+            if (is_array($id_program_studi)) {
+                $query->whereIn('id_program_studi', $id_program_studi);
+            } else {
+                $query->where('id_program_studi', $id_program_studi);
+            }
         });
 
         // get total count
@@ -379,9 +385,12 @@ class KrsService
                 'mahasiswa' => function ($q2) {
                     $q2->select([
                         'id_mhs',
-                        'id_pengguna'
+                        'id_pengguna',
+                        'id_program_studi',
                     ])
                         ->with([
+
+                            'programStudi.fakultas',
                             'pengguna' => function ($q3) {
                                 $q3->select([
                                     'id_pengguna',
@@ -435,6 +444,8 @@ class KrsService
                     'no_kelas_mk' => optional($item->kelasMk)->no_kelas_mk,
                     'jadwal_kelas' => $jadwalAll,
                     'pengampu_mk' => $pengampus,
+                    'fakultas' => $item->mahasiswa->programStudi->fakultas->nm_fakultas ?? '-',
+                    'program_studi' => $item->mahasiswa->programStudi->nm_program_studi ?? '-',
                     'status_approval' => $item->status_apv_pengambilan_mk,
                     'id_mata_kuliah' => optional($item->kelasMk)->id_mata_kuliah,
                     'nm_mata_kuliah' => !empty($mataKuliah) ? optional($item->kelasMk->mataKuliah)->nm_mata_kuliah : '-',

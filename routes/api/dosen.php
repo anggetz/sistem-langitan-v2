@@ -43,8 +43,8 @@ Route::group(
                 Route::post('approve_course', 'approveKprsMk');
                 Route::get('list_course_approval', 'listCourseApproval');
                 Route::get('list_student_approval', 'listStudentNeedApproval');
-                Route::get('list_approved_student', 'getApprovedStudent');
                 Route::get('detail_approved_student/{id}', 'detailApprovalMahasiswa');
+                Route::get('list_course_krs', 'listMataKuliahByActiveSemesterAndProdi');
             }
         );
 
