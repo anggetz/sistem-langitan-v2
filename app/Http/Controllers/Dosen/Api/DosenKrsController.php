@@ -25,7 +25,7 @@ class DosenKrsController extends Controller
     public function __construct() {}
 
     // get list mahasiswa approve krs sign
-    public function getApprovedStudent(Request $request) {
+    public function getListKrs(Request $request) {
         try {
             // pagination parameter
             $limit = $request->get('perPage', 10);
