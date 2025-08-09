@@ -24,9 +24,72 @@ class DosenKrsController extends Controller
 {
     public function __construct() {}
 
+    // get list mahasiswa approve krs sign
+    public function getApprovedStudent(Request $request) {
+        try {
+            // pagination parameter
+            $limit = $request->get('perPage', 10);
+            $page = $request->get('page', 1);
+            $offset = ($page - 1) * $limit;
+
+
+            $q = MahasiswaKrsApprovalSign::
+                with([
+                    'mahasiswa.pengguna',
+                    'mahasiswa.programStudi.fakultas',
+                    'mahasiswaStatus'
+                ]);
+
+            $total = $q->count();
+
+            $data = $q->where('id_dosen', auth()->user()->dosen->id_dosen)
+                ->limit($limit)
+                ->offset($offset)
+                ->orderBy('created_at', 'desc')
+                ->get()
+                ->map(function($krs, $key) {
+                    $mhs = $krs->Mahasiswa ?? new Mahasiswa();
+                    $pengguna = $mhs->Pengguna ?? new Pengguna();
+                    $programStudi = $mhs->programStudi ?? new ProgramStudi();
+                    $fakultas = $programStudi->fakultas ?? new Fakultas();
+                    $mhsStatus = $krs->MahasiswaStatus ?? new MahasiswaStatus();
+
+
+                    return [
+                        'id' => $krs->id_mahasiswa_krs_approval_sign,
+                        'id_mhs' => $mhs->id_mhs,
+                        'nama_mahasiswa' => $pengguna->nama_lengkap,
+                        'program_studi' => $programStudi->nm_program_studi,
+                        'fakultas' => $fakultas->nm_fakultas,
+                        'semester' => $krs->semester->nm_semester ?? 'N/A',
+                        'ipk' => $mhsStatus->ipk ?? 0,
+                        'limit_sks' => $krs->limit_sks,
+                        'kredit_sks' => $krs->kredit_sks,
+                        'is_approved' => empty($krs->sign_path) ? false : true,
+                        'ips' => $mhsStatus->ips ?? 0,
+                    ];
+                });
+
+
+            return response()->json([
+                'message' => 'Get data approved krs successfull',
+                'status' => Message::OK,
+                'data' => $data,
+                'total' => $total,
+                'page' => $page,
+                'per_page' => $limit
+            ]);
+        } catch (Exception $err) {
+            return response()->json([
+                'message' => 'Failed to approve KRS MK.',
+                'error' => $err->getMessage()
+            ], 500);
+        }
+    }
 
     public function detailApprovalMahasiswa(Request $request, $id_mhs, $id_semester) {
         try {
+
             $history = (new KrsService())->getHistoryKrsByIdMhs($id_mhs, $id_semester);
 
             return response()->json([
