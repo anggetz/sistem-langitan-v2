@@ -93,7 +93,7 @@ class MahasiswaKrsController extends Controller
                 $mahasiswaKrsApprovalSign->save();
             }
 
-            $result = (new MahasiswaKrsService())->takeCourse($request->id_kelas_mks);
+            $result = (new MahasiswaKrsService())->takeCourse($request->id_kelas_mks, auth()->user()->mahasiswa->id_mhs);
 
             return response()->json([
                 'message' => 'Berhasil mendaftar mata kuliah.',
@@ -124,7 +124,7 @@ class MahasiswaKrsController extends Controller
                 ], 400);
             }
 
-            $result = (new MahasiswaKrsService())->leaveCourse($request->id_kelas_mks);
+            $result = (new MahasiswaKrsService())->leaveCourse($request->id_kelas_mks, auth()->user()->mahasiswa->id_mhs);
 
             return response()->json([
                 'message' => 'Mata kuliah berhasil dilepas.',

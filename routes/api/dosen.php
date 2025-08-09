@@ -46,6 +46,8 @@ Route::group(
                 Route::get('detail_approved_student/{id_mhs}/{id_semester}', 'detailApprovalMahasiswa');
                 Route::get('list_course_krs', 'listMataKuliahByActiveSemesterAndProdi');
                 Route::get('list_krs', 'getListKrs');
+                Route::post('take_course', 'takeCourse');
+                Route::post('leave_course', 'leaveCourse');
             }
         );
 

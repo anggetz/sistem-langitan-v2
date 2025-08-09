@@ -34,7 +34,8 @@ class KelasMk extends Model
     }
 
     function pengambilanMkKprs(){
-        return $this->hasMany(PengambilanMkKprs::class,"id_kelas_mk","id_kelas_mk");
+        return $this->hasMany(PengambilanMkKprs::class,"id_kelas_mk","id_kelas_mk")
+            ->where('pengambilan_mk_kprs.id_mhs', '=', $this->id_mhs);
     }
 
     public function semester(){

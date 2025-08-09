@@ -9,6 +9,7 @@ use App\Models\Mahasiswa;
 use App\Models\MahasiswaKrsApprovalSign;
 use App\Models\MahasiswaStatus;
 use App\Models\Message;
+use App\Models\PengambilanMk;
 use App\Models\PengambilanMkKprs;
 use App\Models\Pengguna;
 use App\Models\ProgramStudi;
@@ -170,9 +171,47 @@ class DosenKrsController extends Controller
                 where('id_mhs', $validatedData['id_mhs'])
                 ->where('id_semester', $semesterAktif->id_semester)
                 ->update([
-                    'status_apv_pengambilan_mk' => 1
+                    'status_apv_pengambilan_mk' => 1,
+                    'status_pengambilan_mk' => 1,
                 ]);
 
+            $data = PengambilanMkKprs::
+                where('id_mhs', $validatedData['id_mhs'])
+                ->where('id_semester', $semesterAktif->id_semester)
+                ->whereHas('kelasMk')
+                ->get()
+                ->map(function ($item) {
+                    return [
+                        'id_mhs' => $item->id_mhs,
+                        'id_kelas_mk' => $item->id_kelas_mk,
+                        'status_apv_pengambilan_mk' => $item->status_apv_pengambilan_mk,
+                        'status_pengambilan_mk' => $item->status_pengambilan_mk,
+                        'id_semester' => $item->id_semester,
+                        'nilai_angka' => 0,
+                        'nilai_huruf' => '-',
+                        'status_hapus' => 0,
+                        'created_on' => date('Y-m-d'),
+                        'updated_on' => date('Y-m-d'),
+                    ];
+                })
+                ->toArray();
+
+            // insert to pengambilan mk
+            PengambilanMk::upsert($data,
+                ['id_mhs', 'id_kelas_mk', 'id_semester'],
+                [
+                    'id_mhs',
+                    'id_kelas_mk',
+                    'status_apv_pengambilan_mk',
+                    'status_pengambilan_mk',
+                    'id_semester',
+                    'nilai_angka',
+                    'nilai_huruf',
+                    'status_hapus',
+                    'created_on',
+                    'updated_on'
+                ]
+            );
             DB::commit();
 
             return response()->json([
@@ -234,26 +273,73 @@ class DosenKrsController extends Controller
     {
         try {
             // get program studi from dosen wali mhs
-            $idsProgramStudi = DosenWali::where('id_dosen', auth()->user()->dosen->id_dosen)
-                ->where('status_dosen_wali', 1)
-                ->where('id_semester', Semester::aktif()->id_semester)
-                ->with(['mahasiswa'])
-                ->get()->pluck('mahasiswa.id_program_studi');
+           $validatedData = $request->validate([
+                // 'id_program_studi' => 'required|integer',
+                'id_mhs' => 'required|integer',
+            ]);
 
-            if (is_null($idsProgramStudi)) {
+            $id_mhs = $validatedData['id_mhs'];
+
+            $mahasiswa = Mahasiswa::find($id_mhs);
+            if (empty($mahasiswa)) {
                 return response()->json([
-                    'message' => 'No program studi found for the current semester.',
+                    'message' => 'Mahasiswa tidak ditemukan'
                 ], 404);
             }
 
-            $res = (new KrsService())->listMataKuliahByActiveSemesterAndProdi($idsProgramStudi);
+            $res = (new KrsService())->listMataKuliahByActiveSemesterAndProdi($mahasiswa->id_program_studi, Semester::aktif()->id_semester);
             return response()->json($res, 200);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to retrieve data.',
                 'error' => $e->getMessage(),
-                'line' => $e->getLine(),
-                'file' => $e->getFile()
+            ], 500);
+        }
+    }
+
+    public function takeCourse(Request $request)
+    {
+        try {
+            $validatedData = $request->validate([
+                'id_kelas_mks' => 'required|array',
+                'id_mhs' => 'required|integer',
+            ]);
+
+            // take course using KrsService
+            $result = (new KrsService())->takeCourse($validatedData['id_kelas_mks'], $validatedData['id_mhs']);
+
+            return response()->json([
+                'message' => 'Successfully leaving for courses.',
+                'data' => $result,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to leaving for courses.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+
+    public function leaveCourse(Request $request)
+    {
+        try {
+            $validatedData = $request->validate([
+                'id_kelas_mks' => 'required|array',
+                'id_mhs' => 'required|integer',
+            ]);
+
+            // take course using KrsService
+            $result = (new KrsService())->leaveCourse($validatedData['id_kelas_mks'], $validatedData['id_mhs']);
+
+            return response()->json([
+                'message' => 'Successfully registered for courses.',
+                'data' => $result,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to register for courses.',
+                'error' => $e->getMessage()
             ], 500);
         }
     }
