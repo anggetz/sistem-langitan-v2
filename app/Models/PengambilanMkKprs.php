@@ -51,7 +51,6 @@ class PengambilanMkKprs extends Model
     {
         return $this->belongsTo(KelasMk::class, "id_kelas_mk", "id_kelas_mk");
     }
-
     public function activePresensiKelas()
     {
         return $this->belongsTo(PresensiKelas::class, "id_kelas_mk", "id_kelas_mk")
