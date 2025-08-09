@@ -309,12 +309,12 @@ class DosenKrsController extends Controller
             $result = (new KrsService())->takeCourse($validatedData['id_kelas_mks'], $validatedData['id_mhs']);
 
             return response()->json([
-                'message' => 'Successfully leaving for courses.',
+                'message' => 'Successfully taking for courses.',
                 'data' => $result,
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Failed to leaving for courses.',
+                'message' => 'Failed to taking for courses.',
                 'error' => $e->getMessage()
             ], 500);
         }
@@ -333,12 +333,12 @@ class DosenKrsController extends Controller
             $result = (new KrsService())->leaveCourse($validatedData['id_kelas_mks'], $validatedData['id_mhs']);
 
             return response()->json([
-                'message' => 'Successfully registered for courses.',
+                'message' => 'Successfully leaving for courses.',
                 'data' => $result,
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Failed to register for courses.',
+                'message' => 'Failed to leaving for courses.',
                 'error' => $e->getMessage()
             ], 500);
         }
