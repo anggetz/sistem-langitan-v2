@@ -161,7 +161,6 @@ class KrsService
                     'kapasitas_kelas_mk' => $kelasMk->kapasitas_kelas_mk,
                     'no_kelas_mk' => $kelasMk->no_kelas_mk,
                     'id_mata_kuliah' => $kelasMk->id_mata_kuliah,
-
                     'nama_kelas' => $kelasMk->nama->nama_kelas ?? '',
                     'nm_mata_kuliah' => $mataKuliah->nm_mata_kuliah ?? '',
                     'kd_mata_kuliah' => $mataKuliah->kd_mata_kuliah ?? '',
@@ -485,7 +484,7 @@ class KrsService
                 'kelasMk.jadwalKelas.jadwalJam',
                 'kelasMk.jadwalKelas.ruangan',
                 'kelasMk.jadwalKelas.ruangan.gedung',
-                'semester'
+                'semester',
             ]);
 
         if (!empty($id_semester)) {
@@ -548,6 +547,10 @@ class KrsService
             throw new \Exception("Mahasiswa with id $id_mhs not found.");
         }
 
+        $krsSubmitting = MahasiswaKrsApprovalSign::where('id_mhs', $id_mhs)
+            ->where('id_semester', $id_semester)
+            ->first();
+
         // populate dosen wali and riwayat krs
         $data = [
             'nama' => $mhs->pengguna?->nama_lengkap ?? '',
@@ -555,6 +558,7 @@ class KrsService
             'semester' => $semester->nm_semester,
             'th_semester' => $semester->thn_akademik_semester,
             'program_studi' => $semester->programStudi?->nm_program_studi,
+            'status_approval' => !empty($krsSubmitting) && !empty($krsSubmitting->sign_path),
             'limit_sks' => $limitSks,
             'count_kredit_semester' => $countKreditSemster,
             'dosen_wali' => [
