@@ -58,7 +58,7 @@ class KrsService
         return true; // Placeholder for actual validation logic
     }
 
-    public function listMataKuliahByActiveSemesterAndProdi($id_program_studi)
+    public function listMataKuliahByActiveSemesterAndProdi($id_program_studi, $id_semester = null)
     {
 
         $page = request()->get('page', 1);
@@ -71,15 +71,16 @@ class KrsService
             throw new \Exception("Semester aktif tidak ditemukan.");
         }
 
-        $q = KrsProdi::whereHas('kelasMk', function ($query) use ($semesterAktif, $id_program_studi) {
-            $query->where('id_semester', $semesterAktif->id_semester);
+        $q = KrsProdi::whereHas('kelasMk', function ($query) use ($semesterAktif, $id_program_studi, $id_semester) {
+            $query->where('id_program_studi', $id_program_studi);
 
-            if (is_array($id_program_studi)) {
-                $query->whereIn('id_program_studi', $id_program_studi);
-            } else {
-                $query->where('id_program_studi', $id_program_studi);
-            }
         });
+
+        if ($id_semester) {
+            $q->where('id_semester', $id_semester);
+        } else {
+            $q->where('id_semester', $semesterAktif->id_semester);
+        }
 
         // get total count
         $totalCount = $q->count();
@@ -181,7 +182,7 @@ class KrsService
         ];
     }
 
-    public function takeCourse($id_kelas_mks = [])
+    public function takeCourse($id_kelas_mks = [], $id_mhs)
     {
 
         $semesterAktif = Semester::aktif();
@@ -190,14 +191,14 @@ class KrsService
         }
 
         // validate kredit semester with limit
-        $this->validatingKreditSemsesterWithLimit(auth()->user()->mahasiswa->id_mhs, $semesterAktif->id_semester);
+        $this->validatingKreditSemsesterWithLimit($id_mhs, $semesterAktif->id_semester);
 
 
         DB::beginTransaction();
 
         foreach ($id_kelas_mks as $id_kelas_mk) {
             $pengambilanMkKprs = PengambilanMkKprs::where('id_kelas_mk', $id_kelas_mk)
-                ->where('id_mhs', auth()->user()->mahasiswa->id_mhs)
+                ->where('id_mhs', $id_mhs)
                 ->first();
 
             if ($pengambilanMkKprs) {
@@ -207,7 +208,7 @@ class KrsService
 
             $pengambilanMkKprs = new PengambilanMkKprs();
             $pengambilanMkKprs->id_kelas_mk = $id_kelas_mk;
-            $pengambilanMkKprs->id_mhs = auth()->user()->mahasiswa->id_mhs;
+            $pengambilanMkKprs->id_mhs = $id_mhs;
             $pengambilanMkKprs->id_semester = $semesterAktif->id_semester;
             $pengambilanMkKprs->status_apv_pengambilan_mk = 0; // Not approved yet
             $pengambilanMkKprs->save();
@@ -220,7 +221,7 @@ class KrsService
         return true;
     }
 
-    public function leaveCourse($id_kelas_mks = [])
+    public function leaveCourse($id_kelas_mks = [], $id_mhs)
     {
 
         $semesterAktif = Semester::aktif();
@@ -232,7 +233,7 @@ class KrsService
 
         foreach ($id_kelas_mks as $id_kelas_mk) {
             $pengambilanMkKprs = PengambilanMkKprs::where('id_kelas_mk', $id_kelas_mk)
-                ->where('id_mhs', auth()->user()->mahasiswa->id_mhs)
+                ->where('id_mhs', $id_mhs)
                 ->first();
 
             if (empty($pengambilanMkKprs)) {
@@ -476,7 +477,7 @@ class KrsService
             throw new \Exception("Semester with id $id_semester not found.");
         }
 
-        $q = PengambilanMk::where('id_mhs', $id_mhs)
+        $q = PengambilanMkKprs::where('id_mhs', $id_mhs)
             ->with([
                 'kelasMk.programStudi',
                 'kelasMk.mataKuliah',
@@ -526,7 +527,7 @@ class KrsService
             }
 
             return [
-                'id_kelas_mk' => $kelasMk->id_kelas_mk,
+                'id_kelas_mk' => $item->id_kelas_mk,
                 'status_apv' => $item->status_apv_pengambilan_mk,
                 'semester' => $semester->nm_semester,
                 'th_semester' => $semester->thn_akademik_semester,
@@ -646,14 +647,16 @@ class KrsService
         $countKreditSemster = 0;
 
         // get kredit semester from pengambilan mk relation kelas mk
-        PengambilanMk::where('id_mhs', $id_mhs)
+        PengambilanMkKprs::where('id_mhs', $id_mhs)
             ->where('id_semester', $id_semester)
             ->with(['kelasMk' => function ($query) {
                 $query->select('id_kelas_mk', 'kredit_semester');
             }])
             ->get()
             ->each(function ($pengambilanMk) use (&$countKreditSemster) {
-                $countKreditSemster += $pengambilanMk->kelasMk->kredit_semester;
+                $kelasMk = $pengambilanMk->kelasMk ?? new KelasMk();
+
+                $countKreditSemster += $kelasMk->kredit_semester;
             });
         return $countKreditSemster;
     }
