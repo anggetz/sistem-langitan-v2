@@ -25,7 +25,7 @@ class DosenKrsController extends Controller
     public function __construct() {}
 
     // get list mahasiswa approve krs sign
-    public function getApprovedStudent(Request $request) {
+    public function getListKrs(Request $request) {
         try {
             // pagination parameter
             $limit = $request->get('perPage', 10);
@@ -57,13 +57,16 @@ class DosenKrsController extends Controller
 
                     return [
                         'id' => $krs->id_mahasiswa_krs_approval_sign,
+                        'id_mhs' => $mhs->id_mhs,
                         'nama_mahasiswa' => $pengguna->nama_lengkap,
                         'program_studi' => $programStudi->nm_program_studi,
                         'fakultas' => $fakultas->nm_fakultas,
                         'semester' => $krs->semester->nm_semester ?? 'N/A',
+                        'id_semester' => $krs->id_semester,
                         'ipk' => $mhsStatus->ipk ?? 0,
                         'limit_sks' => $krs->limit_sks,
                         'kredit_sks' => $krs->kredit_sks,
+                        'is_approved' => empty($krs->sign_path) ? false : true,
                         'ips' => $mhsStatus->ips ?? 0,
                     ];
                 });
@@ -85,11 +88,8 @@ class DosenKrsController extends Controller
         }
     }
 
-    public function detailApprovalMahasiswa(Request $request, $id) {
+    public function detailApprovalMahasiswa(Request $request, $id_mhs, $id_semester) {
         try {
-            $data = MahasiswaKrsApprovalSign::findOrFail($id);
-            $id_mhs = $data->id_mhs;
-            $id_semester = $data->id_semester;
 
             $history = (new KrsService())->getHistoryKrsByIdMhs($id_mhs, $id_semester);
 
@@ -225,6 +225,35 @@ class DosenKrsController extends Controller
             return response()->json([
                 'message' => 'Failed to get data.',
                 'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+
+    public function listMataKuliahByActiveSemesterAndProdi(Request $request)
+    {
+        try {
+            // get program studi from dosen wali mhs
+            $idsProgramStudi = DosenWali::where('id_dosen', auth()->user()->dosen->id_dosen)
+                ->where('status_dosen_wali', 1)
+                ->where('id_semester', Semester::aktif()->id_semester)
+                ->with(['mahasiswa'])
+                ->get()->pluck('mahasiswa.id_program_studi');
+
+            if (is_null($idsProgramStudi)) {
+                return response()->json([
+                    'message' => 'No program studi found for the current semester.',
+                ], 404);
+            }
+
+            $res = (new KrsService())->listMataKuliahByActiveSemesterAndProdi($idsProgramStudi);
+            return response()->json($res, 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to retrieve data.',
+                'error' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile()
             ], 500);
         }
     }
