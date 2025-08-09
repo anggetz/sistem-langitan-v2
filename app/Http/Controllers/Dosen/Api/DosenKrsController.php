@@ -62,6 +62,7 @@ class DosenKrsController extends Controller
                         'program_studi' => $programStudi->nm_program_studi,
                         'fakultas' => $fakultas->nm_fakultas,
                         'semester' => $krs->semester->nm_semester ?? 'N/A',
+                        'id_semester' => $krs->id_semester,
                         'ipk' => $mhsStatus->ipk ?? 0,
                         'limit_sks' => $krs->limit_sks,
                         'kredit_sks' => $krs->kredit_sks,
