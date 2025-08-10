@@ -565,13 +565,15 @@ class KrsService
             ->where('id_semester', $id_semester)
             ->first();
 
+        $pengguna = Pengguna::find($mhs->id_pengguna);
+
         // populate dosen wali and riwayat krs
         $data = [
-            'nama' => $mhs->pengguna?->nama_lengkap ?? '',
-            'nim' => $mhs->nim ?? '',
+            'nama' => $pengguna->nama_lengkap ?? '',
+            'nim' => $mhs->nim_mhs ?? '',
             'semester' => $semester->nm_semester,
             'th_semester' => $semester->thn_akademik_semester,
-            'program_studi' => $semester->programStudi?->nm_program_studi,
+            'program_studi' => $mhs->programStudi?->nm_program_studi,
             'status_approval' => !empty($krsSubmitting) && !empty($krsSubmitting->sign_path),
             'limit_sks' => $limitSks,
             'count_kredit_semester' => $countKreditSemster,
