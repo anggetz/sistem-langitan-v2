@@ -194,8 +194,11 @@ class KrsService
             throw new \Exception("Tidak ada semester aktif yang ditemukan.");
         }
 
+        $sksNeedToValidating = KelasMk::whereIn('id_kelas_mk', $id_kelas_mks)
+            ->sum('kredit_semester');
+
         // validate kredit semester with limit
-        $this->validatingKreditSemsesterWithLimit($id_mhs, $semesterAktif->id_semester);
+        $this->validatingKreditSemsesterWithLimit($id_mhs, $semesterAktif->id_semester, $sksNeedToValidating);
 
 
         DB::beginTransaction();
@@ -640,6 +643,7 @@ class KrsService
             }
         )->first();
 
+
         if ($mahasiswa === null) {
             // throw new \Exception("Mahasiswa dengan ID $id_mhs tidak ditemukan atau tidak memiliki riwayat nilai untuk semester $id_semester.");
             Log::error("Mahasiswa dengan ID $id_mhs tidak ditemukan atau tidak memiliki riwayat nilai untuk semester $id_semester.");
@@ -656,6 +660,7 @@ class KrsService
             ->orderBy('ipk_minimum', 'desc')
             // ->where('id_semester', $id_semester)
             ->first();
+
 
         $limitSks = (int)$bebanSks->sks_maksimal ?? 0;
         return $limitSks;
@@ -681,12 +686,12 @@ class KrsService
     }
 
 
-    public function validatingKreditSemsesterWithLimit($id_mhs, $id_semester)
+    public function validatingKreditSemsesterWithLimit($id_mhs, $id_semester, $sksNeedToAdded = 0)
     {
         $limitSks = $this->getLimitSksPerSemester($id_mhs, $id_semester);
         $countKreditSemster = $this->countKreditSemester($id_mhs, $id_semester);
 
-        if ($countKreditSemster > $limitSks) {
+        if ($countKreditSemster+ $sksNeedToAdded > $limitSks ) {
             throw new \Exception("Batas maksimal SKS per semester adalah $limitSks SKS. Anda sudah mengambil $countKreditSemster SKS.");
         }
 
