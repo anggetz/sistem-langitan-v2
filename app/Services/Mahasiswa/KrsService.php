@@ -92,6 +92,7 @@ class KrsService
                 $query->select([
                     'id_kelas_mk',
                     'kapasitas_kelas_mk',
+                    'kredit_semester',
                     'no_kelas_mk',
                     'id_mata_kuliah',
                     'terisi_kelas_mk'
@@ -166,7 +167,7 @@ class KrsService
                     'nama_kelas' => $kelasMk->nama->nama_kelas ?? '',
                     'nm_mata_kuliah' => $mataKuliah->nm_mata_kuliah ?? '',
                     'kd_mata_kuliah' => $mataKuliah->kd_mata_kuliah ?? '',
-                    'sks' => $mataKuliah->kredit_semester ?? 0,
+                    'sks' => $kelasMk->kredit_semester ?? 0,
                     'pengampu_mk' => $pengampus,
                     'jadwal_kelas' => $jadwalAll,
                     'sudah_diambil' => count($kelasMk->pengambilanMkKprs) > 0 ? true : false,
