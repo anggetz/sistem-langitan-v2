@@ -166,7 +166,7 @@ class KrsService
                     'nama_kelas' => $kelasMk->nama->nama_kelas ?? '',
                     'nm_mata_kuliah' => $mataKuliah->nm_mata_kuliah ?? '',
                     'kd_mata_kuliah' => $mataKuliah->kd_mata_kuliah ?? '',
-                    'sks' => $mataKuliah->kredit_mata_kuliah ?? 0,
+                    'sks' => $mataKuliah->kredit_semester ?? 0,
                     'pengampu_mk' => $pengampus,
                     'jadwal_kelas' => $jadwalAll,
                     'sudah_diambil' => count($kelasMk->pengambilanMkKprs) > 0 ? true : false,
