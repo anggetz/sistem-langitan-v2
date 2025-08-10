@@ -53,6 +53,7 @@ class KrsService
             ->where('tgl_selesai_jks', '>=', Carbon::now()->timezone(env('APP_TIMEZONE')))
             ->first();
 
+
         if (!$jadwalKegiatanSemester) {
             throw new \Exception("Tidak ada jadwal kegiatan KRS untuk semester aktif.");
         }
