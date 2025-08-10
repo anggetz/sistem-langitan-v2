@@ -469,10 +469,9 @@ class KrsService
         $dosenWali = DosenWali::where('id_mhs', $id_mhs)
             ->where('id_semester', $id_semester)
             ->with(['dosen' => function ($q) {
-                $q->select(['id_dosen', 'id_pengguna'])
-                    ->with(['pengguna' => function ($q2) {
-                        $q2->select(['id_pengguna', DB::raw("gelar_depan || ' ' || nm_pengguna || ' ' || gelar_belakang as nama_lengkap")]);
-                    }]);
+                $q->join('pengguna', 'pengguna.id_pengguna', 'dosen.id_pengguna')
+                            ->select(['pengguna.nm_pengguna', 'dosen.id_dosen']);
+
             }])
             ->first();
 
@@ -576,7 +575,7 @@ class KrsService
             'count_kredit_semester' => $countKreditSemster,
             'dosen_wali' => [
                 'id_dosen' => $dosenWali->dosen?->id_dosen ?? null,
-                'nama_dosen' => $dosenWali->dosen?->pengguna?->nama_lengkap ?? '',
+                'nama_dosen' => $dosenWali->dosen?->nm_pengguna ?? '',
             ],
             'riwayat_krs' => $data,
         ];
