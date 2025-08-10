@@ -198,7 +198,7 @@ class KrsService
             ->sum('kredit_semester');
 
         // validate kredit semester with limit
-        $dataSks = $this->validatingKreditSemsesterWithLimit($id_mhs, $semesterAktif->id_semester, $sksNeedToValidating);
+        $dataSks = $this->validatingKreditSemsesterWithLimit($id_mhs, $semesterAktif->id_semester, $sksNeedToValidating, $subject);
 
 
         DB::beginTransaction();
@@ -687,13 +687,13 @@ class KrsService
     }
 
 
-    public function validatingKreditSemsesterWithLimit($id_mhs, $id_semester, $sksNeedToAdded = 0)
+    public function validatingKreditSemsesterWithLimit($id_mhs, $id_semester, $sksNeedToAdded = 0, $subject = 'Anda')
     {
         $limitSks = $this->getLimitSksPerSemester($id_mhs, $id_semester);
         $countKreditSemster = $this->countKreditSemester($id_mhs, $id_semester);
 
         if ($countKreditSemster + $sksNeedToAdded > $limitSks) {
-            throw new \Exception("Batas maksimal SKS per semester adalah $limitSks SKS. Anda sudah mengambil $countKreditSemster SKS.");
+            throw new \Exception("Batas maksimal SKS per semester adalah $limitSks SKS. $subject sudah mengambil $countKreditSemster SKS.");
         }
 
         return [
