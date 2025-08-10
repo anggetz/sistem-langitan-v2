@@ -329,7 +329,7 @@ class DosenKrsController extends Controller
             ]);
 
             // validate if any data in mahasiswa krs approval sign cannot take course
-            $mahasiswaKrsApprovalSign = MahasiswaKrsApprovalSign::where('id_mhs', auth()->user()->mahasiswa->id_mhs)
+            $mahasiswaKrsApprovalSign = MahasiswaKrsApprovalSign::where('id_mhs', $validatedData['id_mhs'])
                 ->where('id_semester', Semester::aktif()->id_semester)
                 ->first();
 
@@ -365,7 +365,7 @@ class DosenKrsController extends Controller
             ]);
 
             // validate if any data in mahasiswa krs approval sign cannot take course
-            $mahasiswaKrsApprovalSign = MahasiswaKrsApprovalSign::where('id_mhs', auth()->user()->mahasiswa->id_mhs)
+            $mahasiswaKrsApprovalSign = MahasiswaKrsApprovalSign::where('id_mhs', $validatedData['id_mhs'])
                 ->where('id_semester', Semester::aktif()->id_semester)
                 ->first();
 
