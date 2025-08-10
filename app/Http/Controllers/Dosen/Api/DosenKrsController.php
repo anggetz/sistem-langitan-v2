@@ -37,10 +37,10 @@ class DosenKrsController extends Controller
 
 
             $q = MahasiswaKrsApprovalSign::with([
-                    'mahasiswa.pengguna',
-                    'mahasiswa.programStudi.fakultas',
-                    'mahasiswaStatus'
-                ]);
+                'mahasiswa.pengguna',
+                'mahasiswa.programStudi.fakultas',
+                'mahasiswaStatus'
+            ]);
 
             $total = $q->count();
 
@@ -340,10 +340,6 @@ class DosenKrsController extends Controller
                 ->where('id_semester', Semester::aktif()->id_semester)
                 ->sum('kredit_semester');
 
-            return response()->json([
-                'message' => 'SKS tidak boleh kurang dari 0',
-            ], 400);
-
             $mahasiswaKrsApprovalSign->limit_sks = $mahasiswaKrsApprovalSign->limit_sks + $totalSks;
             $mahasiswaKrsApprovalSign->save();
 
@@ -381,6 +377,9 @@ class DosenKrsController extends Controller
                 ->sum('kredit_semester');
 
             if ($mahasiswaKrsApprovalSign->limit_sks - $totalSks < 0) {
+                return response()->json([
+                    'message' => 'SKS tidak boleh kurang dari 0',
+                ], 400);
             }
 
             $mahasiswaKrsApprovalSign->limit_sks = $mahasiswaKrsApprovalSign->limit_sks - $totalSks;
