@@ -632,11 +632,11 @@ class KrsService
         if ($mahasiswa === null) {
             // throw new \Exception("Mahasiswa dengan ID $id_mhs tidak ditemukan atau tidak memiliki riwayat nilai untuk semester $id_semester.");
             Log::error("Mahasiswa dengan ID $id_mhs tidak ditemukan atau tidak memiliki riwayat nilai untuk semester $id_semester.");
-            return 0;
+            return 24;
         }
 
         if ($mahasiswa->historyNilai->isEmpty()) {
-            return 0; // No grades, so no SKS limit
+            return 24; // No grades, so no SKS limit
         }
 
         $bebanSks = BebanSks::where('ipk_minimum', '<=', $mahasiswa->historyNilai->first()->ipk)
