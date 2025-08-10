@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Dosen\Api;
 use App\Http\Controllers\Controller;
 use App\Models\DosenWali;
 use App\Models\Fakultas;
+use App\Models\KelasMk;
 use App\Models\Mahasiswa;
 use App\Models\MahasiswaKrsApprovalSign;
 use App\Models\MahasiswaStatus;
@@ -26,7 +27,8 @@ class DosenKrsController extends Controller
     public function __construct() {}
 
     // get list mahasiswa approve krs sign
-    public function getListKrs(Request $request) {
+    public function getListKrs(Request $request)
+    {
         try {
             // pagination parameter
             $limit = $request->get('perPage', 10);
@@ -34,21 +36,29 @@ class DosenKrsController extends Controller
             $offset = ($page - 1) * $limit;
 
 
-            $q = MahasiswaKrsApprovalSign::
-                with([
-                    'mahasiswa.pengguna',
-                    'mahasiswa.programStudi.fakultas',
-                    'mahasiswaStatus'
-                ]);
+            $q = MahasiswaKrsApprovalSign::with([
+                'mahasiswa.pengguna',
+                'mahasiswa.programStudi.fakultas',
+                'mahasiswaStatus'
+            ]);
 
             $total = $q->count();
 
+            // get dosen mahasiswa allowable
+            $listMhs = DosenWali::where('id_dosen', auth()->user()->dosen->id_dosen)
+                ->get()
+                ->map(function ($item) {
+                    return $item->id_mhs;
+                });
+
             $data = $q
+                ->where('id_semester', Semester::aktif()->id_semester)
+                ->whereIn('id_mhs', $listMhs)
                 ->limit($limit)
                 ->offset($offset)
                 ->orderBy('created_at', 'desc')
                 ->get()
-                ->map(function($krs, $key) {
+                ->map(function ($krs, $key) {
                     $mhs = $krs->Mahasiswa ?? new Mahasiswa();
                     $pengguna = $mhs->Pengguna ?? new Pengguna();
                     $programStudi = $mhs->programStudi ?? new ProgramStudi();
@@ -64,11 +74,11 @@ class DosenKrsController extends Controller
                         'fakultas' => $fakultas->nm_fakultas,
                         'semester' => $krs->semester->nm_semester ?? 'N/A',
                         'id_semester' => $krs->id_semester,
-                        'ipk' => $mhsStatus->ipk ?? 0,
+                        'ipk' => (float)$mhsStatus->ipk ?? 0,
                         'limit_sks' => $krs->limit_sks,
                         'kredit_sks' => $krs->kredit_sks,
                         'is_approved' => empty($krs->sign_path) ? false : true,
-                        'ips' => $mhsStatus->ips ?? 0,
+                        'ips' => (float)$mhsStatus->ips ?? 0,
                     ];
                 });
 
@@ -89,7 +99,8 @@ class DosenKrsController extends Controller
         }
     }
 
-    public function detailApprovalMahasiswa(Request $request, $id_mhs, $id_semester) {
+    public function detailApprovalMahasiswa(Request $request, $id_mhs, $id_semester)
+    {
         try {
 
             $history = (new KrsService())->getHistoryKrsByIdMhs($id_mhs, $id_semester);
@@ -106,7 +117,8 @@ class DosenKrsController extends Controller
         }
     }
 
-    public function approveKprsMk(Request $request) {
+    public function approveKprsMk(Request $request)
+    {
         // define the sign variable
         $validatedData = [];
 
@@ -122,7 +134,6 @@ class DosenKrsController extends Controller
                 $fileName = 'signatures/' . time() . '_' . $file->getClientOriginalName();
                 Storage::disk('public')->put($fileName, file_get_contents($file));
                 $validatedData['sign'] = $fileName;
-
             } else {
                 $validatedData['sign'] = null; // or handle the case where no file is uploaded
             }
@@ -144,7 +155,8 @@ class DosenKrsController extends Controller
                     'sign_path' => $validatedData['sign'],
                 ],
                 [
-                    'id_mhs', 'id_semester'
+                    'id_mhs',
+                    'id_semester'
                 ],
                 [
                     'sign_path',
@@ -177,16 +189,14 @@ class DosenKrsController extends Controller
 
             // split the id_pengambilan_mk_kprs into an array
             // $validatedData['id_pengambilan_mk_kprs'] = is_array($validatedData['id_pengambilan_mk_kprs']) ? $validatedData['id_pengambilan_mk_kprs'] : explode(',', $validatedData['id_pengambilan_mk_kprs']);
-            PengambilanMkKprs::
-                where('id_mhs', $validatedData['id_mhs'])
+            PengambilanMkKprs::where('id_mhs', $validatedData['id_mhs'])
                 ->where('id_semester', $semesterAktif->id_semester)
                 ->update([
                     'status_apv_pengambilan_mk' => 1,
                     'status_pengambilan_mk' => 1,
                 ]);
 
-            $data = PengambilanMkKprs::
-                where('id_mhs', $validatedData['id_mhs'])
+            $data = PengambilanMkKprs::where('id_mhs', $validatedData['id_mhs'])
                 ->where('id_semester', $semesterAktif->id_semester)
                 ->whereHas('kelasMk')
                 ->get()
@@ -207,7 +217,8 @@ class DosenKrsController extends Controller
                 ->toArray();
 
             // insert to pengambilan mk
-            PengambilanMk::upsert($data,
+            PengambilanMk::upsert(
+                $data,
                 ['id_mhs', 'id_kelas_mk', 'id_semester'],
                 [
                     'id_mhs',
@@ -243,7 +254,8 @@ class DosenKrsController extends Controller
         }
     }
 
-    public function listCourseApproval(Request $request) {
+    public function listCourseApproval(Request $request)
+    {
         try {
             $idmhs = $request->query('id_mhs');
 
@@ -261,7 +273,8 @@ class DosenKrsController extends Controller
         }
     }
 
-     public function listStudentNeedApproval(Request $request) {
+    public function listStudentNeedApproval(Request $request)
+    {
         try {
 
             $result = (new KrsService())->listMahasiswaNeedApproval(auth()->user()->dosen->id_dosen);
@@ -283,7 +296,7 @@ class DosenKrsController extends Controller
     {
         try {
             // get program studi from dosen wali mhs
-           $validatedData = $request->validate([
+            $validatedData = $request->validate([
                 // 'id_program_studi' => 'required|integer',
                 'id_mhs' => 'required|integer',
             ]);
@@ -315,8 +328,20 @@ class DosenKrsController extends Controller
                 'id_mhs' => 'required|integer',
             ]);
 
+            // validate if any data in mahasiswa krs approval sign cannot take course
+            $mahasiswaKrsApprovalSign = MahasiswaKrsApprovalSign::where('id_mhs', auth()->user()->mahasiswa->id_mhs)
+                ->where('id_semester', Semester::aktif()->id_semester)
+                ->first();
+
             // take course using KrsService
             $result = (new KrsService())->takeCourse($validatedData['id_kelas_mks'], $validatedData['id_mhs']);
+
+            $totalSks = KelasMk::whereIn('id_kelas_mk', $validatedData['id_kelas_mks'])
+                ->where('id_semester', Semester::aktif()->id_semester)
+                ->sum('kredit_semester');
+
+            $mahasiswaKrsApprovalSign->limit_sks = $mahasiswaKrsApprovalSign->limit_sks + $totalSks;
+            $mahasiswaKrsApprovalSign->save();
 
             return response()->json([
                 'message' => 'Successfully taking for courses.',
@@ -339,8 +364,26 @@ class DosenKrsController extends Controller
                 'id_mhs' => 'required|integer',
             ]);
 
+            // validate if any data in mahasiswa krs approval sign cannot take course
+            $mahasiswaKrsApprovalSign = MahasiswaKrsApprovalSign::where('id_mhs', auth()->user()->mahasiswa->id_mhs)
+                ->where('id_semester', Semester::aktif()->id_semester)
+                ->first();
+
             // take course using KrsService
             $result = (new KrsService())->leaveCourse($validatedData['id_kelas_mks'], $validatedData['id_mhs']);
+
+            $totalSks = KelasMk::whereIn('id_kelas_mk', $validatedData['id_kelas_mks'])
+                ->where('id_semester', Semester::aktif()->id_semester)
+                ->sum('kredit_semester');
+
+            if ($mahasiswaKrsApprovalSign->limit_sks - $totalSks < 0) {
+                return response()->json([
+                    'message' => 'SKS tidak boleh kurang dari 0',
+                ], 400);
+            }
+
+            $mahasiswaKrsApprovalSign->limit_sks = $mahasiswaKrsApprovalSign->limit_sks - $totalSks;
+            $mahasiswaKrsApprovalSign->save();
 
             return response()->json([
                 'message' => 'Successfully leaving for courses.',

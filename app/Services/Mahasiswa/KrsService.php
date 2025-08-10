@@ -198,7 +198,7 @@ class KrsService
             ->sum('kredit_semester');
 
         // validate kredit semester with limit
-        $this->validatingKreditSemsesterWithLimit($id_mhs, $semesterAktif->id_semester, $sksNeedToValidating);
+        $dataSks = $this->validatingKreditSemsesterWithLimit($id_mhs, $semesterAktif->id_semester, $sksNeedToValidating);
 
 
         DB::beginTransaction();
@@ -225,7 +225,7 @@ class KrsService
 
         DB::commit();
 
-        return true;
+        return $dataSks;
     }
 
     public function leaveCourse($id_kelas_mks = [], $id_mhs)
@@ -473,8 +473,7 @@ class KrsService
             ->where('id_semester', $id_semester)
             ->with(['dosen' => function ($q) {
                 $q->join('pengguna', 'pengguna.id_pengguna', 'dosen.id_pengguna')
-                            ->select(['pengguna.nm_pengguna', 'dosen.id_dosen']);
-
+                    ->select(['pengguna.nm_pengguna', 'dosen.id_dosen']);
             }])
             ->first();
 
@@ -691,10 +690,13 @@ class KrsService
         $limitSks = $this->getLimitSksPerSemester($id_mhs, $id_semester);
         $countKreditSemster = $this->countKreditSemester($id_mhs, $id_semester);
 
-        if ($countKreditSemster+ $sksNeedToAdded > $limitSks ) {
+        if ($countKreditSemster + $sksNeedToAdded > $limitSks) {
             throw new \Exception("Batas maksimal SKS per semester adalah $limitSks SKS. Anda sudah mengambil $countKreditSemster SKS.");
         }
 
-        return true;
+        return [
+            'limit_sks' => $limitSks,
+            'kredit_sks' => $countKreditSemster + $sksNeedToAdded,
+        ];
     }
 }

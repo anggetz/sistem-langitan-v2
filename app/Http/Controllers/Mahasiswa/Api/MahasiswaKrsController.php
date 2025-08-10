@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Mahasiswa\Api;
 
 use App\Models\Message;
@@ -10,10 +11,12 @@ use App\Services\Mahasiswa\KeuanganService;
 use App\Http\Resources\Mahasiswa\JadwalKuliahResource;
 use App\Models\JadwalKegiatanSemester;
 use App\Models\Kegiatan;
+use App\Models\KelasMk;
 use App\Models\MahasiswaKrsApprovalSign;
 use App\Models\PengambilanMk;
 use App\Services\Mahasiswa\KrsService as MahasiswaKrsService;
 use Exception;
+use Illuminate\Support\Facades\DB;
 use KrsService;
 
 class MahasiswaKrsController extends Controller
@@ -23,14 +26,14 @@ class MahasiswaKrsController extends Controller
     {
         $detailKegiatan = null;
 
-         // remove this after demo
+        // remove this after demo
         $kegiatan = Kegiatan::where('kode_kegiatan',  'KRS')
             ->where('id_perguruan_tinggi', 1)
             ->first();
 
         $detailKegiatan = $jadwalKegiatanSemester = JadwalKegiatanSemester::where('id_kegiatan', $kegiatan->id_kegiatan)
-                ->where('id_semester', Semester::aktif()->id_semester)
-                ->first();
+            ->where('id_semester', Semester::aktif()->id_semester)
+            ->first();
 
         try {
             $isValid = (new MahasiswaKrsService())->ValidateKRSScheduleByActiveSemester();
@@ -99,20 +102,30 @@ class MahasiswaKrsController extends Controller
                 ->where('id_semester', Semester::aktif()->id_semester)
                 ->first();
 
+            DB::beginTransaction();
+
+            $result = (new MahasiswaKrsService())->takeCourse($request->id_kelas_mks, auth()->user()->mahasiswa->id_mhs);
+
             if (!empty($mahasiswaKrsApprovalSign) && $mahasiswaKrsApprovalSign->sign_path) {
                 return response()->json([
                     'message' => 'Dosen anda sudah menandatangani KRS anda, silakan hubungi dosen anda untuk melakukan perubahan.',
                 ], 400);
+            } else if (!empty($mahasiswaKrsApprovalSign)) {
+                $mahasiswaKrsApprovalSign->limit_sks = $result['limit_sks'];
+                $mahasiswaKrsApprovalSign->kredit_sks = $result['kredit_sks'];
+                $mahasiswaKrsApprovalSign->save();
             } else if (empty($mahasiswaKrsApprovalSign)) {
                 // create the data
                 // the sign is flag to indicate that the mahasiswa has signed the KRS
                 $mahasiswaKrsApprovalSign = new MahasiswaKrsApprovalSign();
                 $mahasiswaKrsApprovalSign->id_mhs = auth()->user()->mahasiswa->id_mhs;
                 $mahasiswaKrsApprovalSign->id_semester = Semester::aktif()->id_semester;
+                $mahasiswaKrsApprovalSign->limit_sks = $result['limit_sks'];
+                $mahasiswaKrsApprovalSign->kredit_sks = $result['kredit_sks'];
                 $mahasiswaKrsApprovalSign->save();
             }
 
-            $result = (new MahasiswaKrsService())->takeCourse($request->id_kelas_mks, auth()->user()->mahasiswa->id_mhs);
+            DB::commit();
 
             return response()->json([
                 'message' => 'Berhasil mendaftar mata kuliah.',
@@ -127,7 +140,7 @@ class MahasiswaKrsController extends Controller
     }
 
     // leave course
-     public function leaveCourse(Request $request)
+    public function leaveCourse(Request $request)
     {
         // Implement logic to handle course registration
 
@@ -143,7 +156,30 @@ class MahasiswaKrsController extends Controller
                 ], 400);
             }
 
+            $mahasiswaKrsApprovalSign = MahasiswaKrsApprovalSign::where('id_mhs', auth()->user()->mahasiswa->id_mhs)
+                ->where('id_semester', Semester::aktif()->id_semester)
+                ->first();
+
             $result = (new MahasiswaKrsService())->leaveCourse($request->id_kelas_mks, auth()->user()->mahasiswa->id_mhs);
+
+            if (!empty($mahasiswaKrsApprovalSign) && $mahasiswaKrsApprovalSign->sign_path) {
+                return response()->json([
+                    'message' => 'Dosen anda sudah menandatangani KRS anda, silakan hubungi dosen anda untuk melakukan perubahan.',
+                ], 400);
+            } else if (!empty($mahasiswaKrsApprovalSign)) {
+                // counting the total
+                $totalKreditMk = KelasMk::whereIn('id_kelas_mk', $validatedData['id_kelas_mks'])
+                    ->sum('kredit_semester');
+
+                if ($mahasiswaKrsApprovalSign->limit_sks - $totalKreditMk < 0) {
+                    return response()->json([
+                        'message' => 'Limit SKS tidak boleh lebih kecil dari 0',
+                    ], 400);
+                }
+                $mahasiswaKrsApprovalSign->limit_sks = $mahasiswaKrsApprovalSign->limit_sks - $totalKreditMk;
+                $mahasiswaKrsApprovalSign->kredit_sks = $result['kredit_sks'];
+                $mahasiswaKrsApprovalSign->save();
+            }
 
             return response()->json([
                 'message' => 'Mata kuliah berhasil dilepas.',
@@ -204,6 +240,4 @@ class MahasiswaKrsController extends Controller
             ], 500);
         }
     }
-
-
 }
