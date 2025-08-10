@@ -186,7 +186,7 @@ class KrsService
         ];
     }
 
-    public function takeCourse($id_kelas_mks = [], $id_mhs)
+    public function takeCourse($id_kelas_mks = [], $id_mhs, $subject = 'Anda')
     {
 
         $semesterAktif = Semester::aktif();
@@ -209,7 +209,7 @@ class KrsService
                 ->first();
 
             if ($pengambilanMkKprs) {
-                throw new \Exception("Anda sudah mengambil mata kuliah ini.");
+                throw new \Exception("$subject sudah mengambil mata kuliah ini.");
             }
 
 
