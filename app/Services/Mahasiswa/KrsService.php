@@ -23,6 +23,7 @@ use App\Models\Semester;
 use App\Models\TagihanMhs;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class KrsService
 {
@@ -33,6 +34,7 @@ class KrsService
 
         // get krs kegiatan id
         $kegiatan = Kegiatan::where('kode_kegiatan', self::CODE)
+            ->where('id_perguruan_tinggi', 1)
             ->first();
 
         if (!$kegiatan) {
@@ -628,7 +630,9 @@ class KrsService
         )->first();
 
         if ($mahasiswa === null) {
-            throw new \Exception("Mahasiswa dengan ID $id_mhs tidak ditemukan atau tidak memiliki riwayat nilai untuk semester $id_semester.");
+            // throw new \Exception("Mahasiswa dengan ID $id_mhs tidak ditemukan atau tidak memiliki riwayat nilai untuk semester $id_semester.");
+            Log::error("Mahasiswa dengan ID $id_mhs tidak ditemukan atau tidak memiliki riwayat nilai untuk semester $id_semester.");
+            return 0;
         }
 
         if ($mahasiswa->historyNilai->isEmpty()) {
