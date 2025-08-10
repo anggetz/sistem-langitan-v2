@@ -8,6 +8,8 @@ use App\Http\Controllers\Controller;
 use App\Services\Mahasiswa\AkademikService;
 use App\Services\Mahasiswa\KeuanganService;
 use App\Http\Resources\Mahasiswa\JadwalKuliahResource;
+use App\Models\JadwalKegiatanSemester;
+use App\Models\Kegiatan;
 use App\Models\MahasiswaKrsApprovalSign;
 use App\Models\PengambilanMk;
 use App\Services\Mahasiswa\KrsService as MahasiswaKrsService;
@@ -19,24 +21,39 @@ class MahasiswaKrsController extends Controller
 
     public function CheckKRSScheduleOnCurrentSemester(Request $request)
     {
+        $detailKegiatan = null;
+
+         // remove this after demo
+        $kegiatan = Kegiatan::where('kode_kegiatan',  'KRS')
+            ->where('id_perguruan_tinggi', 1)
+            ->first();
+
+        $detailKegiatan = $jadwalKegiatanSemester = JadwalKegiatanSemester::where('id_kegiatan', $kegiatan->id_kegiatan)
+                ->where('id_semester', Semester::aktif()->id_semester)
+                ->first();
+
         try {
             $isValid = (new MahasiswaKrsService())->ValidateKRSScheduleByActiveSemester();
+
             if ($isValid) {
                 return response()->json([
                     'message' => 'KRS schedule is valid for the current semester.',
                     'data' => true,
+                    'info' => $detailKegiatan,
                 ], 200);
             } else {
                 return response()->json([
                     'message' => 'KRS schedule is not valid for the current semester.',
-                    'data' => false
+                    'data' => false,
+                    'info' => $detailKegiatan,
                 ], 400);
             }
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to retrieve class schedule.',
                 'data' => false,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
+                'info' => $detailKegiatan,
             ], 400);
         }
     }
