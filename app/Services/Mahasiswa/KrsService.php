@@ -595,7 +595,8 @@ class KrsService
 
         $prevSemester = Semester::prevAktif();
         if (!$prevSemester) {
-            throw new \Exception("Tidak ada semester sebelumnya yang ditemukan.");
+            // it means he semester awal;
+            return true;
         }
 
         $prevKrsProdi = $this->getTagihanBySemester($id_mhs, $prevSemester->id_semester);
