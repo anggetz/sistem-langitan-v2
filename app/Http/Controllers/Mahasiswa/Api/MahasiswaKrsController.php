@@ -28,14 +28,16 @@ class MahasiswaKrsController extends Controller
                 ], 200);
             } else {
                 return response()->json([
-                    'message' => 'KRS schedule is not valid for the current semester.'
+                    'message' => 'KRS schedule is not valid for the current semester.',
+                    'data' => false
                 ], 400);
             }
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to retrieve class schedule.',
+                'data' => false,
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
