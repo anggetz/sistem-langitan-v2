@@ -76,7 +76,6 @@ class KrsService
 
         $q = KrsProdi::whereHas('kelasMk', function ($query) use ($semesterAktif, $id_program_studi, $id_semester) {
             $query->where('id_program_studi', $id_program_studi);
-
         });
 
         if ($id_semester) {
@@ -119,7 +118,9 @@ class KrsService
                                 }, 'jadwalJam' => function ($q) {
                                     $q->select([
                                         'id_jadwal_jam',
-                                         DB::raw('jam_mulai || \':\' || menit_mulai as waktu_mulai'), DB::raw('jam_selesai || \':\' || menit_selesai as waktu_selesai')]);
+                                        DB::raw('jam_mulai || \':\' || menit_mulai as waktu_mulai'),
+                                        DB::raw('jam_selesai || \':\' || menit_selesai as waktu_selesai')
+                                    ]);
                                 }])
                                 ->select(['id_jadwal_jam', 'id_ruangan', 'id_kelas_mk', 'id_jadwal_kelas', 'id_jadwal_hari']);
                         },
@@ -292,7 +293,8 @@ class KrsService
         return true;
     }
 
-    public function listMahasiswaNeedApproval($id_dosen) {
+    public function listMahasiswaNeedApproval($id_dosen)
+    {
         $page = request()->get('page', 1);
         $perPage = request()->get('per_page', 10);
         $offset = ($page - 1) * $perPage;
@@ -489,6 +491,13 @@ class KrsService
                 'kelasMk.jadwalKelas.ruangan',
                 'kelasMk.jadwalKelas.ruangan.gedung',
                 'semester',
+                'kelasMk.pengampuMk' => function ($q) {
+                    $q->select(['id_pengampu_mk', 'id_dosen', 'id_kelas_mk'])
+                        ->with(['dosen' => function ($q2) {
+                            $q2->join('pengguna', 'pengguna.id_pengguna', 'dosen.id_pengguna')
+                                ->select(['pengguna.nm_pengguna', 'dosen.id_dosen']);
+                        }]);
+                },
             ]);
 
         if (!empty($id_semester)) {
@@ -509,7 +518,7 @@ class KrsService
                 $pengampus[] = [
                     'id_pengampu_mk' => $pengampuMk->id_pengampu_mk,
                     'id_dosen' => $pengampuMk->dosen?->id_dosen ?? null,
-                    'nama_dosen' => $pengampuMk->dosen?->pengguna?->nama_lengkap ?? '',
+                    'nama_dosen' => $pengampuMk->dosen?->nm_pengguna ?? '',
                 ];
             }
 
