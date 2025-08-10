@@ -107,9 +107,8 @@ class KrsService
                         'pengampuMk' => function ($q) {
                             $q->select(['id_pengampu_mk', 'id_dosen', 'id_kelas_mk'])
                                 ->with(['dosen' => function ($q2) {
-                                    $q2->with(['pengguna' => function ($q3) {
-                                        $q3->select(['id_pengguna', DB::raw("gelar_depan || ' ' || nm_pengguna || ' ' || gelar_belakang as nama_lengkap")]);
-                                    }])->select(['id_dosen', 'id_pengguna', 'gelar_depan', 'nm_pengguna', 'gelar_belakang']);
+                                    $q2->join('pengguna', 'pengguna.id_pengguna', 'dosen.id_pengguna')
+                                        ->select(['pengguna.nm_pengguna', 'dosen.id_dosen']);
                                 }]);
                         },
                         'jadwalKelas' => function ($query) {
@@ -117,7 +116,9 @@ class KrsService
                                 ->with(['ruangan' => function ($q) {
                                     $q->select(['id_ruangan', 'nm_ruangan']);
                                 }, 'jadwalJam' => function ($q) {
-                                    $q->select(['id_jadwal_jam', DB::raw('jam_mulai || \':\' || menit_mulai as waktu_mulai'), DB::raw('jam_selesai || \':\' || menit_selesai as waktu_selesai')]);
+                                    $q->select([
+                                        'id_jadwal_jam',
+                                         DB::raw('jam_mulai || \':\' || menit_mulai as waktu_mulai'), DB::raw('jam_selesai || \':\' || menit_selesai as waktu_selesai')]);
                                 }])
                                 ->select(['id_jadwal_jam', 'id_ruangan', 'id_kelas_mk', 'id_jadwal_kelas', 'id_jadwal_hari']);
                         },
@@ -137,10 +138,9 @@ class KrsService
                     $pengampus[] = [
                         'id_pengampu_mk' => $pengampuMk->id_pengampu_mk,
                         'id_dosen' => $pengampuMk->dosen?->id_dosen ?? null,
-                        'nama_dosen' => $pengampuMk->dosen?->pengguna?->nama_lengkap ?? '',
+                        'nama_dosen' => $pengampuMk->dosen?->nm_pengguna,
                     ];
                 }
-
 
                 $jadwal = !empty($kelasMk->jadwalKelas) ? $kelasMk->jadwalKelas : new JadwalKelas();
 

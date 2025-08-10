@@ -15,6 +15,13 @@ class Dosen extends Model
     const CREATED_AT = 'created_on';
     const UPDATED_AT = 'updated_on';
 
+    protected function casts(): array
+    {
+        return [
+            'id_pengguna' => 'integer',
+        ];
+    }
+
     public function pengampuMk(){
         return $this->hasMany(PengampuMk::class,"id_dosen","id_dosen");
     }
