@@ -109,7 +109,7 @@ class KrsService
                                 ->with(['dosen' => function ($q2) {
                                     $q2->with(['pengguna' => function ($q3) {
                                         $q3->select(['id_pengguna', DB::raw("gelar_depan || ' ' || nm_pengguna || ' ' || gelar_belakang as nama_lengkap")]);
-                                    }])->select(['id_dosen', 'id_pengguna']);
+                                    }])->select(['id_dosen', 'id_pengguna', 'gelar_depan', 'nm_pengguna', 'gelar_belakang']);
                                 }]);
                         },
                         'jadwalKelas' => function ($query) {
