@@ -43,7 +43,16 @@ class DosenKrsController extends Controller
 
             $total = $q->count();
 
+            // get dosen mahasiswa allowable
+            $listMhs = DosenWali::where('id_dosen', auth()->user()->dosen->id_dosen)
+                    ->get()
+                    ->map(function($item) {
+                        return $item->id_mhs;
+                    });
+
             $data = $q
+                ->where('id_semester', Semester::aktif()->id_semester)
+                ->whereIn('id_mhs', $listMhs)
                 ->limit($limit)
                 ->offset($offset)
                 ->orderBy('created_at', 'desc')
@@ -64,11 +73,11 @@ class DosenKrsController extends Controller
                         'fakultas' => $fakultas->nm_fakultas,
                         'semester' => $krs->semester->nm_semester ?? 'N/A',
                         'id_semester' => $krs->id_semester,
-                        'ipk' => $mhsStatus->ipk ?? 0,
+                        'ipk' => (float)$mhsStatus->ipk ?? 0,
                         'limit_sks' => $krs->limit_sks,
                         'kredit_sks' => $krs->kredit_sks,
                         'is_approved' => empty($krs->sign_path) ? false : true,
-                        'ips' => $mhsStatus->ips ?? 0,
+                        'ips' => (float)$mhsStatus->ips ?? 0,
                     ];
                 });
 
