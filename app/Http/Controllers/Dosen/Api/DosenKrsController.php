@@ -334,7 +334,7 @@ class DosenKrsController extends Controller
                 ->first();
 
             // take course using KrsService
-            $result = (new KrsService())->takeCourse($validatedData['id_kelas_mks'], $validatedData['id_mhs']);
+            $result = (new KrsService())->takeCourse($validatedData['id_kelas_mks'], $validatedData['id_mhs'], 'Mahasiswa ini');
 
             $totalSks = KelasMk::whereIn('id_kelas_mk', $validatedData['id_kelas_mks'])
                 ->where('id_semester', Semester::aktif()->id_semester)
