@@ -132,7 +132,7 @@ class DosenKrsController extends Controller
             if ($request->hasFile('sign')) {
                 $file = $request->file('sign');
                 $fileName = 'signatures/' . time() . '_' . $file->getClientOriginalName();
-                Storage::disk('public')->put($fileName, file_get_contents($file));
+                Storage::disk('local')->put($fileName, file_get_contents($file));
                 $validatedData['sign'] = $fileName;
             } else {
                 $validatedData['sign'] = null; // or handle the case where no file is uploaded

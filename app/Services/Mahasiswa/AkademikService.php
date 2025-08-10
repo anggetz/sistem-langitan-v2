@@ -19,7 +19,8 @@ class AkademikService
 {
     protected $CODE_JADWAL_PENILAIAN;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->CODE_JADWAL_PENILAIAN = env('CODE_JADWAL_PENILAIAN', 'Input Nilai');
     }
 
@@ -45,7 +46,7 @@ class AkademikService
     public function jadwalKuliah()
     {
         try {
-            $data = auth()->user()->mahasiswa->pengambilanMk()
+            $jadwal = auth()->user()->mahasiswa->pengambilanMk()
                 ->with([
                     "namaKelas:nama_kelas.nama_kelas",
                     "mataKuliah:mata_kuliah.nm_mata_kuliah,mata_kuliah.kredit_semester",
@@ -65,64 +66,73 @@ class AkademikService
                 ->map(function ($item) {
                     $nm_kelas = $item->namaKelas->nama_kelas ?? '-';
                     $nama_mk = $item->mataKuliah->nm_mata_kuliah ?? '-';
-                    $jadwalHari = '-';
-                    $jadwalJamMulai = '-';
-                    $jadwalJamSelesai = '-';
-                    $jadwalJamMulaiOrd = 0;
-                    $jadwalJamSelesaiOrd = 0;
-                    $idJadwalHari = 0;
-                    $ruangan = '-';
-                    $gedung = '-';
 
                     $kelasMk = $item->kelasMk;
-                    if (!empty($kelasMk)) {
-                        $jadwalKelas = $kelasMk->jadwalKelas;
 
-                        if (!empty($jadwalKelas)) {
-                            $jadwalJam = $jadwalKelas->jadwalJam;
-                            $jadwalHari = $jadwalKelas->nama_hari;
-                            $idJadwalHari = $jadwalKelas->id_jadwal_hari;
-                            $ruangan = $jadwalKelas->ruangan ?? new Ruangan();
-                            $gedung = $ruangan->gedung ?? new Gedung();
-
-                            if (!empty($jadwalJam)) {
-                                $jadwalJamMulai = $jadwalJam->jam_mulai . ':' . $jadwalJam->menit_mulai;
-                                $jadwalJamSelesai = $jadwalJam->jam_selesai . ':' . $jadwalJam->menit_selesai;
-                                $jadwalJamMulaiOrd = $jadwalJam->jam_mulai * 100 + $jadwalJam->menit_mulai;
-                                $jadwalJamSelesaiOrd = $jadwalJam->jam_selesai * 100 + $jadwalJam->menit_selesai;
-                            }
-                        }
+                    $jadwallAll = [];
+                    foreach ($kelasMk->jadwalKelas as $jadwal) {
+                        $jadwallAll[] = [
+                            'id_jadwal_hari' => $jadwal->id_jadwal_hari,
+                            'nama_hari' => $jadwal->nama_hari,
+                            'jam_mulai' => $jadwal->jadwalJam->jam_mulai . ":" . $jadwal->jadwalJam->menit_mulai,
+                            'jam_selesai' => $jadwal->jadwalJam->jam_selesai . ":" . $jadwal->jadwalJam->menit_selesai,
+                            'jam_mulai_ord' => $jadwal->jadwalJam->jam_mulai * 100 +  $jadwal->jadwalJam->menit_mulai,
+                            'jam_selesai_ord' =>  $jadwal->jadwalJam->jam_selesai * 100 +  $jadwal->menit_selesai,
+                            'gedung' => $jadwal->ruangan->gedung->nm_gedung ?? '-',
+                            'ruangan' => $jadwal->ruangan->nm_ruangan ?? '-',
+                        ];
                     }
                     return [
                         'nm_kelas' => $nm_kelas,
                         'nama_mk' => $nama_mk,
                         'id_kelas_mk' => $item->id_kelas_mk,
-                        'hari' => $jadwalHari,
-                        'jam_mulai' => $jadwalJamMulai,
-                        'jam_selesai' => $jadwalJamSelesai,
-                        'jam_mulai_ord' => $jadwalJamMulaiOrd,
-                        'jam_selesai_ord' => $jadwalJamSelesaiOrd,
-                        'id_jadwal_hari' => $idJadwalHari,
-                        'ruangan' => $ruangan->nm_ruangan,
-                        'gedung' => $gedung->nm_gedung
+                        'jadwalAll' => $jadwallAll,
                     ];
-                })->sortBy([
-                    fn($a, $b) => $a['id_jadwal_hari'] <=> $b['id_jadwal_hari'],
-                    fn($a, $b) => $a['jam_mulai_ord'] <=> $b['jam_selesai_ord'],
-                ])->groupBy('hari')->map(function ($items) {
-                    return $items->map(function ($item) {
-                        return [
-                            'nama_mk' => $item['nama_mk'],
-                            'id_kelas_mk' => $item['id_kelas_mk'],
-                            'ruangan' => $item['ruangan'],
-                            'gedung' => $item['gedung'],
-                            'jadwal' => [
-                                'jam' => $item['jam_mulai'] . ' - ' . $item['jam_selesai'],
-                            ],
-                        ];
-                    })->values();
-                });;
-            return $data;
+                });
+
+            // ->sortBy([
+            //     fn($a, $b) => $a['id_jadwal_hari'] <=> $b['id_jadwal_hari'],
+            //     fn($a, $b) => $a['jam_mulai_ord'] <=> $b['jam_selesai_ord'],
+            // ])->groupBy('hari')->map(function ($items) {
+            //     return $items->map(function ($item) {
+            //         return [
+            //             'nama_mk' => $item['nama_mk'],
+            //             'id_kelas_mk' => $item['id_kelas_mk'],
+            //             'ruangan' => $item['ruangan'],
+            //             'gedung' => $item['gedung'],
+            //             'jadwal' => [
+            //                 'jam' => $item['jam_mulai'] . ' - ' . $item['jam_selesai'],
+            //             ],
+            //         ];
+            //     })->values();
+            // });;
+
+            $jadwalResponse = [];
+            // make the jadwal as single array
+            $jadwal = $jadwal->map(function ($item) use (&$jadwalResponse) {
+                foreach ($item['jadwalAll'] as $jadwal) {
+                    # code...
+                    array_push($jadwalResponse, [
+                        'nama_mk' => $item['nama_mk'],
+                        'id_kelas_mk' => $item['id_kelas_mk'],
+                        'id_jadwal_hari' => $jadwal['id_jadwal_hari'],
+                        'hari' => $jadwal['nama_hari'],
+                        'jam_mulai' => $jadwal['jam_mulai'],
+                        'jam_selesai' => $jadwal['jam_selesai'],
+                        'jam_mulai_ord' => $jadwal['jam_mulai_ord'],
+                        'jam_selesai_ord' => $jadwal['jam_selesai_ord'],
+                        'gedung' => $jadwal['gedung'],
+                        'ruangan' => $jadwal['ruangan'],
+                    ]);
+                }
+            });
+
+            return collect($jadwalResponse)
+                    ->sortBy([
+                        fn($a, $b) => $a['id_jadwal_hari'] <=> $b['id_jadwal_hari'],
+                        fn($a, $b) => $a['jam_mulai_ord'] <=> $b['jam_selesai_ord'],
+                    ])
+                    ->groupBy('hari')->toArray();
         } catch (Exception $e) {
             return response()->json([
                 'status' => 'error',
@@ -177,5 +187,4 @@ class AkademikService
         }
         return true;
     }
-
 }
