@@ -43,7 +43,7 @@ class DosenKrsController extends Controller
 
             $total = $q->count();
 
-            $data = $q->where('id_dosen', auth()->user()->dosen->id_dosen)
+            $data = $q
                 ->limit($limit)
                 ->offset($offset)
                 ->orderBy('created_at', 'desc')
