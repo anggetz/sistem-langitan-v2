@@ -122,6 +122,7 @@ class DosenKrsController extends Controller
                 $fileName = 'signatures/' . time() . '_' . $file->getClientOriginalName();
                 Storage::disk('public')->put($fileName, file_get_contents($file));
                 $validatedData['sign'] = $fileName;
+
             } else {
                 $validatedData['sign'] = null; // or handle the case where no file is uploaded
             }
@@ -133,16 +134,25 @@ class DosenKrsController extends Controller
             $limitForCurrentSemester = (new KrsService())->getLimitSksPerSemester($validatedData['id_mhs'], Semester::aktif()->id_semester);
 
             // save the sign path to mahasiswa krs apprval sign
-            $mahasiswaKrsApprovalSign = MahasiswaKrsApprovalSign::updateOrCreate(
+            $mahasiswaKrsApprovalSign = MahasiswaKrsApprovalSign::upsert(
                 [
                     'id_mhs' => $validatedData['id_mhs'],
                     'id_semester' => Semester::aktif()->id_semester,
                     'id_dosen' => auth()->user()->dosen->id_dosen,
                     'limit_sks' => $limitForCurrentSemester,
-                    'kredit_sks' => $currentKreditSemester
+                    'kredit_sks' => $currentKreditSemester,
+                    'sign_path' => $validatedData['sign'],
                 ],
                 [
-                    'sign_path' => $validatedData['sign'],
+                    'id_mhs', 'id_semester'
+                ],
+                [
+                    'sign_path',
+                    'id_dosen',
+                    'limit_sks',
+                    'kredit_sks',
+                    'id_mhs',
+                    'id_semester'
                 ]
             );
 
