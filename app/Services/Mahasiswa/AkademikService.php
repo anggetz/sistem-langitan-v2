@@ -43,7 +43,7 @@ class AkademikService
         return $data;
     }
 
-    public function jadwalKuliah()
+    public function jadwalKuliah($hari = null)
     {
         try {
             $jadwal = auth()->user()->mahasiswa->pengambilanMk()
@@ -61,7 +61,11 @@ class AkademikService
                     }
                 ])
                 ->semesterAktif()
-                ->whereHas("kelasMk.jadwalKelas")
+                ->whereHas("kelasMk.jadwalKelas", function($q) use ($hari) {
+                    $q->when($hari, function ($query) use ($hari) {
+                        $query->where('id_jadwal_hari', $hari);
+                    });
+                })
                 ->get(["id_pengambilan_mk", "id_kelas_mk", "id_semester"])
                 ->map(function ($item) {
                     $nm_kelas = $item->namaKelas->nama_kelas ?? '-';

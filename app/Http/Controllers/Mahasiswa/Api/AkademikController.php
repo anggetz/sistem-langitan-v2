@@ -43,6 +43,15 @@ class AkademikController extends Controller
         ], 200);
     }
 
+    public function jadwalKuliahHariIni()
+    {
+        $data = $this->akademikService->jadwalKuliah(date('w') + 2);
+        return response()->json([
+            'status' => Message::OK,
+            'data' => $data
+        ], 200);
+    }
+
     public function khsPerSemester(Request $request)
     {
         $semester = $request->get("semester");
