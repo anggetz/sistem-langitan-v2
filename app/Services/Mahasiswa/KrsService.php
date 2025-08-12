@@ -12,6 +12,7 @@ use App\Models\KelasMk;
 use App\Models\KrsProdi;
 use App\Models\Mahasiswa;
 use App\Models\MahasiswaKrsApprovalSign;
+use App\Models\MahasiswaStatus;
 use App\Models\MataKuliah;
 use App\Models\PengambilanMk;
 use App\Models\PengambilanMkKprs;
@@ -567,6 +568,12 @@ class KrsService
 
         $pengguna = Pengguna::find($mhs->id_pengguna);
 
+        // get ipk from Mahasiswa Status
+        $nilaiMhs = MahasiswaStatus::where('id_mhs', $id_mhs)
+            ->where('id_semester', $id_semester)
+            ->first();
+
+
         // populate dosen wali and riwayat krs
         $data = [
             'nama' => $pengguna->nama_lengkap ?? '',
@@ -577,6 +584,7 @@ class KrsService
             'status_approval' => !empty($krsSubmitting) && !empty($krsSubmitting->sign_path),
             'limit_sks' => $limitSks,
             'count_kredit_semester' => $countKreditSemster,
+            'nilai_mhs' => $nilaiMhs,
             'dosen_wali' => [
                 'id_dosen' => $dosenWali->dosen?->id_dosen ?? null,
                 'nama_dosen' => $dosenWali->dosen?->nm_pengguna ?? '',
