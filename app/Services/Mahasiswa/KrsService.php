@@ -542,6 +542,7 @@ class KrsService
 
             return [
                 'id_kelas_mk' => $item->id_kelas_mk,
+                'kode_mk' => $mataKuliah->kd_mata_kuliah,
                 'status_apv' => $item->status_apv_pengambilan_mk,
                 'semester' => $semester->nm_semester,
                 'th_semester' => $semester->thn_akademik_semester,

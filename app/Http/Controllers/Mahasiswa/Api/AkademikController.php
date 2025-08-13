@@ -101,10 +101,15 @@ class AkademikController extends Controller
         ], 200);
     }
 
-    public function historyNilai()
+    public function historyNilai(Request $request)
     {
+        $semester = $request->get("semester", null);
+
         $data = auth()->user()->mahasiswa;
         $history = $data->historyNilai()->with(['semester:id_semester,nm_semester,thn_akademik_semester'])->orderBy('id_mhs_status', 'asc');
+        if (!empty($semester)) {
+            $history = $history->where('id_semester', $semester);
+        }
         $historyData = $history->get(['id_mhs_status', 'ips', 'ipk', 'sks_semester', 'sks_total', 'id_semester']);
         $historyCount = $history->count();
         $sks_tempuh = 0;
