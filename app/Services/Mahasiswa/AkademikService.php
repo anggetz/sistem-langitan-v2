@@ -94,23 +94,6 @@ class AkademikService
                     ];
                 });
 
-            // ->sortBy([
-            //     fn($a, $b) => $a['id_jadwal_hari'] <=> $b['id_jadwal_hari'],
-            //     fn($a, $b) => $a['jam_mulai_ord'] <=> $b['jam_selesai_ord'],
-            // ])->groupBy('hari')->map(function ($items) {
-            //     return $items->map(function ($item) {
-            //         return [
-            //             'nama_mk' => $item['nama_mk'],
-            //             'id_kelas_mk' => $item['id_kelas_mk'],
-            //             'ruangan' => $item['ruangan'],
-            //             'gedung' => $item['gedung'],
-            //             'jadwal' => [
-            //                 'jam' => $item['jam_mulai'] . ' - ' . $item['jam_selesai'],
-            //             ],
-            //         ];
-            //     })->values();
-            // });;
-
             $jadwalResponse = [];
             // make the jadwal as single array
             $jadwal = $jadwal->map(function ($item) use (&$jadwalResponse) {
@@ -152,9 +135,9 @@ class AkademikService
                 "namaKelas:nama_kelas.nama_kelas",
                 "mataKuliah:mata_kuliah.nm_mata_kuliah,mata_kuliah.kredit_semester"
             ])
-            ->whereSemester($idSemester)
-            ->get(["id_pengambilan_mk", "id_kelas_mk", "id_mhs", "nilai_huruf", "flagnilai", "id_semester"])
-            ->map();
+            // ->whereSemester($idSemester)
+            ->get(["id_pengambilan_mk", "id_kelas_mk", "id_mhs", "nilai_huruf", "flagnilai", "id_semester"]);
+            // ->map();
         return $data;
     }
 

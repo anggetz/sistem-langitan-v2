@@ -45,7 +45,7 @@ class AkademikController extends Controller
 
     public function jadwalKuliahHariIni()
     {
-        $data = $this->akademikService->jadwalKuliah(date('w') + 2);
+        $data = $this->akademikService->jadwalKuliah(date('w') + 1);
         return response()->json([
             'status' => Message::OK,
             'data' => $data
