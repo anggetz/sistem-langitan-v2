@@ -43,7 +43,7 @@ class AkademikService
         return $data;
     }
 
-    public function jadwalKuliah()
+    public function jadwalKuliah($hari = null)
     {
         try {
             $jadwal = auth()->user()->mahasiswa->pengambilanMk()
@@ -61,7 +61,11 @@ class AkademikService
                     }
                 ])
                 ->semesterAktif()
-                ->whereHas("kelasMk.jadwalKelas")
+                ->whereHas("kelasMk.jadwalKelas", function($q) use ($hari) {
+                    $q->when($hari, function ($query) use ($hari) {
+                        $query->where('id_jadwal_hari', $hari);
+                    });
+                })
                 ->get(["id_pengambilan_mk", "id_kelas_mk", "id_semester"])
                 ->map(function ($item) {
                     $nm_kelas = $item->namaKelas->nama_kelas ?? '-';
@@ -89,23 +93,6 @@ class AkademikService
                         'jadwalAll' => $jadwallAll,
                     ];
                 });
-
-            // ->sortBy([
-            //     fn($a, $b) => $a['id_jadwal_hari'] <=> $b['id_jadwal_hari'],
-            //     fn($a, $b) => $a['jam_mulai_ord'] <=> $b['jam_selesai_ord'],
-            // ])->groupBy('hari')->map(function ($items) {
-            //     return $items->map(function ($item) {
-            //         return [
-            //             'nama_mk' => $item['nama_mk'],
-            //             'id_kelas_mk' => $item['id_kelas_mk'],
-            //             'ruangan' => $item['ruangan'],
-            //             'gedung' => $item['gedung'],
-            //             'jadwal' => [
-            //                 'jam' => $item['jam_mulai'] . ' - ' . $item['jam_selesai'],
-            //             ],
-            //         ];
-            //     })->values();
-            // });;
 
             $jadwalResponse = [];
             // make the jadwal as single array
@@ -149,8 +136,8 @@ class AkademikService
                 "mataKuliah:mata_kuliah.nm_mata_kuliah,mata_kuliah.kredit_semester"
             ])
             ->whereSemester($idSemester)
-            ->get(["id_pengambilan_mk", "id_kelas_mk", "id_mhs", "nilai_huruf", "flagnilai", "id_semester"])
-            ->map();
+            ->get(["id_pengambilan_mk", "id_kelas_mk", "id_mhs", "nilai_huruf", "flagnilai", "id_semester"]);
+            // ->map();
         return $data;
     }
 

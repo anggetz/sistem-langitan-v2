@@ -112,7 +112,7 @@ class DosenJadwalController extends Controller
                     });
 
                     $query->whereHas('jadwalKelas', function ($q) {
-                        $q->where('id_jadwal_hari', date('w') + 2);
+                        $q->where('id_jadwal_hari', date('w') + 1);
                     });
                 },
             ])->find(auth()->user()->id_pengguna);

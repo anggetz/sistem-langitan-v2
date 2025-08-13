@@ -30,6 +30,7 @@ Route::group(['prefix' => 'mahasiswa', 'middleware' => 'role:' . Role::MAHASISWA
         function () {
             Route::get('kalender', 'kalender');
             Route::get('jadwal-kuliah', 'jadwalKuliah');
+            Route::get('jadwal-kuliah-hariini', 'jadwalKuliahHariIni');
             Route::get('jadwal-ujian', 'jadwalUjian');
             Route::get('history-nilai', 'historyNilai');
             Route::get('khs', 'khs');
