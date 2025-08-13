@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Dosen\Api;
 use App\Http\Controllers\Controller;
 use App\Models\DosenWali;
 use App\Models\Fakultas;
+use App\Models\JadwalKegiatanSemester;
+use App\Models\Kegiatan;
 use App\Models\KelasMk;
 use App\Models\Mahasiswa;
 use App\Models\MahasiswaKrsApprovalSign;
@@ -25,6 +27,45 @@ use Illuminate\Support\Facades\Storage;
 class DosenKrsController extends Controller
 {
     public function __construct() {}
+
+     public function CheckKRSScheduleOnCurrentSemester(Request $request)
+    {
+        $detailKegiatan = null;
+
+        // remove this after demo
+        $kegiatan = Kegiatan::where('kode_kegiatan',  'KRS')
+            ->where('id_perguruan_tinggi', 1)
+            ->first();
+
+        $detailKegiatan = $jadwalKegiatanSemester = JadwalKegiatanSemester::where('id_kegiatan', $kegiatan->id_kegiatan)
+            ->where('id_semester', Semester::aktif()->id_semester)
+            ->first();
+
+        try {
+            $isValid = (new KrsService())->ValidateKRSScheduleByActiveSemester();
+
+            if ($isValid) {
+                return response()->json([
+                    'message' => 'KRS schedule is valid for the current semester.',
+                    'data' => true,
+                    'info' => $detailKegiatan,
+                ], 200);
+            } else {
+                return response()->json([
+                    'message' => 'KRS schedule is not valid for the current semester.',
+                    'data' => false,
+                    'info' => $detailKegiatan,
+                ], 400);
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to retrieve class schedule.',
+                'data' => false,
+                'error' => $e->getMessage(),
+                'info' => $detailKegiatan,
+            ], 400);
+        }
+    }
 
     // get list mahasiswa approve krs sign
     public function getListKrs(Request $request)
