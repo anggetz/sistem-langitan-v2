@@ -40,6 +40,7 @@ Route::group(
         Route::group(
             ['prefix' => 'krs', 'controller' => DosenKrsController::class],
             function () {
+                Route::get('check-krs-schedule', 'CheckKRSScheduleOnCurrentSemester');
                 Route::post('approve_course', 'approveKprsMk');
                 Route::get('list_course_approval', 'listCourseApproval');
                 Route::get('list_student_approval', 'listStudentNeedApproval');
