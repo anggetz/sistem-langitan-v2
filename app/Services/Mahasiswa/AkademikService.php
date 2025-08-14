@@ -133,10 +133,10 @@ class AkademikService
         $data = auth()->user()->mahasiswa->pengambilanMk()
             ->with([
                 "namaKelas:nama_kelas.nama_kelas",
-                "mataKuliah:mata_kuliah.nm_mata_kuliah,mata_kuliah.kredit_semester"
+                "mataKuliah:mata_kuliah.nm_mata_kuliah,mata_kuliah.kredit_semester,kd_mata_kuliah",
             ])
             ->whereSemester($idSemester)
-            ->get(["id_pengambilan_mk", "id_kelas_mk", "id_mhs", "nilai_huruf", "flagnilai", "id_semester"]);
+            ->get(["id_pengambilan_mk", "id_kelas_mk", "id_mhs", "nilai_huruf", "nilai_angka", "flagnilai", "id_semester"]);
             // ->map();
         return $data;
     }

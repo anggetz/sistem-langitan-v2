@@ -133,6 +133,8 @@ class CalculatingFinalScore extends Command
                 'id_pengambilan_mk' => $finalScore['pengambilan_mk']->id_pengambilan_mk ?? null,
                 'fd_nilai_angka' => $finalScore['nilai'],
                 'fd_nilai_huruf' =>  $peraturanNilaiMinMax ? $peraturanNilaiMinMax->standardNilai->nm_standar_nilai : 'F',
+                'nilai_angka' => $finalScore['nilai'],
+                'nilai_huruf' =>  $peraturanNilaiMinMax ? $peraturanNilaiMinMax->standardNilai->nm_standar_nilai : 'F',
             ]);
         }
 
