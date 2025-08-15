@@ -40,11 +40,15 @@ Route::group(
         Route::group(
             ['prefix' => 'krs', 'controller' => DosenKrsController::class],
             function () {
+                Route::get('check-krs-schedule', 'CheckKRSScheduleOnCurrentSemester');
                 Route::post('approve_course', 'approveKprsMk');
                 Route::get('list_course_approval', 'listCourseApproval');
                 Route::get('list_student_approval', 'listStudentNeedApproval');
-                Route::get('list_approved_student', 'getApprovedStudent');
-                Route::get('detail_approved_student/{id}', 'detailApprovalMahasiswa');
+                Route::get('detail_approved_student/{id_mhs}/{id_semester}', 'detailApprovalMahasiswa');
+                Route::get('list_course_krs', 'listMataKuliahByActiveSemesterAndProdi');
+                Route::get('list_krs', 'getListKrs');
+                Route::post('take_course', 'takeCourse');
+                Route::post('leave_course', 'leaveCourse');
             }
         );
 
