@@ -10,7 +10,7 @@ class Config extends Model
 {
     use HasFactory;
     protected $table = 'config';
-    protected $primaryKey = 'kd_konfig';
+    protected $primaryKey = 'kd_config';
 
     // primary key type
     protected $keyType = 'string';
@@ -19,6 +19,14 @@ class Config extends Model
     public $timestamps = false;
     //guarded
     protected $guarded = [];
+
+    // case
+     protected function casts(): array
+    {
+        return [
+            'default_value' => 'string',
+        ];
+    }
 
 
 }

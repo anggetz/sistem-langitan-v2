@@ -10,7 +10,7 @@ class ConfigPT extends Model
 {
     use HasFactory;
     protected $table = 'config_pt';
-    protected $primaryKey = 'kd_konfig';
+    protected $primaryKey = 'KD_CONFIG';
 
     // primary key type
     protected $keyType = 'string';

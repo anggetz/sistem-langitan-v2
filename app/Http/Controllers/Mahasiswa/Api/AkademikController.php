@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\JadwalKegiatanSemester;
 use App\Services\Mahasiswa\BerandaService;
 use App\Http\Resources\Mahasiswa\JadwalKuliahResource;
+use App\Models\Config;
 use App\Models\ConfigPT;
 use App\Models\PresensiMhs;
 use App\Services\Mahasiswa\AkademikService;
@@ -230,15 +231,21 @@ class AkademikController extends Controller
     public function isAllowAddMkKrs()
     {
         try {
-            $configPt = ConfigPT::where('kd_konfig', 'is_allow_add_mk_krs')
-                ->where('id_perguruan_tinggi', pt()->id_perguruan_tinggi)
-                ->firstOrCreate([
-                    'kd_konfig' => 'is_allow_add_mk_krs',
-                    'nilai' => '0'
-                ]);
+            $configPt = ConfigPT::where('KD_CONFIG', 'IS_ALLOW_ADD_MK_KRS')
+                ->where('id_perguruan_tinggi', env('APP_ID_PERGURUAN_TINGGI_DEFAULT', '1'))
+                ->first();
+
+            if (!$configPt) {
+                // check if kd_config inside config table
+               return response()->json([
+                    'status' => Message::OK,
+                    'message' => 'Config not found',
+                    'data' => false
+                ], 200);
+            }
             return response()->json([
                 'status' => Message::OK,
-                'data' => $configPt->nilai == '1' ? true : false,
+                'data' => $configPt->config_value == 'Y' ? true : false,
             ], 200);
         } catch (Exception $err) {
             return response()->json([
