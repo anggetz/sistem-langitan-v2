@@ -203,7 +203,7 @@ class MahasiswaKrsController extends Controller
                         'message' => 'Limit SKS tidak boleh lebih kecil dari 0',
                     ], 400);
                 }
-                $mahasiswaKrsApprovalSign->kredit_sks = $mahasiswaKrsApprovalSign->kredit_sks -  $totalKreditMk;
+                $mahasiswaKrsApprovalSign->kredit_sks = (int)$mahasiswaKrsApprovalSign->kredit_sks -  $totalKreditMk;
                 $mahasiswaKrsApprovalSign->save();
             }
 
