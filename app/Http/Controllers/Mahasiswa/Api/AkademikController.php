@@ -216,7 +216,7 @@ class AkademikController extends Controller
     public function getSemesterActive()
     {
         $data = auth()->user()->mahasiswa
-            ->pengambilanMk()
+            ->pengambilanMkKprs()
             ->with("semester:id_semester,nm_semester,tahun_ajaran,status_aktif_semester")
             ->groupBy("id_semester")
             ->orderByDesc('id_semester')

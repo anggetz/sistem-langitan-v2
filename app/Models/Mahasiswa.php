@@ -116,6 +116,12 @@ class Mahasiswa extends Model
         return $this->hasMany(PengambilanMk::class, "id_mhs", "id_mhs");
     }
 
+    public function pengambilanMkKprs()
+    {
+        return $this->hasMany(PengambilanMkKprs::class, "id_mhs", "id_mhs");
+    }
+
+
     public function pengambilanMkApproved()
     {
         return $this->pengambilanMk()->where("status_apv_pengambilan_mk", 1);
