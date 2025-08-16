@@ -55,6 +55,7 @@ Route::group(['prefix' => 'mahasiswa', 'middleware' => 'role:' . Role::MAHASISWA
         ['prefix' => 'krs', 'controller' => MahasiswaKrsController::class],
         function () {
             Route::get('check-krs-schedule', 'CheckKRSScheduleOnCurrentSemester');
+            Route::get('check-tagihan', 'CheckTagihanValidation');
             Route::get('list_mk', 'listMataKuliahByActiveSemesterAndProdi');
             Route::get('riwayat', 'getHistoryKrs');
             Route::post('take_course', 'takeCourse');

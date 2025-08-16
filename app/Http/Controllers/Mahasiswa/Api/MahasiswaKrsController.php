@@ -61,6 +61,33 @@ class MahasiswaKrsController extends Controller
         }
     }
 
+
+    public function CheckTagihanValidation(Request $request)
+    {
+
+        try {
+            $isValid = (new MahasiswaKrsService())->validateMahasiswaCanKrsByActiveSemesterAndPrevSemester(auth()->user()->mahasiswa->id_mhs);
+
+            if ($isValid) {
+                return response()->json([
+                    'message' => 'Mahasiswa dapat melakukan KRS pada semester ini.',
+                    'data' => true,
+                ], 200);
+            } else {
+                return response()->json([
+                    'message' => 'Mahasiswa tidak dapat melakukan KRS pada semester ini. Silakan periksa tagihan atau status KRS Anda.',
+                    'data' => false,
+                ], 400);
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'gagal melakukan validasi tagihan.',
+                'data' => false,
+                'error' => $e->getMessage(),
+            ], 400);
+        }
+    }
+
     public function listMataKuliahByActiveSemesterAndProdi(Request $request)
     {
         try {
