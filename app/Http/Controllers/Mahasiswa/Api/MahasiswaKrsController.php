@@ -243,10 +243,30 @@ class MahasiswaKrsController extends Controller
         }
     }
 
+
     public function getLimitSksPerSemester(Request $request)
     {
         try {
             $semester = Semester::prevAktif();
+
+            if (count($semester) > 1) {
+                // check if inside semester has semester pendek get pendek instead
+                $isExistsPendek = $semester->where('nm_semester', 'Pendek')->exists();
+
+                if ($isExistsPendek) {
+                    $semester = $semester->where('nm_semester', 'Pendek')->first();
+                } else {
+                     $semester = $semester->where('nm_semester', 'Ganjil')->first();
+                }
+            } else if (count($semester) > 0) {
+                 $semester = $semester[0];
+            } else {
+               return response()->json([
+                    'message' => 'Tidak ada semester aktif',
+                    'status' => false,
+                ], 400);
+            }
+
             $id_semester = $semester->id_semester;
 
             $result = (new MahasiswaKrsService())->getLimitSksPerSemester(auth()->user()->mahasiswa->id_mhs, $id_semester);

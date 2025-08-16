@@ -616,22 +616,24 @@ class KrsService
             $isTrueActiveSemster = true; // ada tagihan mhs untuk semester aktif
         }
 
-        $prevSemester = Semester::prevAktif();
-        if (!$prevSemester) {
+        $prevSemesters = Semester::prevAktif();
+        if (!count($prevSemesters) < 1) {
             // it means he semester awal;
             return true;
         }
 
-        $prevKrsProdi = $this->getTagihanBySemester($id_mhs, $prevSemester->id_semester);
+        foreach ($prevSemesters as $prevSemester) {
+            $prevKrsProdi = $this->getTagihanBySemester($id_mhs, $prevSemester->id_semester);
 
-        $isTruePrevSemester = empty($prevKrsProdi); //tidak ada tagihan mhs untuk semester sebelumnya
+            $isTruePrevSemester = empty($prevKrsProdi); //tidak ada tagihan mhs untuk semester sebelumnya
 
-        if (!empty($prevKrsProdi)) {
-            // check if the total biaya and denda is less than or equal to total terbayar
-            if ($prevKrsProdi->total_besar_biaya + $prevKrsProdi->total_denda_biaya > $prevKrsProdi->total_terbayar) {
-                return false;
+            if (!empty($prevKrsProdi)) {
+                // check if the total biaya and denda is less than or equal to total terbayar
+                if ($prevKrsProdi->total_besar_biaya + $prevKrsProdi->total_denda_biaya > $prevKrsProdi->total_terbayar) {
+                    return false;
+                }
+                $isTruePrevSemester = true; // ada tagihan mhs untuk semester sebelumnya
             }
-            $isTruePrevSemester = true; // ada tagihan mhs untuk semester sebelumnya
         }
 
         return true && $isTrueActiveSemster && $isTruePrevSemester;
