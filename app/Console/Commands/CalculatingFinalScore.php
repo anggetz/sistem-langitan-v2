@@ -2,6 +2,8 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Mahasiswa;
+use App\Models\MahasiswaStatus;
 use App\Models\NilaiMk;
 use App\Models\PengambilanMk;
 use App\Models\PeraturanNilai;
@@ -65,8 +67,6 @@ class CalculatingFinalScore extends Command
             return 1; // Return a non-zero exit code for error
         }
 
-
-
         $mk = null;
 
         $totalScoreMhs = [];
@@ -118,6 +118,15 @@ class CalculatingFinalScore extends Command
                 // Store the final score for the component
                 $totalScoreMhs[$idMhs]['nilai'] += $weightedScore;
             }
+
+            MahasiswaStatus::where(
+                [
+                    'id_mhs' => $idMhs,
+                    'id_semester' => $totalScoreMhs[$idMhs]['pengambilan_mk']->id_semester ?? null,
+                ]
+            )->update([
+                'komponens' => json_encode($totalScorePerKomponen),
+            ]);
         }
 
         // foreach to store the final score in the database

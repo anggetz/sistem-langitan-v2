@@ -136,8 +136,16 @@ class AkademikService
                 "mataKuliah:mata_kuliah.nm_mata_kuliah,mata_kuliah.kredit_semester,kd_mata_kuliah",
             ])
             ->whereSemester($idSemester)
-            ->get(["id_pengambilan_mk", "id_kelas_mk", "id_mhs", "nilai_huruf", "nilai_angka", "flagnilai", "id_semester"]);
-            // ->map();
+            // multi on
+            ->join('mahasiswa_status', function ($join) {
+                $join->on('pengambilan_mk.id_mhs', '=', 'mahasiswa_status.id_mhs')
+                    ->whereRaw('mahasiswa_status.id_semester = pengambilan_mk.id_semester');
+            })
+            ->get(["pengambilan_mk.id_pengambilan_mk", "pengambilan_mk.id_kelas_mk", "pengambilan_mk.id_mhs", "pengambilan_mk.nilai_huruf", "pengambilan_mk.nilai_angka", "pengambilan_mk.flagnilai", "pengambilan_mk.id_semester", "mahasiswa_status.komponens"])
+            ->map(function ($item) {
+                $item->komponens = $item->komponens == null ? json_decode("{}", true) : json_decode($item->komponens, true);
+                return $item;
+            });
         return $data;
     }
 
