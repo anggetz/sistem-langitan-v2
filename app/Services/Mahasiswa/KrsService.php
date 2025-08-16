@@ -62,7 +62,7 @@ class KrsService
         return true; // Placeholder for actual validation logic
     }
 
-    public function listMataKuliahByActiveSemesterAndProdi($id_program_studi, $id_semester = null)
+    public function listMataKuliahByActiveSemesterAndProdi($id_program_studi, $id_semester = null, $id_mhs = null)
     {
 
         $page = request()->get('page', 1);
@@ -75,9 +75,13 @@ class KrsService
             throw new \Exception("Semester aktif tidak ditemukan.");
         }
 
+        // dd($id_program_studi, $semesterAktif->id_semester);
+
         $q = KrsProdi::whereHas('kelasMk', function ($query) use ($semesterAktif, $id_program_studi, $id_semester) {
             $query->where('id_program_studi', $id_program_studi);
         });
+
+        // $q->where('id_program_studi', $id_program_studi);
 
         if ($id_semester) {
             $q->where('id_semester', $id_semester);
@@ -88,8 +92,10 @@ class KrsService
         // get total count
         $totalCount = $q->count();
 
+        // dd($totalCount);
+
         $q = $q->with([
-            'kelasMk' => function ($query) {
+            'kelasMk' => function ($query) use ($id_mhs) {
                 $query->select([
                     'id_kelas_mk',
                     'kapasitas_kelas_mk',
@@ -99,6 +105,11 @@ class KrsService
                     'terisi_kelas_mk'
                 ])
                     ->with([
+                        'pengambilanMkKprs' => function ($q) use ($id_mhs) {
+                            if ($id_mhs) {
+                                $q->where('id_mhs', $id_mhs);
+                            }
+                        },
                         'nama' => function ($q) {
                             $q->select(['id_nama_kelas', 'nama_kelas']);
                         },
@@ -160,6 +171,8 @@ class KrsService
                         'nama_hari' => $jadwalKelas->nama_hari,
                     ];
                 }
+
+                // dd($kelasMk->pengambilanMkKprs);
 
                 // TODO: add field for terisi kelasmk
                 return [

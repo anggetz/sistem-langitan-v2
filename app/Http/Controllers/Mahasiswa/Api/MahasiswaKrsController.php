@@ -198,13 +198,12 @@ class MahasiswaKrsController extends Controller
                 $totalKreditMk = KelasMk::whereIn('id_kelas_mk', $validatedData['id_kelas_mks'])
                     ->sum('kredit_semester');
 
-                if ($mahasiswaKrsApprovalSign->limit_sks - $totalKreditMk < 0) {
+                if ($mahasiswaKrsApprovalSign->kredit_sks - $totalKreditMk < 0) {
                     return response()->json([
                         'message' => 'Limit SKS tidak boleh lebih kecil dari 0',
                     ], 400);
                 }
-                $mahasiswaKrsApprovalSign->limit_sks = $mahasiswaKrsApprovalSign->limit_sks - $totalKreditMk;
-                $mahasiswaKrsApprovalSign->kredit_sks = $result['kredit_sks'];
+                $mahasiswaKrsApprovalSign->kredit_sks = $mahasiswaKrsApprovalSign->kredit_sks -  $totalKreditMk;
                 $mahasiswaKrsApprovalSign->save();
             }
 

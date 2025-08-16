@@ -8,12 +8,14 @@ use App\Models\MataKuliah;
 use App\Models\PengampuMk;
 use App\Models\KurikulumMk;
 use App\Models\PengambilanMk;
+use Awobaz\Compoships\Compoships;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class KelasMk extends Model
 {
-    use HasFactory, Blameable;
+    use HasFactory, Blameable, Compoships;
+
     protected $table = 'kelas_mk';
     protected $primaryKey = 'id_kelas_mk';
     const CREATED_AT = 'created_on';
@@ -34,8 +36,7 @@ class KelasMk extends Model
     }
 
     function pengambilanMkKprs(){
-        return $this->hasMany(PengambilanMkKprs::class,"id_kelas_mk","id_kelas_mk")
-            ->where('pengambilan_mk_kprs.id_mhs', '=', $this->id_mhs);
+        return $this->hasMany(PengambilanMkKprs::class, "id_kelas_mk","id_kelas_mk");
     }
 
     public function semester(){
