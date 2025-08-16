@@ -351,7 +351,7 @@ class DosenKrsController extends Controller
                 ], 404);
             }
 
-            $res = (new KrsService())->listMataKuliahByActiveSemesterAndProdi($mahasiswa->id_program_studi, Semester::aktif()->id_semester);
+            $res = (new KrsService())->listMataKuliahByActiveSemesterAndProdi($mahasiswa->id_program_studi, Semester::aktif()->id_semester, $mahasiswa->id_mhs);
             return response()->json($res, 200);
         } catch (\Exception $e) {
             return response()->json([
