@@ -198,13 +198,12 @@ class MahasiswaKrsController extends Controller
                 $totalKreditMk = KelasMk::whereIn('id_kelas_mk', $validatedData['id_kelas_mks'])
                     ->sum('kredit_semester');
 
-                if ($mahasiswaKrsApprovalSign->limit_sks - $totalKreditMk < 0) {
+                if ($mahasiswaKrsApprovalSign->kredit_sks - $totalKreditMk < 0) {
                     return response()->json([
                         'message' => 'Limit SKS tidak boleh lebih kecil dari 0',
                     ], 400);
                 }
-                $mahasiswaKrsApprovalSign->limit_sks = $mahasiswaKrsApprovalSign->limit_sks - $totalKreditMk;
-                $mahasiswaKrsApprovalSign->kredit_sks = $result['kredit_sks'];
+                $mahasiswaKrsApprovalSign->kredit_sks = $mahasiswaKrsApprovalSign->kredit_sks -  $totalKreditMk;
                 $mahasiswaKrsApprovalSign->save();
             }
 
@@ -243,10 +242,30 @@ class MahasiswaKrsController extends Controller
         }
     }
 
+
     public function getLimitSksPerSemester(Request $request)
     {
         try {
             $semester = Semester::prevAktif();
+
+            if (count($semester) > 1) {
+                // check if inside semester has semester pendek get pendek instead
+                $isExistsPendek = $semester->where('nm_semester', 'Pendek')->exists();
+
+                if ($isExistsPendek) {
+                    $semester = $semester->where('nm_semester', 'Pendek')->first();
+                } else {
+                     $semester = $semester->where('nm_semester', 'Ganjil')->first();
+                }
+            } else if (count($semester) > 0) {
+                 $semester = $semester[0];
+            } else {
+               return response()->json([
+                    'message' => 'Tidak ada semester aktif',
+                    'status' => false,
+                ], 400);
+            }
+
             $id_semester = $semester->id_semester;
 
             $result = (new MahasiswaKrsService())->getLimitSksPerSemester(auth()->user()->mahasiswa->id_mhs, $id_semester);
