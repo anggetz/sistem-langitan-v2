@@ -56,8 +56,8 @@ class KeuanganController extends Controller
         $mahasiswa = auth()->user()->mahasiswa;
 
         $dataPembayaran = Pembayaran::with([
-            'tagihan.detail_biaya.biaya:id_biaya,nm_biaya,keterangan_biaya',
-            'tagihan.detail_biaya:id_detail_biaya,id_biaya,besar_biaya,keterangan_biaya',
+            'tagihan.detailBiaya.biaya:id_biaya,nm_biaya,keterangan_biaya',
+            'tagihan.detailBiaya:id_detail_biaya,id_biaya,besar_biaya,keterangan_biaya',
             'bank:id_bank,nm_bank',
             'tagihan:id_tagihan,besar_biaya,denda_biaya,id_detail_biaya',
         ])

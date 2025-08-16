@@ -64,6 +64,13 @@ Route::group(
         );
 
         Route::group(
+            ['prefix' => 'akademik', 'controller' => DosenController::class],
+            function () {
+                Route::get('kalender', 'kalender');
+            }
+        );
+
+        Route::group(
             ['prefix' => 'penelitian_approval', 'controller' => DosenPenelitianApprovalController::class],
             function () {
                 Route::post('approval_prodi', 'approvalProdi');
