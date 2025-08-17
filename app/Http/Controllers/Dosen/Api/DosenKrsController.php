@@ -18,6 +18,7 @@ use App\Models\Pengguna;
 use App\Models\ProgramStudi;
 use App\Models\Semester;
 use App\Services\Mahasiswa\KrsService;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -237,11 +238,17 @@ class DosenKrsController extends Controller
                     'status_pengambilan_mk' => 1,
                 ]);
 
+            $mataKuliah = [];
+
             $data = PengambilanMkKprs::where('id_mhs', $validatedData['id_mhs'])
                 ->where('id_semester', $semesterAktif->id_semester)
+                ->with('kelasMk.mataKuliah')
                 ->whereHas('kelasMk')
                 ->get()
-                ->map(function ($item) {
+                ->map(function ($item) use (&$mataKuliah) {
+
+                    array_push($mataKuliah, $item->kelasMk->mataKuliah);
+
                     return [
                         'id_mhs' => $item->id_mhs,
                         'id_kelas_mk' => $item->id_kelas_mk,
@@ -274,7 +281,60 @@ class DosenKrsController extends Controller
                     'updated_on'
                 ]
             );
+
+            $sksData = PengambilanMk::where('id_mhs', $validatedData['id_mhs'])
+                        ->join('kelas_mk', 'pengambilan_mk.id_kelas_mk', '=', 'kelas_mk.id_kelas_mk')
+                        ->join('mata_kuliah', 'kelas_mk.id_mata_kuliah', '=', 'mata_kuliah.id_mata_kuliah')
+                        ->get(['mata_kuliah.id_mata_kuliah', 'mata_kuliah.kredit_semester']);
+
+            // unique id_mata_kuliah
+            $sksTotal = $sksData->unique('id_mata_kuliah')->whereNotIn('id_mata_kuliah', collect($mataKuliah)->map(function ($item) {
+                return $item->id_mata_kuliah;
+            }))->sum('kredit_semester');
+
+
+            // get previous mahasiswa status
+            $prevData = MahasiswaStatus::where('id_semester', '<', $semesterAktif->id_semester)
+                                    ->orderBy('id_semester', 'DESC')
+                                    ->first();
+
+
+            MahasiswaStatus::upsert(
+                [
+                    'id_mhs' => $validatedData['id_mhs'],
+                    'ips' => 0,
+                    'ipk' => $prevData->ipk,
+                    'sks_total' => $sksTotal + $currentKreditSemester,
+                    'sks_semester' =>  $currentKreditSemester,
+                    'id_semester' => $semesterAktif->id_semester,
+                    'id_status_pengguna' => 1,
+                    'created_on' => Carbon::now(),
+                    'created_by' => auth()->user()->id_pengguna,
+                    'updated_on' => Carbon::now(),
+                    'updated_by' => auth()->user()->id_pengguna,
+                ],
+                [
+                    'id_mhs',
+                    'id_semester',
+                ],
+                [
+                    'id_mhs',
+                    'ips',
+                    'ipk',
+                    'sks_total',
+                    'sks_semester',
+                    'id_semester',
+                    'id_status_pengguna',
+                    'created_on',
+                    'created_by',
+                    'updated_on',
+                    'updated_by'
+                ]
+            );
+
             DB::commit();
+
+
 
             return response()->json([
                 'message' => 'KRS MK approved successfully.',
