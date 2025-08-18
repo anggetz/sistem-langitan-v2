@@ -8,6 +8,8 @@ use App\Models\Mahasiswa;
 use App\Models\MahasiswaStatus;
 use App\Models\Message;
 use App\Models\NilaiMk;
+use App\Models\PengambilanMk;
+use App\Models\Semester;
 use App\Services\Mahasiswa\AkademikService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
@@ -302,6 +304,7 @@ class DosenPenilaianController extends Controller
     {
         $limit = $request->get('perPage', 10);
         $page = $request->get('page', 1);
+        $id_semester = $request->get('id_semester', null);
         $offset = ($page - 1) * $limit;
 
         // id mhs
@@ -310,37 +313,79 @@ class DosenPenilaianController extends Controller
         $nm_komponen_mk = $request->get('nm_komponen_mk', null);
 
         try {
-            $nilaiMks = NilaiMk::whereHas('pengambilanMk', function ($query) use ($id_kelas_mk, $id_mhs) {
-                $query->where('id_kelas_mk', $id_kelas_mk);
-                if ($id_mhs) {
-                    $query->where('id_mhs', $id_mhs);
-                }
-            })->with(['pengambilanMk.mahasiswa.pengguna:id_pengguna,gelar_depan,nm_pengguna,gelar_belakang']);
+            // $nilaiMks = NilaiMk::whereHas('pengambilanMk', function ($query) use ($id_kelas_mk, $id_mhs, $id_semester) {
+            //     $query->where('id_kelas_mk', $id_kelas_mk);
+            //     if ($id_mhs) {
+            //         $query->where('id_mhs', $id_mhs);
+            //     }
 
-            if ($nm_komponen_mk) {
-                $nilaiMks->whereHas('komponenMk', function ($query) use ($nm_komponen_mk) {
-                    $query->where('nm_komponen_mk',  $nm_komponen_mk);
+            //     if ($id_semester) {
+            //         $query->where('id_semester', $id_semester);
+            //     } else {
+            //         $query->where('id_semester', Semester::aktif()->id_semester);
+            //     }
+            // })->with(['pengambilanMk.mahasiswa.pengguna:id_pengguna,gelar_depan,nm_pengguna,gelar_belakang']);
+
+            // if ($nm_komponen_mk) {
+            //     $nilaiMks->leftJoin('komponen_mk', function ($join) use ($nm_komponen_mk) {
+            //         $join->on('nilai_mk.id_komponen_mk', '=', 'komponen_mk.id_komponen_mk');
+            //     });
+            //     $nilaiMks->where('komponen_mk.nm_komponen_mk', '=',$nm_komponen_mk);
+            // }
+
+
+            $data = PengambilanMk::where('id_kelas_mk', $id_kelas_mk)
+                ->with(['mahasiswa.pengguna:id_pengguna,gelar_depan,nm_pengguna,gelar_belakang'])
+                ->when($id_mhs, function ($query) use ($id_mhs) {
+                    return $query->where('id_mhs', $id_mhs);
+                })
+                ->when($id_semester, function ($query) use ($id_semester) {
+                    return $query->where('id_semester', $id_semester);
+                }, function ($query) {
+                    return $query->where('id_semester', Semester::aktif()->id_semester);
                 });
-            }
+
+            $nilaiMks = NilaiMk::whereHas('pengambilanMk', function ($query) use ($data) {
+                $query->whereIn('id_pengambilan_mk', $data->pluck('id_pengambilan_mk'));
+            })->with([
+                'pengambilanMk.mahasiswa.pengguna:id_pengguna,gelar_depan,nm_pengguna,gelar_belakang',
+                'komponenMk' => function ($query) use ($nm_komponen_mk) {
+                    if ($nm_komponen_mk) {
+                        $query->where('nm_komponen_mk', $nm_komponen_mk);
+                    }
+                }
+            ])
+            ->get();
 
             return response()->json([
                 'status' => Message::OK,
                 'message' => 'Get Nilai successfully.',
-                'data' => $nilaiMks->offset($offset)
+                'data' => $data->offset($offset)
                     ->limit($limit)
-                    ->get()->map(function ($item) {
-                        $pengguna = $item->pengambilanMk->mahasiswa->pengguna ?? new \App\Models\Pengguna();
+                    ->get()->map(function ($item) use ($nilaiMks, $nm_komponen_mk) {
+                        $pengguna = $item->mahasiswa->pengguna ?? new \App\Models\Pengguna();
+                        $qNilaiMk = $nilaiMks->where('id_pengambilan_mk', $item->id_pengambilan_mk)
+                            ->where('id_mhs', $item->id_mhs);
+
+                        if ($nm_komponen_mk) {
+                            $nilaiMk = $qNilaiMk->where('komponenMk.nm_komponen_mk', $nm_komponen_mk);
+                        }
+
+                        $nilaiMk = $qNilaiMk->first() ?? null;
+
+                        dd($nilaiMk);
+
                         return [
-                            'id_mhs' => $item->pengambilanMk->id_mhs,
+                            'id_mhs' => $item->id_mhs,
                             'id_nilai_mk' => $item->id_nilai_mk,
                             'nama_mhs' => $pengguna->nama_lengkap,
-                            'nim_mhs' => $item->pengambilanMk->mahasiswa->nim_mhs ?? '',
-                            'id_komponen_mk' => $item->id_komponen_mk,
-                            'nm_komponen_mk' => $item->komponenMk->nm_komponen_mk ?? '',
-                            'besar_nilai_mk' => $item->besar_nilai_mk,
+                            'nim_mhs' => $item->mahasiswa->nim_mhs ?? '',
+                            'nilai' => $nilaiMk ? $nilaiMk->besar_nilai_mk : 0,
+                            'id_pengambilan_mk' => $item->id_pengambilan_mk,
+                            'id_komponen_mk' => $nilaiMk ? $nilaiMk->id_komponen_mk : null,
                         ];
                     }),
-                'total' => $nilaiMks->count(),
+                'total' => $data->count(),
                 'per_page' => $limit,
                 'page' => $page,
             ], 200);

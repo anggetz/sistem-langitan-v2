@@ -83,11 +83,11 @@ class KrsService
 
         // $q->where('id_program_studi', $id_program_studi);
 
-        if ($id_semester) {
-            $q->where('id_semester', $id_semester);
-        } else {
-            $q->where('id_semester', $semesterAktif->id_semester);
+        if (!$id_semester) {
+            $id_semester = $semesterAktif->id_semester;
         }
+
+        $q->where('id_semester', $id_semester);
 
         // get total count
         $totalCount = $q->count();
@@ -95,7 +95,7 @@ class KrsService
         // dd($totalCount);
 
         $q = $q->with([
-            'kelasMk' => function ($query) use ($id_mhs) {
+            'kelasMk' => function ($query) use ($id_mhs, $id_semester) {
                 $query->select([
                     'id_kelas_mk',
                     'kapasitas_kelas_mk',
@@ -105,10 +105,11 @@ class KrsService
                     'terisi_kelas_mk'
                 ])
                     ->with([
-                        'pengambilanMkKprs' => function ($q) use ($id_mhs) {
+                        'pengambilanMk' => function ($q) use ($id_mhs, $id_semester) {
                             if ($id_mhs) {
                                 $q->where('id_mhs', $id_mhs);
                             }
+                            $q->where('id_semester', $id_semester);
                         },
                         'nama' => function ($q) {
                             $q->select(['id_nama_kelas', 'nama_kelas']);
@@ -172,7 +173,7 @@ class KrsService
                     ];
                 }
 
-                // dd($kelasMk->pengambilanMkKprs);
+                // dd($kelasMk->pengambilanMk);
 
                 // TODO: add field for terisi kelasmk
                 return [
@@ -186,8 +187,8 @@ class KrsService
                     'sks' => (int)$kelasMk->kredit_semester ?? 0,
                     'pengampu_mk' => $pengampus,
                     'jadwal_kelas' => $jadwalAll,
-                    'sudah_diambil' => count($kelasMk->pengambilanMkKprs) > 0 ? true : false,
-                    'telah_disetujui' => count($kelasMk->pengambilanMkKprs) > 0 ? $kelasMk->pengambilanMkKprs[0]->status_apv_pengambilan_mk == 1 : false,
+                    'sudah_diambil' => count($kelasMk->pengambilanMk) > 0 ? true : false,
+                    'telah_disetujui' => count($kelasMk->pengambilanMk) > 0 ? $kelasMk->pengambilanMk[0]->status_apv_pengambilan_mk == 1 : false,
                 ];
             });
         // Assuming there's a method to get courses by semester
@@ -218,21 +219,21 @@ class KrsService
         DB::beginTransaction();
 
         foreach ($id_kelas_mks as $id_kelas_mk) {
-            $pengambilanMkKprs = PengambilanMkKprs::where('id_kelas_mk', $id_kelas_mk)
+            $pengambilanMk = PengambilanMk::where('id_kelas_mk', $id_kelas_mk)
                 ->where('id_mhs', $id_mhs)
                 ->first();
 
-            if ($pengambilanMkKprs) {
+            if ($pengambilanMk) {
                 throw new \Exception("$subject sudah mengambil mata kuliah ini.");
             }
 
 
-            $pengambilanMkKprs = new PengambilanMkKprs();
-            $pengambilanMkKprs->id_kelas_mk = $id_kelas_mk;
-            $pengambilanMkKprs->id_mhs = $id_mhs;
-            $pengambilanMkKprs->id_semester = $semesterAktif->id_semester;
-            $pengambilanMkKprs->status_apv_pengambilan_mk = 0; // Not approved yet
-            $pengambilanMkKprs->save();
+            $pengambilanMk = new PengambilanMk();
+            $pengambilanMk->id_kelas_mk = $id_kelas_mk;
+            $pengambilanMk->id_mhs = $id_mhs;
+            $pengambilanMk->id_semester = $semesterAktif->id_semester;
+            $pengambilanMk->status_apv_pengambilan_mk = 0; // Not approved yet
+            $pengambilanMk->save();
 
             //TODO: store to new table krs.
         }
@@ -253,19 +254,19 @@ class KrsService
         DB::beginTransaction();
 
         foreach ($id_kelas_mks as $id_kelas_mk) {
-            $pengambilanMkKprs = PengambilanMkKprs::where('id_kelas_mk', $id_kelas_mk)
+            $pengambilanMk = PengambilanMk::where('id_kelas_mk', $id_kelas_mk)
                 ->where('id_mhs', $id_mhs)
                 ->first();
 
-            if (empty($pengambilanMkKprs)) {
+            if (empty($pengambilanMk)) {
                 throw new \Exception("Tidak ada pengambilan mata kuliah ini atau sudah .");
             }
 
-            if ($pengambilanMkKprs->status_apv_pengambilan_mk == 1) {
+            if ($pengambilanMk->status_apv_pengambilan_mk == 1) {
                 throw new \Exception("Anda tidak dapat membatalkan pengambilan mata kuliah yang sudah disetujui.");
             }
 
-            $pengambilanMkKprs->delete();
+            $pengambilanMk->delete();
         }
 
         DB::commit();
@@ -325,7 +326,7 @@ class KrsService
             ->where('id_semester', $semesterAktif->id_semester)
             ->pluck('id_mhs');
 
-        $query = PengambilanMkKprs::whereIn('id_mhs', $dosenWali)
+        $query = PengambilanMk::whereIn('id_mhs', $dosenWali)
             ->where('id_semester', $semesterAktif->id_semester)
             // ->where('status_apv_pengambilan_mk', 0) // Only those not approved
             ->with(['kelasMk.mataKuliah']);
@@ -337,7 +338,7 @@ class KrsService
             ->get()
             ->map(function ($item) {
                 return [
-                    'id_pengambilan_mk_kprs' => $item->id_pengambilan_mk_kprs,
+                    'id_pengambilan_mk' => $item->id_pengambilan_mk_kprs,
                     'id_mhs' => $item->id_mhs,
                     'nm_mahasiswa' => optional($item->mahasiswa->pengguna)->nm_pengguna,
                     'id_kelas_mk' => $item->id_kelas_mk,
@@ -497,7 +498,7 @@ class KrsService
             throw new \Exception("Semester with id $id_semester not found.");
         }
 
-        $q = PengambilanMkKprs::where('id_mhs', $id_mhs)
+        $q = PengambilanMk::where('id_mhs', $id_mhs)
             ->with([
                 'kelasMk.programStudi',
                 'kelasMk.mataKuliah',
@@ -576,10 +577,6 @@ class KrsService
             throw new \Exception("Mahasiswa with id $id_mhs not found.");
         }
 
-        $krsSubmitting = MahasiswaKrsApprovalSign::where('id_mhs', $id_mhs)
-            ->where('id_semester', $id_semester)
-            ->first();
-
         $pengguna = Pengguna::find($mhs->id_pengguna);
 
         // get ipk from Mahasiswa Status
@@ -595,7 +592,7 @@ class KrsService
             'semester' => $semester->nm_semester,
             'th_semester' => $semester->thn_akademik_semester,
             'program_studi' => $mhs->programStudi?->nm_program_studi,
-            'status_approval' => !empty($krsSubmitting) && !empty($krsSubmitting->sign_path),
+            'status_approval' => $data->first()->status_apv_pengambilan_mk ?? 0,
             'limit_sks' => $limitSks,
             'count_kredit_semester' => $countKreditSemster,
             'nilai_mhs' => $nilaiMhs,
@@ -696,7 +693,7 @@ class KrsService
         $countKreditSemster = 0;
 
         // get kredit semester from pengambilan mk relation kelas mk
-        PengambilanMkKprs::where('id_mhs', $id_mhs)
+        PengambilanMk::where('id_mhs', $id_mhs)
             ->where('id_semester', $id_semester)
             ->with(['kelasMk' => function ($query) {
                 $query->select('id_kelas_mk', 'kredit_semester');

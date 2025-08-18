@@ -432,20 +432,20 @@ class DosenKrsController extends Controller
                 'id_mhs' => 'required|integer',
             ]);
 
-            // validate if any data in mahasiswa krs approval sign cannot take course
-            $mahasiswaKrsApprovalSign = MahasiswaKrsApprovalSign::where('id_mhs', $validatedData['id_mhs'])
+             // if any pengambilam mk approved then cannot add course
+            $pengambilanMk = PengambilanMk::where('id_mhs', auth()->user()->mahasiswa->id_mhs)
                 ->where('id_semester', Semester::aktif()->id_semester)
+                ->where('status_apv_pengambilan_mk', 1) // approved
                 ->first();
+
+            if ($pengambilanMk) {
+                return response()->json([
+                    'message' => 'Anda tidak dapat mendaftar mata kuliah karena sudah ada pengambilan mata kuliah yang disetujui.',
+                ], 400);
+            }
 
             // take course using KrsService
             $result = (new KrsService())->takeCourse($validatedData['id_kelas_mks'], $validatedData['id_mhs'], 'Mahasiswa ini');
-
-            $totalSks = KelasMk::whereIn('id_kelas_mk', $validatedData['id_kelas_mks'])
-                ->where('id_semester', Semester::aktif()->id_semester)
-                ->sum('kredit_semester');
-
-            $mahasiswaKrsApprovalSign->limit_sks = $mahasiswaKrsApprovalSign->limit_sks + $totalSks;
-            $mahasiswaKrsApprovalSign->save();
 
             return response()->json([
                 'message' => 'Successfully taking for courses.',
@@ -468,26 +468,9 @@ class DosenKrsController extends Controller
                 'id_mhs' => 'required|integer',
             ]);
 
-            // validate if any data in mahasiswa krs approval sign cannot take course
-            $mahasiswaKrsApprovalSign = MahasiswaKrsApprovalSign::where('id_mhs', $validatedData['id_mhs'])
-                ->where('id_semester', Semester::aktif()->id_semester)
-                ->first();
 
             // take course using KrsService
             $result = (new KrsService())->leaveCourse($validatedData['id_kelas_mks'], $validatedData['id_mhs']);
-
-            $totalSks = KelasMk::whereIn('id_kelas_mk', $validatedData['id_kelas_mks'])
-                ->where('id_semester', Semester::aktif()->id_semester)
-                ->sum('kredit_semester');
-
-            if ($mahasiswaKrsApprovalSign->limit_sks - $totalSks < 0) {
-                return response()->json([
-                    'message' => 'SKS tidak boleh kurang dari 0',
-                ], 400);
-            }
-
-            $mahasiswaKrsApprovalSign->limit_sks = $mahasiswaKrsApprovalSign->limit_sks - $totalSks;
-            $mahasiswaKrsApprovalSign->save();
 
             return response()->json([
                 'message' => 'Successfully leaving for courses.',
