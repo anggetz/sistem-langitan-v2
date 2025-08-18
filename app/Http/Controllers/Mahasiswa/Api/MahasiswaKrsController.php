@@ -177,7 +177,7 @@ class MahasiswaKrsController extends Controller
             return response()->json([
                 'message' => 'Mata kuliah berhasil dilepas.',
                 'data' => $result,
-            ], 201);
+            ], 200);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Gagal melepas mata kuliah.',
@@ -200,7 +200,7 @@ class MahasiswaKrsController extends Controller
             return response()->json([
                 'message' => 'Riwayat KRS berhasil didapat.',
                 'data' => $result,
-            ], 201);
+            ], 200);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Gagal mendapatkan riwayat KRS',
@@ -245,7 +245,7 @@ class MahasiswaKrsController extends Controller
                     'beban_sks' => $result,
                     'kredit_semester' => $countKreditSemster,
                 ],
-            ], 201);
+            ], 200);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Gagal mendapatkan maksimal sks',
