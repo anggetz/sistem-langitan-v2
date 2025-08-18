@@ -9,6 +9,7 @@ use App\Models\PengambilanMk;
 use App\Models\PengampuMk;
 use App\Models\PresensiKelas;
 use App\Models\PresensiMhs;
+use App\Models\Semester;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -107,6 +108,7 @@ class DosenPresensiController extends Controller
 
             $mahasiswas = PengambilanMk::select('persen_presensi', 'id_kelas_mk', 'id_mhs')
                 ->where('id_kelas_mk', $id_kelas)
+                ->where('id_semester', Semester::aktif())
                 ->with([
                     'mahasiswa' => function ($q) {
                         $q->select('id_mhs', 'id_pengguna')->with([
@@ -220,7 +222,7 @@ class DosenPresensiController extends Controller
             $now = Carbon::now();
 
             $presensiKelas = PresensiKelas::where('id_presensi_kelas', $id_presensi_kelas)
-                                            ->first();
+                ->first();
 
             if (empty($presensiKelas)) {
                 return response()->json([
@@ -232,7 +234,7 @@ class DosenPresensiController extends Controller
             $tglPresensiKelasCarbon = Carbon::parse($presensiKelas->tgl_presensi_kelas);
 
             if ($now > $tglPresensiKelasCarbon->addWeek()) {
-                 return response()->json([
+                return response()->json([
                     'status' => false,
                     'message' => 'Presensi tidak boleh di edit, sudah melebihi 1 minggu',
                 ], 400);
@@ -240,8 +242,8 @@ class DosenPresensiController extends Controller
 
             // check data integrity
             $pengampuMk = PengampuMk::where('id_dosen', auth()->user()->dosen->id_dosen)
-                                    ->where('id_kelas_mk', $presensiKelas->id_kelas_mk)
-                                    ->first();
+                ->where('id_kelas_mk', $presensiKelas->id_kelas_mk)
+                ->first();
 
             if (empty($pengampuMk)) {
                 return response()->json([
@@ -275,7 +277,7 @@ class DosenPresensiController extends Controller
             $now = Carbon::now();
 
             $presensiKelas = PresensiKelas::where('id_presensi_kelas', $id_presensi_kelas)
-                                            ->first();
+                ->first();
 
             if (empty($presensiKelas)) {
                 return response()->json([
@@ -287,7 +289,7 @@ class DosenPresensiController extends Controller
             $tglPresensiKelasCarbon = Carbon::parse($presensiKelas->tgl_presensi_kelas);
 
             if ($now > $tglPresensiKelasCarbon->addWeek()) {
-                 return response()->json([
+                return response()->json([
                     'status' => false,
                     'message' => 'Presensi tidak boleh di hapus, sudah melebihi 1 minggu',
                 ], 400);
@@ -295,8 +297,8 @@ class DosenPresensiController extends Controller
 
             // check data integrity
             $pengampuMk = PengampuMk::where('id_dosen', auth()->user()->dosen->id_dosen)
-                                    ->where('id_kelas_mk', $presensiKelas->id_kelas_mk)
-                                    ->first();
+                ->where('id_kelas_mk', $presensiKelas->id_kelas_mk)
+                ->first();
 
             if (empty($pengampuMk)) {
                 return response()->json([
