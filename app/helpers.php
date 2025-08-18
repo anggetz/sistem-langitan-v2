@@ -8,6 +8,7 @@ function pt()
     if (app()->bound('pt')) {
         return app('pt');
     }
+
     $defaultPt = Cache::get("pt", null);
     if ($defaultPt == null) {
         $defaultPt = App\Models\PerguruanTinggi::find(env('APP_ID_PERGURUAN_TINGGI_DEFAULT'));
