@@ -76,56 +76,116 @@ class DosenKrsController extends Controller
             $limit = $request->get('perPage', 10);
             $page = $request->get('page', 1);
             $offset = ($page - 1) * $limit;
+            $idSemesterAktif = Semester::aktif()->id_semester;
 
+            $query = DosenWali::with([
+                'mahasiswa' => function ($j) use ($idSemesterAktif) {
+                    //list mahasiswa yang memiliki pengambilan_mk di id_semester aktif                
+                    $j->with([
+                        'pengguna' => function ($q) {
+                            $q->select('id_pengguna', 'nm_pengguna');
+                        },
+                        'programStudi' => function ($q) {
+                            $q->select('id_program_studi', 'nm_program_studi', 'id_fakultas', 'id_jenjang');
+                        },
+                        'programStudi.fakultas' => function ($q) {
+                            $q->select('id_fakultas', 'nm_fakultas');
+                        },
+                        'programStudi.jenjang' => function ($q) {
+                            $q->select('id_jenjang', 'nm_jenjang');
+                        },
+                        'mahasiswaKrsApprovalSign' => function ($q) use ($idSemesterAktif) {
+                            $q->with('mahasiswaStatus')->where('id_semester', $idSemesterAktif);
+                        }
+                    ])
+                        ->select('id_mhs', 'id_pengguna', 'id_program_studi', 'thn_angkatan_mhs')
+                        ->whereHas('pengambilanMk', function ($q) use ($idSemesterAktif) {
+                            $q->where('id_semester', $idSemesterAktif);
+                        });
+                },
+                'semester' => function ($j) {
+                    $j->select('id_semester', 'nm_semester');
+                }
+            ])
+                ->where('id_dosen', auth()->user()->dosen?->id_dosen)
+                ->where('id_semester', $idSemesterAktif);
 
-            $q = MahasiswaKrsApprovalSign::with([
-                'mahasiswa.pengguna',
-                'mahasiswa.programStudi.fakultas',
-                'mahasiswaStatus',
-                'mahasiswa.programStudi.jenjang'
-            ]);
+            $total = $query->count();
 
-            $total = $q->count();
-
-            // get dosen mahasiswa allowable
-            $listMhs = DosenWali::where('id_dosen', auth()->user()->dosen->id_dosen)
-                ->get()
-                ->map(function ($item) {
-                    return $item->id_mhs;
-                });
-
-            $data = $q
-                ->where('id_semester', Semester::aktif()->id_semester)
-                ->whereIn('id_mhs', $listMhs)
+            $data = $query
                 ->limit($limit)
                 ->offset($offset)
-                ->orderBy('created_at', 'desc')
+                // ->get();
                 ->get()
                 ->map(function ($krs, $key) {
-                    $mhs = $krs->Mahasiswa ?? new Mahasiswa();
-                    $pengguna = $mhs->Pengguna ?? new Pengguna();
-                    $programStudi = $mhs->programStudi ?? new ProgramStudi();
-                    $fakultas = $programStudi->fakultas ?? new Fakultas();
-                    $mhsStatus = $krs->MahasiswaStatus ?? new MahasiswaStatus();
-
-
+                    $approval = $krs->mahasiswa?->mahasiswaKrsApprovalSign;
+                    if ($approval) $approval = $approval[0];
                     return [
-                        'id' => $krs->id_mahasiswa_krs_approval_sign,
-                        'id_mhs' => $mhs->id_mhs,
-                        'nama_mahasiswa' => $pengguna->nama_lengkap,
-                        'program_studi' => $programStudi->nm_program_studi,
-                        'jenjang' => $mhs?->programStudi?->jenjang?->nm_jenjang,
-                        'angkatan' => $mhs?->thn_angkatan_mhs,
-                        'fakultas' => $fakultas->nm_fakultas,
-                        'semester' => $krs->semester->nm_semester ?? 'N/A',
+                        'id' => $approval?->id_mahasiswa_krs_approval_sign,
+                        'id_mhs' => $krs->mahasiswa?->id_mhs,
+                        'nama_mahasiswa' => $krs->mahasiswa?->pengguna->nama_lengkap,
+                        'program_studi' => $krs->mahasiswa?->programStudi?->nm_program_studi,
+                        'fakultas' => $krs->mahasiswa?->programStudi?->fakultas?->nm_fakultas,
+                        'jenjang' => $krs->mahasiswa?->programStudi?->jenjang?->nm_jenjang,
+                        'angkatan' => $krs->mahasiswa?->thn_angkatan_mhs,
+                        'semester' => $krs->semester?->nm_semester ?? 'N/A',
                         'id_semester' => $krs->id_semester,
-                        'ipk' => (float)$mhsStatus->ipk ?? 0,
-                        'limit_sks' => $krs->limit_sks,
-                        'kredit_sks' => $krs->kredit_sks,
-                        'is_approved' => empty($krs->sign_path) ? false : true,
-                        'ips' => (float)$mhsStatus->ips ?? 0,
+                        'ipk' => (float)$approval?->mahasiswaStatus?->ipk ?? 0,
+                        'limit_sks' => $approval?->limit_sks,
+                        'kredit_sks' => $approval?->kredit_sks,
+                        'is_approved' => empty($approval?->sign_path) ? false : true,
+                        'ips' => (float)$approval?->mahasiswaStatus?->ips ?? 0,
                     ];
                 });
+
+            // $q = MahasiswaKrsApprovalSign::with([
+            //     'mahasiswa.pengguna',
+            //     'mahasiswa.programStudi.fakultas',
+            //     'mahasiswaStatus',
+            //     'mahasiswa.programStudi.jenjang'
+            // ]);
+
+            // $total = $q->count();
+
+            // // get dosen mahasiswa allowable
+            // $listMhs = DosenWali::where('id_dosen', auth()->user()->dosen->id_dosen)
+            //     ->get()
+            //     ->map(function ($item) {
+            //         return $item->id_mhs;
+            //     });
+
+            // $data = $q
+            //     ->where('id_semester', Semester::aktif()->id_semester)
+            //     ->whereIn('id_mhs', $listMhs)
+            //     ->limit($limit)
+            //     ->offset($offset)
+            //     ->orderBy('created_at', 'desc')
+            //     ->get()
+            //     ->map(function ($krs, $key) {
+            //         $mhs = $krs->Mahasiswa ?? new Mahasiswa();
+            //         $pengguna = $mhs->Pengguna ?? new Pengguna();
+            //         $programStudi = $mhs->programStudi ?? new ProgramStudi();
+            //         $fakultas = $programStudi->fakultas ?? new Fakultas();
+            //         $mhsStatus = $krs->MahasiswaStatus ?? new MahasiswaStatus();
+
+
+            //         return [
+            //             'id' => $krs->id_mahasiswa_krs_approval_sign,
+            //             'id_mhs' => $mhs->id_mhs,
+            //             'nama_mahasiswa' => $pengguna->nama_lengkap,
+            //             'program_studi' => $programStudi->nm_program_studi,
+            //             'jenjang' => $mhs?->programStudi?->jenjang?->nm_jenjang,
+            //             'angkatan' => $mhs?->thn_angkatan_mhs,
+            //             'fakultas' => $fakultas->nm_fakultas,
+            //             'semester' => $krs->semester->nm_semester ?? 'N/A',
+            //             'id_semester' => $krs->id_semester,
+            //             'ipk' => (float)$mhsStatus->ipk ?? 0,
+            //             'limit_sks' => $krs->limit_sks,
+            //             'kredit_sks' => $krs->kredit_sks,
+            //             'is_approved' => empty($krs->sign_path) ? false : true,
+            //             'ips' => (float)$mhsStatus->ips ?? 0,
+            //         ];
+            //     });
 
 
             return response()->json([
@@ -432,7 +492,7 @@ class DosenKrsController extends Controller
                 'id_mhs' => 'required|integer',
             ]);
 
-             // if any pengambilam mk approved then cannot add course
+            // if any pengambilam mk approved then cannot add course
             $pengambilanMk = PengambilanMk::where('id_mhs', auth()->user()->mahasiswa->id_mhs)
                 ->where('id_semester', Semester::aktif()->id_semester)
                 ->where('status_apv_pengambilan_mk', 1) // approved
