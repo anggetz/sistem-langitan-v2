@@ -6,6 +6,7 @@ use App\Models\KelasMk;
 use App\Models\Semester;
 use App\Models\Mahasiswa;
 use App\Traits\Blameable;
+use Awobaz\Compoships\Compoships;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Znck\Eloquent\Traits\BelongsToThrough;
@@ -13,6 +14,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class PengambilanMkKprs extends Model
 {
+
+    use Compoships;
 
     protected $table = 'pengambilan_mk_kprs';
     protected $primaryKey = 'id_pengambilan_mk_kprs';

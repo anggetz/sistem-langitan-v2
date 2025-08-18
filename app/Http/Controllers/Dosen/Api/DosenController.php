@@ -7,6 +7,7 @@ use App\Models\Jenjang;
 use App\Models\Message;
 use App\Models\Pengguna;
 use App\Models\ProgramStudi;
+use App\Services\Mahasiswa\AkademikService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -14,7 +15,11 @@ use Illuminate\Support\Facades\Storage;
 
 class DosenController extends Controller
 {
-    public function __construct() {}
+    private $akademikService;
+    public function __construct(AkademikService $akademikService)
+    {
+        $this->akademikService = $akademikService;
+    }
 
     public function profile()
     {
@@ -164,5 +169,14 @@ class DosenController extends Controller
                 'message' => $e->getMessage()
             ], 500);
         }
+    }
+
+    public function kalender()
+    {
+        $data = $this->akademikService->kalender();
+        return response()->json([
+            'status' => Message::OK,
+            'data' => $data
+        ], 200);
     }
 }

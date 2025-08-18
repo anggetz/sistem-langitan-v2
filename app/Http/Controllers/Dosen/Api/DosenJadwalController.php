@@ -85,14 +85,16 @@ class DosenJadwalController extends Controller
                 }
             });
 
-            return response()->json([
-                'message' => Message::OK,
-                'data' => collect($jadwalResponse)
+            $jadwalDosen = collect($jadwalResponse)
                     ->sortBy([
                         fn($a, $b) => $a['id_jadwal_hari'] <=> $b['id_jadwal_hari'],
                         fn($a, $b) => $a['jam_mulai_ord'] <=> $b['jam_selesai_ord'],
                     ])
-                    ->groupBy('hari')->toArray()
+                    ->groupBy('hari')->toArray();
+
+            return response()->json([
+                'message' => Message::OK,
+                'data' => count($jadwalDosen) > 0 ? $jadwalDosen : json_decode('{}'),
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -172,14 +174,16 @@ class DosenJadwalController extends Controller
                 }
             });
 
-            return response()->json([
-                'message' => Message::OK,
-                'data' => collect($jadwalResponse)
+            $jadwalDosenToday = collect($jadwalResponse)
                     ->sortBy([
                         fn($a, $b) => $a['id_jadwal_hari'] <=> $b['id_jadwal_hari'],
                         fn($a, $b) => $a['jam_mulai_ord'] <=> $b['jam_selesai_ord'],
                     ])
-                    ->groupBy('hari')->toArray()
+                    ->groupBy('hari')->toArray();
+
+            return response()->json([
+                'message' => Message::OK,
+                'data' => count($jadwalDosenToday) > 0 ? $jadwalDosenToday : json_decode('{}'),
             ]);
         } catch (\Exception $e) {
             return response()->json([

@@ -30,11 +30,22 @@ class Semester extends Model
     {
         $semesterAktif = self::aktif();
 
+        $prevCoditionNmSemester = [];
+        $prevYear = $semesterAktif->thn_akademik_semester;
+
+        if ($semesterAktif->nm_semester == 'Genap') {
+            $prevCoditionNmSemester = ['Ganjil', 'Pendek'];
+        } else if ($semesterAktif->nm_semester == 'Ganjil') {
+            $prevYear--;
+            $prevCoditionNmSemester = ['Genap'];
+        }
+
         // Get the previous semester
-        $semesterAktif = self::where("STATUS_AKTIF_SEMESTER", "True")
-            ->whereRaw("TO_NUMBER(ID_SEMESTER) < TO_NUMBER(".(int)$semesterAktif->id_semester.")")
+        $semesterAktif = self::whereRaw("thn_akademik_semester = '".(int)$prevYear."'")
+            ->whereIn("nm_semester", $prevCoditionNmSemester)
+            ->where("id_perguruan_tinggi", pt()->id_perguruan_tinggi)
             ->orderBy("ID_SEMESTER", "DESC")
-            ->first();
+            ->get();
 
         return $semesterAktif;
     }

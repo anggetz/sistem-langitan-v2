@@ -16,7 +16,7 @@ class KeuanganService{
 
     }
 
-    public function tagihan($page, $offset){
+    public function tagihan($page = null, $offset = null){
         $mahasiswa=Auth::user()->mahasiswa;
         // $mahasiswa->tagihan_mhs()
         //         ->with([
