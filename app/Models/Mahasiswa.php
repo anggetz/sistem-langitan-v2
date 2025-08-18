@@ -127,6 +127,11 @@ class Mahasiswa extends Model
         return $this->pengambilanMk()->where("status_apv_pengambilan_mk", 1);
     }
 
+    public function mahasiswaKrsApprovalSign()
+    {
+        return $this->hasMany(MahasiswaKrsApprovalSign::class, "id_mhs", "id_mhs");
+    }
+
     public function tagihanMhs()
     {
         return $this->hasMany(TagihanMhs::class, "id_mhs", "id_mhs");
