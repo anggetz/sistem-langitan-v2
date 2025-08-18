@@ -687,7 +687,7 @@ class KrsService
             ->first();
 
 
-        $limitSks = !empty($bebanSks) ? (int)$bebanSks->sks_maksimal ?? 0 : 0;
+        $limitSks = !empty($bebanSks) ? (int)$bebanSks->sks_maksimal ?? 24 : 24;
         return $limitSks;
     }
 
