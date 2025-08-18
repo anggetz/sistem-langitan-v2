@@ -105,10 +105,11 @@ class DosenPresensiController extends Controller
     {
         try {
             $now = Carbon::now();
+            $semester = Semester::aktif();
 
             $mahasiswas = PengambilanMk::select('persen_presensi', 'id_kelas_mk', 'id_mhs')
                 ->where('id_kelas_mk', $id_kelas)
-                ->where('id_semester', Semester::aktif())
+                ->where('id_semester', $semester->id_semester)
                 ->with([
                     'mahasiswa' => function ($q) {
                         $q->select('id_mhs', 'id_pengguna')->with([
