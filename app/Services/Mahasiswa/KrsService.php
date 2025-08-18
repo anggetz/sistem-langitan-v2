@@ -584,7 +584,6 @@ class KrsService
             ->where('id_semester', $id_semester)
             ->first();
 
-
         // populate dosen wali and riwayat krs
         $data = [
             'nama' => $pengguna->nama_lengkap ?? '',
@@ -592,7 +591,7 @@ class KrsService
             'semester' => $semester->nm_semester,
             'th_semester' => $semester->thn_akademik_semester,
             'program_studi' => $mhs->programStudi?->nm_program_studi,
-            'status_approval' => $data->first()->status_apv_pengambilan_mk ?? 0,
+            'status_approval' => $data->first()['status_apv'] ?? "0",
             'limit_sks' => $limitSks,
             'count_kredit_semester' => $countKreditSemster,
             'nilai_mhs' => $nilaiMhs,
