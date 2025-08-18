@@ -1,0 +1,55 @@
+name: CI/CD on Pull Request to Develop
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - develop # Target branch untuk PR
+
+jobs:
+  # Job ini hanya akan berjalan jika PR berhasil di-merge
+  deploy:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: gd, mbstring, pdo_mysql
+          tools: composer:v2
+
+      - name: Install Composer dependencies
+        run: composer install --no-dev --no-interaction --prefer-dist
+
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 2246 # Opsional: jika menggunakan port khusus
+          script: |
+            # Ganti dengan path direktori proyek Anda di server
+            cd /var/www/sistem-langitan-v2
+
+            # Update kode dari git
+            git pull origin develop # Pastikan pull dari branch develop
+
+            # Install dependencies dan jalankan migrasi
+            composer install --no-dev --no-interaction --prefer-dist
+            php artisan migrate --force
+
+            # Bersihkan cache
+            php artisan cache:clear
+            php artisan config:cache
+            php artisan route:cache
+            php artisan view:cache
+
+            # Restart FPM
+            sudo systemctl restart php8.2-fpm
+
+            echo "Deployment berhasil!"
