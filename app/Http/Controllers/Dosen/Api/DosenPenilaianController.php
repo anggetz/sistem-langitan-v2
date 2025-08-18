@@ -345,15 +345,10 @@ class DosenPenilaianController extends Controller
                     return $query->where('id_semester', Semester::aktif()->id_semester);
                 });
 
-            $nilaiMks = NilaiMk::whereHas('pengambilanMk', function ($query) use ($data) {
-                $query->whereIn('id_pengambilan_mk', $data->pluck('id_pengambilan_mk'));
-            })->with([
-                'pengambilanMk.mahasiswa.pengguna:id_pengguna,gelar_depan,nm_pengguna,gelar_belakang',
-                'komponenMk' => function ($query) use ($nm_komponen_mk) {
-                    if ($nm_komponen_mk) {
-                        $query->where('nm_komponen_mk', $nm_komponen_mk);
-                    }
-                }
+            $nilaiMks = NilaiMk::whereIn('id_pengambilan_mk', $data->get()->map(function($item) {
+                return $item->id_pengambilan_mk;
+            }))->with([
+                'komponenMk'
             ])
             ->get();
 
@@ -373,14 +368,12 @@ class DosenPenilaianController extends Controller
 
                         $nilaiMk = $qNilaiMk->first() ?? null;
 
-                        dd($nilaiMk);
-
                         return [
                             'id_mhs' => $item->id_mhs,
                             'id_nilai_mk' => $item->id_nilai_mk,
                             'nama_mhs' => $pengguna->nama_lengkap,
                             'nim_mhs' => $item->mahasiswa->nim_mhs ?? '',
-                            'nilai' => $nilaiMk ? $nilaiMk->besar_nilai_mk : 0,
+                            'nilai' => $nilaiMk ? (int)$nilaiMk->besar_nilai_mk : 0,
                             'id_pengambilan_mk' => $item->id_pengambilan_mk,
                             'id_komponen_mk' => $nilaiMk ? $nilaiMk->id_komponen_mk : null,
                         ];

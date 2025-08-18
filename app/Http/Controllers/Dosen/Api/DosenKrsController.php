@@ -462,6 +462,7 @@ class DosenKrsController extends Controller
             if ($pengambilanMk) {
                 return response()->json([
                     'message' => 'Anda tidak dapat mendaftar mata kuliah karena sudah ada pengambilan mata kuliah yang disetujui.',
+                    'error' => 'Pengambilan MK sudah disetujui.'
                 ], 400);
             }
 
