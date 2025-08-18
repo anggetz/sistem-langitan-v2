@@ -29,7 +29,7 @@ class DosenKrsController extends Controller
 {
     public function __construct() {}
 
-     public function CheckKRSScheduleOnCurrentSemester(Request $request)
+    public function CheckKRSScheduleOnCurrentSemester(Request $request)
     {
         $detailKegiatan = null;
 
@@ -81,7 +81,8 @@ class DosenKrsController extends Controller
             $q = MahasiswaKrsApprovalSign::with([
                 'mahasiswa.pengguna',
                 'mahasiswa.programStudi.fakultas',
-                'mahasiswaStatus'
+                'mahasiswaStatus',
+                'mahasiswa.programStudi.jenjang'
             ]);
 
             $total = $q->count();
@@ -113,6 +114,7 @@ class DosenKrsController extends Controller
                         'id_mhs' => $mhs->id_mhs,
                         'nama_mahasiswa' => $pengguna->nama_lengkap,
                         'program_studi' => $programStudi->nm_program_studi,
+                        'jenjang' => $mhs?->programStudi?->jenjang?->nm_jenjang,
                         'fakultas' => $fakultas->nm_fakultas,
                         'semester' => $krs->semester->nm_semester ?? 'N/A',
                         'id_semester' => $krs->id_semester,
@@ -283,9 +285,9 @@ class DosenKrsController extends Controller
             );
 
             $sksData = PengambilanMk::where('id_mhs', $validatedData['id_mhs'])
-                        ->join('kelas_mk', 'pengambilan_mk.id_kelas_mk', '=', 'kelas_mk.id_kelas_mk')
-                        ->join('mata_kuliah', 'kelas_mk.id_mata_kuliah', '=', 'mata_kuliah.id_mata_kuliah')
-                        ->get(['mata_kuliah.id_mata_kuliah', 'mata_kuliah.kredit_semester']);
+                ->join('kelas_mk', 'pengambilan_mk.id_kelas_mk', '=', 'kelas_mk.id_kelas_mk')
+                ->join('mata_kuliah', 'kelas_mk.id_mata_kuliah', '=', 'mata_kuliah.id_mata_kuliah')
+                ->get(['mata_kuliah.id_mata_kuliah', 'mata_kuliah.kredit_semester']);
 
             // unique id_mata_kuliah
             $sksTotal = $sksData->unique('id_mata_kuliah')->whereNotIn('id_mata_kuliah', collect($mataKuliah)->map(function ($item) {
@@ -295,8 +297,8 @@ class DosenKrsController extends Controller
 
             // get previous mahasiswa status
             $prevData = MahasiswaStatus::where('id_semester', '<', $semesterAktif->id_semester)
-                                    ->orderBy('id_semester', 'DESC')
-                                    ->first();
+                ->orderBy('id_semester', 'DESC')
+                ->first();
 
 
             MahasiswaStatus::upsert(
