@@ -115,6 +115,7 @@ class DosenKrsController extends Controller
                         'nama_mahasiswa' => $pengguna->nama_lengkap,
                         'program_studi' => $programStudi->nm_program_studi,
                         'jenjang' => $mhs?->programStudi?->jenjang?->nm_jenjang,
+                        'angkatan' => $mhs?->thn_angkatan_mhs,
                         'fakultas' => $fakultas->nm_fakultas,
                         'semester' => $krs->semester->nm_semester ?? 'N/A',
                         'id_semester' => $krs->id_semester,
