@@ -121,22 +121,15 @@ class DosenKrsController extends Controller
                 ->orderBy('pengguna.nm_pengguna', 'ASC') // lalu nama
                 ->get()
                 ->map(function ($item) {
-                    return [
-                        'id' => $item->id,
-                        'id_mhs' => $item->id_mhs,
-                        'nama_mahasiswa' => $item->nama_mahasiswa,
-                        'program_studi' => $item->program_studi,
-                        'fakultas' => $item->fakultas,
-                        'jenjang' => $item->jenjang,
-                        'angkatan' => $item->angkatan,
-                        'semester' => $item->semester ?? 'N/A',
-                        'id_semester' => $item->id_semester,
-                        'ipk' => (float)($item->ipk ?? 0),
-                        'ips' => (float)($item->ips ?? 0),
-                        'limit_sks' => (int)$item->limit_sks,
-                        'kredit_sks' => (int)$item->kredit_sks,
-                        'is_approved' => !empty($item->sign_path),
-                    ];
+                    unset($item['rn']);
+                    $item['ipk'] = (float) $item['ipk'] ?? 0;
+                    $item['ips'] = (float) $item['ips'] ?? 0;
+                    $item['limit_sks'] = (int) $item['limit_sks'] ?? 0;
+                    $item['kredit_sks'] = (int) $item['kredit_sks'] ?? 0;
+                    $item['semester'] = $item['semester'] ?? 'N/A';
+                    $item['is_approved'] = !empty($item['sign_path']);
+                    unset($item['sign_path']);
+                    return $item;
                 });
 
             return response()->json([
