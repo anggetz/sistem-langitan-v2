@@ -80,7 +80,7 @@ class DosenKrsController extends Controller
 
             $query = DosenWali::with([
                 'mahasiswa' => function ($j) use ($idSemesterAktif) {
-                    //list mahasiswa yang memiliki pengambilan_mk di id_semester aktif                
+                    //list mahasiswa yang memiliki pengambilan_mk di id_semester aktif
                     $j->with([
                         'pengguna' => function ($q) {
                             $q->select('id_pengguna', 'nm_pengguna');
@@ -292,58 +292,19 @@ class DosenKrsController extends Controller
                 ], 401);
             }
 
-            // split the id_pengambilan_mk_kprs into an array
-            // $validatedData['id_pengambilan_mk_kprs'] = is_array($validatedData['id_pengambilan_mk_kprs']) ? $validatedData['id_pengambilan_mk_kprs'] : explode(',', $validatedData['id_pengambilan_mk_kprs']);
-            PengambilanMkKprs::where('id_mhs', $validatedData['id_mhs'])
-                ->where('id_semester', $semesterAktif->id_semester)
-                ->update([
-                    'status_apv_pengambilan_mk' => 1,
-                    'status_pengambilan_mk' => 1,
-                ]);
-
-            $mataKuliah = [];
-
-            $data = PengambilanMkKprs::where('id_mhs', $validatedData['id_mhs'])
-                ->where('id_semester', $semesterAktif->id_semester)
-                ->with('kelasMk.mataKuliah')
-                ->whereHas('kelasMk')
-                ->get()
-                ->map(function ($item) use (&$mataKuliah) {
-
-                    array_push($mataKuliah, $item->kelasMk->mataKuliah);
-
-                    return [
-                        'id_mhs' => $item->id_mhs,
-                        'id_kelas_mk' => $item->id_kelas_mk,
-                        'status_apv_pengambilan_mk' => $item->status_apv_pengambilan_mk,
-                        'status_pengambilan_mk' => $item->status_pengambilan_mk,
-                        'id_semester' => $item->id_semester,
-                        'nilai_angka' => 0,
-                        'nilai_huruf' => '-',
-                        'status_hapus' => 0,
-                        'created_on' => date('Y-m-d'),
-                        'updated_on' => date('Y-m-d'),
-                    ];
-                })
-                ->toArray();
 
             // insert to pengambilan mk
-            PengambilanMk::upsert(
-                $data,
-                ['id_mhs', 'id_kelas_mk', 'id_semester'],
-                [
-                    'id_mhs',
-                    'id_kelas_mk',
-                    'status_apv_pengambilan_mk',
-                    'status_pengambilan_mk',
-                    'id_semester',
-                    'nilai_angka',
-                    'nilai_huruf',
-                    'status_hapus',
-                    'created_on',
-                    'updated_on'
-                ]
-            );
+            PengambilanMk::where('id_mhs', $validatedData['id_mhs'])
+                ->where('id_semester', $semesterAktif->id_semester)
+                ->update([
+                    'status_apv_pengambilan_mk' => 1, // approved
+                    'updated_on' => Carbon::now(),
+                    'updated_by' => auth()->user()->id_pengguna,
+                ]);
+
+            $mataKuliah = PengambilanMkKprs::where('id_mhs', $validatedData['id_mhs'])
+                                ->where('id_semester', $semesterAktif->id_semester)
+                                ->get();
 
             $sksData = PengambilanMk::where('id_mhs', $validatedData['id_mhs'])
                 ->join('kelas_mk', 'pengambilan_mk.id_kelas_mk', '=', 'kelas_mk.id_kelas_mk')
@@ -493,7 +454,7 @@ class DosenKrsController extends Controller
             ]);
 
             // if any pengambilam mk approved then cannot add course
-            $pengambilanMk = PengambilanMk::where('id_mhs', auth()->user()->mahasiswa->id_mhs)
+            $pengambilanMk = PengambilanMk::where('id_mhs', $validatedData['id_mhs'])
                 ->where('id_semester', Semester::aktif()->id_semester)
                 ->where('status_apv_pengambilan_mk', 1) // approved
                 ->first();
