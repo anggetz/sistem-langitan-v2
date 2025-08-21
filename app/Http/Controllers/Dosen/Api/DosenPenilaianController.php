@@ -156,7 +156,7 @@ class DosenPenilaianController extends Controller
             // get mhs
             $q = \App\Models\PengambilanMk::where('id_kelas_mk', $id_kelas_mk)
                 ->where('id_semester', $idSemesterAktif)
-                ->with(['mahasiswa.pengguna:id_pengguna,gelar_depan,nm_pengguna,gelar_belakang']);
+                ->with(['mahasiswa.pengguna:id_pengguna,gelar_depan,nm_pengguna,gelar_belakang', 'mahasiswa.programStudi:id_program_studi,id_jenjang']);
 
             if ($id_mhs) {
                 $q->where('id_mhs', $id_mhs);
@@ -208,7 +208,7 @@ class DosenPenilaianController extends Controller
                     'nama_mhs' => $pengguna->nama_lengkap,
                     'nim_mhs' => $mahasiswa->nim_mhs ?? '',
                     'nilai_akhir' => floor($nilaiAkhir),
-                    'nilai_huruf' => static::nilaiHuruf(floor($nilaiAkhir), $mahasiswa?->id_jenjang)
+                    'nilai_huruf' => static::nilaiHuruf(floor($nilaiAkhir), $mahasiswa?->programStudi?->id_jenjang)
                 ];
             });
 
