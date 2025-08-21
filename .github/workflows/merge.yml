@@ -2,105 +2,55 @@ name: Auto Merge PR
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
-    branches:
-      - develop
-  pull_request_review:
-    types: [submitted]
+    types: [opened, synchronize, ready_for_review]
     branches:
       - develop
 
 jobs:
-  automerge:
+  auto-merge:
     runs-on: ubuntu-latest
-    if: github.event.pull_request.draft == false
-    
+    permissions:
+      contents: write
+      pull-requests: write
+      checks: read
+      
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          fetch-depth: 0
-
-      - name: Check for conflicts
-        id: conflict-check
-        run: |
-          # Fetch latest develop branch
-          git fetch origin develop
-          
-          # Try to merge and check for conflicts
-          git checkout -b temp-merge-check
-          git merge origin/develop --no-commit --no-ff || {
-            echo "has_conflicts=true" >> $GITHUB_OUTPUT
-            git merge --abort
-            exit 0
-          }
-          
-          echo "has_conflicts=false" >> $GITHUB_OUTPUT
-          git reset --hard HEAD~1
-
-      - name: Auto merge if no conflicts
-        if: steps.conflict-check.outputs.has_conflicts == 'false'
-        uses: pascalgn/merge-action@v0.15.6
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          merge_method: merge
-          merge_commit_message: "Auto-merge: {pull_request.title} (#{pull_request.number})"
-
-      - name: Comment if conflicts exist
-        if: steps.conflict-check.outputs.has_conflicts == 'true'
+      - name: Enable Auto-merge
+        if: ${{ !github.event.pull_request.draft }}
         uses: actions/github-script@v7
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: '⚠️ **Merge conflict detected!** Please resolve conflicts and push changes. Auto-merge will retry after conflicts are resolved.'
-            })
-
-  # Job terpisah untuk retry merge setelah conflict resolved
-  retry-merge:
-    runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request' && github.event.action == 'synchronize'
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          fetch-depth: 0
-
-      - name: Check if conflicts are resolved
-        id: resolved-check
-        run: |
-          git fetch origin develop
-          git checkout -b temp-merge-check
-          git merge origin/develop --no-commit --no-ff || {
-            echo "still_has_conflicts=true" >> $GITHUB_OUTPUT
-            git merge --abort
-            exit 0
-          }
-          
-          echo "still_has_conflicts=false" >> $GITHUB_OUTPUT
-          git reset --hard HEAD~1
-
-      - name: Auto merge after conflict resolution
-        if: steps.resolved-check.outputs.still_has_conflicts == 'false'
-        uses: pascalgn/merge-action@v0.15.6
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          merge_method: merge
-          merge_commit_message: "Auto-merge after conflict resolution: {pull_request.title} (#{pull_request.number})"
-
-      - name: Comment success
-        if: steps.resolved-check.outputs.still_has_conflicts == 'false'
-        uses: actions/github-script@v7
-        with:
-          script: |
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: '✅ **Conflicts resolved!** PR has been automatically merged.'
-            })
+            const { owner, repo } = context.repo;
+            const pull_number = context.payload.pull_request.number;
+            
+            try {
+              // Enable auto-merge
+              await github.rest.pulls.createAutoMerge({
+                owner,
+                repo,
+                pull_number,
+                merge_method: 'merge'
+              });
+              
+              console.log('✅ Auto-merge enabled for PR #' + pull_number);
+              
+              // Add success comment
+              await github.rest.issues.createComment({
+                issue_number: pull_number,
+                owner,
+                repo,
+                body: '🤖 **Auto-merge enabled!** This PR will be automatically merged when all checks pass and requirements are met.'
+              });
+              
+            } catch (error) {
+              console.log('Error:', error.message);
+              
+              // Add error comment
+              await github.rest.issues.createComment({
+                issue_number: pull_number,
+                owner,
+                repo,
+                body: `⚠️ **Auto-merge failed**: ${error.message}\n\nPlease check repository settings or merge manually.`
+              });
+            }
