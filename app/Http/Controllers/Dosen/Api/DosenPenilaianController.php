@@ -140,10 +140,12 @@ class DosenPenilaianController extends Controller
 
         // id mhs
         $id_mhs = $request->get('id_mhs', null);
+        $idSemesterAktif = Semester::aktif()->id_semester;
 
         try {
             // get mhs
             $q = \App\Models\PengambilanMk::where('id_kelas_mk', $id_kelas_mk)
+                ->where('id_semester', $idSemesterAktif)
                 ->with(['mahasiswa.pengguna:id_pengguna,gelar_depan,nm_pengguna,gelar_belakang']);
 
             if ($id_mhs) {
@@ -276,7 +278,7 @@ class DosenPenilaianController extends Controller
             // dd($mahasiswa->toArray());
             NilaiMk::upsert(
                 $mahasiswa->toArray(),
-                ['id_mhs', 'id_pengambilan_mk','id_komponen_mk'],
+                ['id_mhs', 'id_pengambilan_mk', 'id_komponen_mk'],
                 [
                     'besar_nilai_mk',
                 ]
@@ -345,12 +347,12 @@ class DosenPenilaianController extends Controller
                     return $query->where('id_semester', Semester::aktif()->id_semester);
                 });
 
-            $nilaiMks = NilaiMk::whereIn('id_pengambilan_mk', $data->get()->map(function($item) {
+            $nilaiMks = NilaiMk::whereIn('id_pengambilan_mk', $data->get()->map(function ($item) {
                 return $item->id_pengambilan_mk;
             }))->with([
                 'komponenMk'
             ])
-            ->get();
+                ->get();
 
             return response()->json([
                 'status' => Message::OK,
