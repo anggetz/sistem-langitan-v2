@@ -1,32 +1,38 @@
 name: Deploy to Server
 
 on:
+  push:
+    branches:
+      - develop
   pull_request:
     types: [closed]
     branches:
-      - develop # Target branch untuk PR
-  push:
-    branches:
-      - develop # Target branch untuk PR
+      - develop
 
 jobs:
-  # Job ini hanya akan berjalan jika PR berhasil di-merge
   deploy:
     runs-on: ubuntu-latest
-    if: github.event.pull_request.merged == true
+    # Kondisi yang lebih fleksibel
+    if: |
+      (github.event_name == 'push' && github.ref == 'refs/heads/develop') ||
+      (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
+    
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
       - name: Deploy to VPS
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: 2246 # Opsional: jika menggunakan port khusus
+          port: 2246
           script: |
             # Ganti dengan path direktori proyek Anda di server
             cd /var/www/sistem-langitan-v2
-
+            
             # Update kode dari git
-            git pull origin develop # Pastikan pull dari branch develop
-
+            git pull origin develop
+            
             echo "Deployment berhasil!"
