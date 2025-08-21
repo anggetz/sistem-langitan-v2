@@ -1,8 +1,11 @@
-name: CI/CD on Pull Request to Develop
+name: Deploy to Server
 
 on:
   pull_request:
     types: [closed]
+    branches:
+      - develop # Target branch untuk PR
+  push:
     branches:
       - develop # Target branch untuk PR
 
