@@ -9,6 +9,7 @@ use App\Models\MahasiswaStatus;
 use App\Models\Message;
 use App\Models\NilaiMk;
 use App\Models\PengambilanMk;
+use App\Models\PeraturanNilai;
 use App\Models\Semester;
 use App\Services\Mahasiswa\AkademikService;
 use Illuminate\Http\Request;
@@ -132,6 +133,101 @@ class DosenPenilaianController extends Controller
         }
     }
 
+    public static function nilaiHuruf($nilai, $idJenjang)
+    {
+        $peraturanNilai = PeraturanNilai::with('standardNilai')
+            ->where('nilai_min_peraturan_nilai', '<=', $nilai)
+            ->where('id_jenjang', $idJenjang)
+            ->first();
+        return $peraturanNilai?->standardNilai->nm_standar_nilai;
+    }
+
+    public function calculatingNilaiAkhir(Request $request, $id_kelas_mk)
+    {
+        $limit = $request->get('perPage', 10);
+        $page = $request->get('page', 1);
+        $offset = ($page - 1) * $limit;
+
+        // id mhs
+        $id_mhs = $request->get('id_mhs', null);
+        $idSemesterAktif = Semester::aktif()->id_semester;
+
+        try {
+            // get mhs
+            $q = \App\Models\PengambilanMk::where('id_kelas_mk', $id_kelas_mk)
+                ->where('id_semester', $idSemesterAktif)
+                ->with(['mahasiswa.pengguna:id_pengguna,gelar_depan,nm_pengguna,gelar_belakang', 'mahasiswa.programStudi:id_program_studi,id_jenjang']);
+
+            if ($id_mhs) {
+                $q->where('id_mhs', $id_mhs);
+            }
+
+            $total = $q->count();
+
+            $mhs = $q->offset($offset)
+                ->limit($limit)
+                ->get();
+
+
+            if ($mhs->isEmpty()) {
+                return response()->json([
+                    'status' => Message::FAIL,
+                    'message' => 'Tidak ada mahasiswa yang terdaftar di kelas ini.',
+                ], 404);
+            }
+
+            $komponenFetched = [];
+
+            $namaMhsMapped = $mhs->map(function ($item) use ($id_kelas_mk, $komponenFetched) {
+                $komponen = KomponenMk::where('id_kelas_mk', $id_kelas_mk)->get();
+                $nilaiAkhir = 0;
+
+                $nilaiMks = NilaiMk::selectRaw("
+                    id_komponen_mk, SUM(besar_nilai_mk)/count(id_komponen_mk) as besar_nilai_mk
+                ")->where([
+                    'id_pengambilan_mk' => $item->id_pengambilan_mk,
+                    'id_mhs' => $item->id_mhs,
+                ])->groupBy('id_komponen_mk')->get();
+
+                foreach ($nilaiMks as $nilaiMk) {
+                    if ($komponenFetched[$nilaiMk->id_komponen_mk] ?? null) {
+                        $komponen = $komponenFetched[$nilaiMk->id_komponen_mk];
+                    } else {
+                        $komponen = KomponenMk::find($nilaiMk->id_komponen_mk);
+                        $komponenFetched[$nilaiMk->id_komponen_mk] = $komponen;
+                    }
+                    if ($komponen) {
+                        $nilaiAkhir += $nilaiMk->besar_nilai_mk * ($komponen->persentase_komponen_mk / 100);
+                    }
+                }
+
+                $mahasiswa = $item->mahasiswa ?? new Mahasiswa();
+                $pengguna = $mahasiswa->pengguna ?? new \App\Models\Pengguna();
+
+                return [
+                    'nama_mhs' => $pengguna->nama_lengkap,
+                    'nim_mhs' => $mahasiswa->nim_mhs ?? '',
+                    'nilai_akhir' => floor($nilaiAkhir),
+                    'nilai_huruf' => static::nilaiHuruf(floor($nilaiAkhir), $mahasiswa?->programStudi?->id_jenjang)
+                ];
+            });
+
+            return response()->json([
+                'status' => Message::OK,
+                'message' => 'Perhitungan nilai akhir berhasil.',
+                'data' => $namaMhsMapped,
+                'total' => $total,
+                'per_page' => $limit,
+                'page' => $page,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to approve KRS MK.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function saveNilaiMk(Request $request)
     {
         $validatedData = $request->validate([
@@ -193,7 +289,7 @@ class DosenPenilaianController extends Controller
             // dd($mahasiswa->toArray());
             NilaiMk::upsert(
                 $mahasiswa->toArray(),
-                ['id_mhs', 'id_pengambilan_mk','id_komponen_mk'],
+                ['id_mhs', 'id_pengambilan_mk', 'id_komponen_mk'],
                 [
                     'besar_nilai_mk',
                 ]
@@ -242,12 +338,12 @@ class DosenPenilaianController extends Controller
                     return $query->where('id_semester', Semester::aktif()->id_semester);
                 });
 
-            $nilaiMks = NilaiMk::whereIn('id_pengambilan_mk', $data->get()->map(function($item) {
+            $nilaiMks = NilaiMk::whereIn('id_pengambilan_mk', $data->get()->map(function ($item) {
                 return $item->id_pengambilan_mk;
             }))->with([
                 'komponenMk'
             ])
-            ->get();
+                ->get();
 
             return response()->json([
                 'status' => Message::OK,
