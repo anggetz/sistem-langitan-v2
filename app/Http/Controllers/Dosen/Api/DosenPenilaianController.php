@@ -9,6 +9,7 @@ use App\Models\MahasiswaStatus;
 use App\Models\Message;
 use App\Models\NilaiMk;
 use App\Models\PengambilanMk;
+use App\Models\PeraturanNilai;
 use App\Models\Semester;
 use App\Services\Mahasiswa\AkademikService;
 use Illuminate\Http\Request;
@@ -132,6 +133,15 @@ class DosenPenilaianController extends Controller
         }
     }
 
+    public static function nilaiHuruf($nilai, $idJenjang)
+    {
+        $peraturanNilai = PeraturanNilai::with('standardNilai')
+            ->where('nilai_min_peraturan_nilai', '<=', $nilai)
+            ->where('id_jenjang', $idJenjang)
+            ->first();
+        return $peraturanNilai?->standardNilai->nm_standar_nilai;
+    }
+
     public function calculatingNilaiAkhir(Request $request, $id_kelas_mk)
     {
         $limit = $request->get('perPage', 10);
@@ -197,7 +207,8 @@ class DosenPenilaianController extends Controller
                 return [
                     'nama_mhs' => $pengguna->nama_lengkap,
                     'nim_mhs' => $mahasiswa->nim_mhs ?? '',
-                    'nilai_akhir' => floor($nilaiAkhir)
+                    'nilai_akhir' => floor($nilaiAkhir),
+                    'nilai_huruf' => static::nilaiHuruf(floor($nilaiAkhir), $mahasiswa?->id_jenjang)
                 ];
             });
 
