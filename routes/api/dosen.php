@@ -85,7 +85,7 @@ Route::group(
             function () {
                 Route::get('get_komponen_mk/{id_kelas_mk}', 'getKomponenByIdKelasMk');
                 Route::put('update_komponen/{id_kelas_mk}', 'updateKomponen');
-                Route::get('nilai_akhir/{id_kelas_mk}', 'calculatingNilaiAkhir');
+                // Route::get('nilai_akhir/{id_kelas_mk}', 'calculatingNilaiAkhir');
                 Route::post('save_nilai', 'saveNilaiMk');
                 Route::get('get_nilai/{id_kelas_mk}', 'getNilai');
             }

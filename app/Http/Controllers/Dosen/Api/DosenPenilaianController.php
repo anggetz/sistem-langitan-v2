@@ -326,26 +326,6 @@ class DosenPenilaianController extends Controller
         $nm_komponen_mk = $request->get('nm_komponen_mk', null);
 
         try {
-            // $nilaiMks = NilaiMk::whereHas('pengambilanMk', function ($query) use ($id_kelas_mk, $id_mhs, $id_semester) {
-            //     $query->where('id_kelas_mk', $id_kelas_mk);
-            //     if ($id_mhs) {
-            //         $query->where('id_mhs', $id_mhs);
-            //     }
-
-            //     if ($id_semester) {
-            //         $query->where('id_semester', $id_semester);
-            //     } else {
-            //         $query->where('id_semester', Semester::aktif()->id_semester);
-            //     }
-            // })->with(['pengambilanMk.mahasiswa.pengguna:id_pengguna,gelar_depan,nm_pengguna,gelar_belakang']);
-
-            // if ($nm_komponen_mk) {
-            //     $nilaiMks->leftJoin('komponen_mk', function ($join) use ($nm_komponen_mk) {
-            //         $join->on('nilai_mk.id_komponen_mk', '=', 'komponen_mk.id_komponen_mk');
-            //     });
-            //     $nilaiMks->where('komponen_mk.nm_komponen_mk', '=',$nm_komponen_mk);
-            // }
-
 
             $data = PengambilanMk::where('id_kelas_mk', $id_kelas_mk)
                 ->with(['mahasiswa.pengguna:id_pengguna,gelar_depan,nm_pengguna,gelar_belakang'])

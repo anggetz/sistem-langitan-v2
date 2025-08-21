@@ -132,7 +132,7 @@ class DosenKrsController extends Controller
                     return $item;
                 });
 
-            return response()->json([
+          return response()->json([
                 'message' => 'Get data approved krs successfull',
                 'status' => Message::OK,
                 'data' => $data,

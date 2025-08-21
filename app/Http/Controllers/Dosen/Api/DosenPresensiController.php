@@ -107,9 +107,9 @@ class DosenPresensiController extends Controller
             $now = Carbon::now();
             $semester = Semester::aktif();
 
-            $mahasiswas = PengambilanMk::select('persen_presensi', 'id_kelas_mk', 'id_mhs')
-                ->where('id_kelas_mk', $id_kelas)
-                ->where('id_semester', $semester->id_semester)
+            $mahasiswas = PengambilanMk::select('pengambilan_mk.persen_presensi', 'pengambilan_mk.id_kelas_mk', 'pengambilan_mk.id_mhs', 'presensi_mkmhs.id_presensi_mkmhs', 'presensi_mkmhs.qr_flag')
+                ->where('pengambilan_mk.id_kelas_mk', $id_kelas)
+                ->where('pengambilan_mk.id_semester', $semester->id_semester)
                 ->with([
                     'mahasiswa' => function ($q) {
                         $q->select('id_mhs', 'id_pengguna')->with([
@@ -119,18 +119,24 @@ class DosenPresensiController extends Controller
                         ]);
                     },
                 ])
+                ->join('presensi_kelas',  function ($join) use ($id_presensi, $id_kelas) {
+                    $join->on('presensi_kelas.id_kelas_mk', '=', 'pengambilan_mk.id_kelas_mk')
+                        ->where('presensi_kelas.id_presensi_kelas', $id_presensi);
+                        // ->where('presensi_mkmhs.id_kelas_mk', $id_kelas);
+                })
+                ->leftJoin('presensi_mkmhs', function ($join) use ($id_presensi, $id_kelas) {
+                    $join->on('presensi_mkmhs.id_mhs', '=', 'pengambilan_mk.id_mhs')
+                        ->where('presensi_mkmhs.id_presensi_kelas', $id_presensi)
+                        ->where('presensi_mkmhs.kehadiran', 1);
+                        // ->where('presensi_mkmhs.id_kelas_mk', $id_kelas);
+                })
                 ->get()
                 ->map(function ($item) use ($id_kelas, $id_presensi) {
-                    $presensiMhs = PresensiMhs::where('id_mhs', $item->id_mhs)
-                        ->where('kehadiran', '1')
-                        ->whereHas('presensiKelas', function ($q) use ($id_kelas, $id_presensi) {
-                            $q->where('id_kelas_mk', $id_kelas);
-                            $q->where('id_presensi_kelas', $id_presensi);
-                        })
-                        ->first();
+
+                    $presensiMhs = $item->id_presensi_mkmhs;
 
                     $item->sudah_presensi = !empty($presensiMhs);
-                    $item->qr_flag = !empty($presensiMhs) ? $presensiMhs->qr_flag : false;
+                    $item->qr_flag = !empty($item->qr_flag) ? true : false;
                     return $item;
                 });
 
