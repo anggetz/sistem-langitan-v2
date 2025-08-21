@@ -138,55 +138,6 @@ class DosenKrsController extends Controller
                     ];
                 });
 
-            // $q = MahasiswaKrsApprovalSign::with([
-            //     'mahasiswa.pengguna',
-            //     'mahasiswa.programStudi.fakultas',
-            //     'mahasiswaStatus',
-            //     'mahasiswa.programStudi.jenjang'
-            // ]);
-
-            // $total = $q->count();
-
-            // // get dosen mahasiswa allowable
-            // $listMhs = DosenWali::where('id_dosen', auth()->user()->dosen->id_dosen)
-            //     ->get()
-            //     ->map(function ($item) {
-            //         return $item->id_mhs;
-            //     });
-
-            // $data = $q
-            //     ->where('id_semester', Semester::aktif()->id_semester)
-            //     ->whereIn('id_mhs', $listMhs)
-            //     ->limit($limit)
-            //     ->offset($offset)
-            //     ->orderBy('created_at', 'desc')
-            //     ->get()
-            //     ->map(function ($krs, $key) {
-            //         $mhs = $krs->Mahasiswa ?? new Mahasiswa();
-            //         $pengguna = $mhs->Pengguna ?? new Pengguna();
-            //         $programStudi = $mhs->programStudi ?? new ProgramStudi();
-            //         $fakultas = $programStudi->fakultas ?? new Fakultas();
-            //         $mhsStatus = $krs->MahasiswaStatus ?? new MahasiswaStatus();
-
-
-            //         return [
-            //             'id' => $krs->id_mahasiswa_krs_approval_sign,
-            //             'id_mhs' => $mhs->id_mhs,
-            //             'nama_mahasiswa' => $pengguna->nama_lengkap,
-            //             'program_studi' => $programStudi->nm_program_studi,
-            //             'jenjang' => $mhs?->programStudi?->jenjang?->nm_jenjang,
-            //             'angkatan' => $mhs?->thn_angkatan_mhs,
-            //             'fakultas' => $fakultas->nm_fakultas,
-            //             'semester' => $krs->semester->nm_semester ?? 'N/A',
-            //             'id_semester' => $krs->id_semester,
-            //             'ipk' => (float)$mhsStatus->ipk ?? 0,
-            //             'limit_sks' => $krs->limit_sks,
-            //             'kredit_sks' => $krs->kredit_sks,
-            //             'is_approved' => empty($krs->sign_path) ? false : true,
-            //             'ips' => (float)$mhsStatus->ips ?? 0,
-            //         ];
-            //     });
-
 
             return response()->json([
                 'message' => 'Get data approved krs successfull',

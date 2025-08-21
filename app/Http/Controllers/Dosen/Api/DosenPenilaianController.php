@@ -132,89 +132,6 @@ class DosenPenilaianController extends Controller
         }
     }
 
-    public function calculatingNilaiAkhir(Request $request, $id_kelas_mk)
-    {
-        $limit = $request->get('perPage', 10);
-        $page = $request->get('page', 1);
-        $offset = ($page - 1) * $limit;
-
-        // id mhs
-        $id_mhs = $request->get('id_mhs', null);
-
-        try {
-            // get mhs
-            $q = \App\Models\PengambilanMk::where('id_kelas_mk', $id_kelas_mk)
-                ->with(['mahasiswa.pengguna:id_pengguna,gelar_depan,nm_pengguna,gelar_belakang']);
-
-            if ($id_mhs) {
-                $q->where('id_mhs', $id_mhs);
-            }
-
-            $total = $q->count();
-
-            $mhs = $q->offset($offset)
-                ->limit($limit)
-                ->get();
-
-
-            if ($mhs->isEmpty()) {
-                return response()->json([
-                    'status' => Message::FAIL,
-                    'message' => 'Tidak ada mahasiswa yang terdaftar di kelas ini.',
-                ], 404);
-            }
-
-            $komponenFetched = [];
-
-            $namaMhsMapped = $mhs->map(function ($item) use ($id_kelas_mk, $komponenFetched) {
-                $komponen = KomponenMk::where('id_kelas_mk', $id_kelas_mk)->get();
-                $nilaiAkhir = 0;
-
-                $nilaiMks = NilaiMk::selectRaw("
-                    id_komponen_mk, SUM(besar_nilai_mk)/count(id_komponen_mk) as besar_nilai_mk
-                ")->where([
-                    'id_pengambilan_mk' => $item->id_pengambilan_mk,
-                    'id_mhs' => $item->id_mhs,
-                ])->groupBy('id_komponen_mk')->get();
-
-                foreach ($nilaiMks as $nilaiMk) {
-                    if ($komponenFetched[$nilaiMk->id_komponen_mk] ?? null) {
-                        $komponen = $komponenFetched[$nilaiMk->id_komponen_mk];
-                    } else {
-                        $komponen = KomponenMk::find($nilaiMk->id_komponen_mk);
-                        $komponenFetched[$nilaiMk->id_komponen_mk] = $komponen;
-                    }
-                    if ($komponen) {
-                        $nilaiAkhir += $nilaiMk->besar_nilai_mk * ($komponen->persentase_komponen_mk / 100);
-                    }
-                }
-
-                $mahasiswa = $item->mahasiswa ?? new Mahasiswa();
-                $pengguna = $mahasiswa->pengguna ?? new \App\Models\Pengguna();
-
-                return [
-                    'nama_mhs' => $pengguna->nama_lengkap,
-                    'nim_mhs' => $mahasiswa->nim_mhs ?? '',
-                    'nilai_akhir' => floor($nilaiAkhir)
-                ];
-            });
-
-            return response()->json([
-                'status' => Message::OK,
-                'message' => 'Perhitungan nilai akhir berhasil.',
-                'data' => $namaMhsMapped,
-                'total' => $total,
-                'per_page' => $limit,
-                'page' => $page,
-            ], 200);
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Failed to approve KRS MK.',
-                'error' => $e->getMessage()
-            ], 500);
-        }
-    }
-
     public function saveNilaiMk(Request $request)
     {
         $validatedData = $request->validate([
@@ -313,26 +230,6 @@ class DosenPenilaianController extends Controller
         $nm_komponen_mk = $request->get('nm_komponen_mk', null);
 
         try {
-            // $nilaiMks = NilaiMk::whereHas('pengambilanMk', function ($query) use ($id_kelas_mk, $id_mhs, $id_semester) {
-            //     $query->where('id_kelas_mk', $id_kelas_mk);
-            //     if ($id_mhs) {
-            //         $query->where('id_mhs', $id_mhs);
-            //     }
-
-            //     if ($id_semester) {
-            //         $query->where('id_semester', $id_semester);
-            //     } else {
-            //         $query->where('id_semester', Semester::aktif()->id_semester);
-            //     }
-            // })->with(['pengambilanMk.mahasiswa.pengguna:id_pengguna,gelar_depan,nm_pengguna,gelar_belakang']);
-
-            // if ($nm_komponen_mk) {
-            //     $nilaiMks->leftJoin('komponen_mk', function ($join) use ($nm_komponen_mk) {
-            //         $join->on('nilai_mk.id_komponen_mk', '=', 'komponen_mk.id_komponen_mk');
-            //     });
-            //     $nilaiMks->where('komponen_mk.nm_komponen_mk', '=',$nm_komponen_mk);
-            // }
-
 
             $data = PengambilanMk::where('id_kelas_mk', $id_kelas_mk)
                 ->with(['mahasiswa.pengguna:id_pengguna,gelar_depan,nm_pengguna,gelar_belakang'])
