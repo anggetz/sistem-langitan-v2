@@ -1,9 +1,6 @@
 name: Deploy to Server
 
 on:
-  push:
-    branches:
-      - develop
   pull_request:
     types: [closed]
     branches:
@@ -14,7 +11,6 @@ jobs:
     runs-on: ubuntu-latest
     # Kondisi yang lebih fleksibel
     if: |
-      (github.event_name == 'push' && github.ref == 'refs/heads/develop') ||
       (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
     
     steps:
