@@ -1,47 +1,29 @@
-name: Auto-Merge & Deploy
+name: CI/CD on Pull Request to Develop
 
 on:
   pull_request:
-    types: [opened, synchronize]
+    types: [closed]
     branches:
-      - develop
-  push:
-    branches:
-      - develop
+      - develop # Target branch untuk PR
 
 jobs:
-  auto_merge_pr:
-    runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request' && github.event.pull_request.mergeable
-
-    steps:
-      - name: Auto-Merge Pull Request
-        uses: pascalgn/automerge-action@v0.15.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          MERGE_METHOD: 'squash'
-
+  # Job ini hanya akan berjalan jika PR berhasil di-merge
   deploy:
     runs-on: ubuntu-latest
-    needs: auto_merge_pr # Memastikan job ini berjalan setelah auto-merge berhasil
-    if: success() && github.event_name == 'push'
-
+    if: github.event.pull_request.merged == true
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
       - name: Deploy to VPS
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: 2246
+          port: 2246 # Opsional: jika menggunakan port khusus
           script: |
             # Ganti dengan path direktori proyek Anda di server
             cd /var/www/sistem-langitan-v2
 
             # Update kode dari git
-            git pull origin develop
+            git pull origin develop # Pastikan pull dari branch develop
 
             echo "Deployment berhasil!"
