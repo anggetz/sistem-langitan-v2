@@ -444,13 +444,11 @@ class DosenPenilaianController extends Controller
                 'data' => $data->offset($offset)
                     ->limit($limit)
                     ->get()->map(function ($item) {
-                        $pengguna = $item->mahasiswa->pengguna ?? new \App\Models\Pengguna();
-
                         return [
                             'id_mhs' => $item->id_mhs,
                             'id_nilai_mk' => $item->id_nilai_mk,
-                            'nama_mhs' => $pengguna->nama_lengkap,
-                            'nim_mhs' => $item->mahasiswa->nim_mhs ?? '',
+                            'nama_mhs' => $item->mahasiswa?->pengguna?->nama_lengkap ?? '',
+                            'nim_mhs' => $item->mahasiswa?->nim_mhs ?? '',
                             'nilai' => (int)$item->besar_nilai_mk,
                             'id_pengambilan_mk' => $item->id_pengambilan_mk,
                             'id_komponen_mk' => $item->id_komponen_mk,
