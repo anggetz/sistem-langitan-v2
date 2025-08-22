@@ -122,13 +122,13 @@ class DosenPresensiController extends Controller
                 ->join('presensi_kelas',  function ($join) use ($id_presensi, $id_kelas) {
                     $join->on('presensi_kelas.id_kelas_mk', '=', 'pengambilan_mk.id_kelas_mk')
                         ->where('presensi_kelas.id_presensi_kelas', $id_presensi);
-                        // ->where('presensi_mkmhs.id_kelas_mk', $id_kelas);
+                    // ->where('presensi_mkmhs.id_kelas_mk', $id_kelas);
                 })
                 ->leftJoin('presensi_mkmhs', function ($join) use ($id_presensi, $id_kelas) {
                     $join->on('presensi_mkmhs.id_mhs', '=', 'pengambilan_mk.id_mhs')
                         ->where('presensi_mkmhs.id_presensi_kelas', $id_presensi)
                         ->where('presensi_mkmhs.kehadiran', 1);
-                        // ->where('presensi_mkmhs.id_kelas_mk', $id_kelas);
+                    // ->where('presensi_mkmhs.id_kelas_mk', $id_kelas);
                 })
                 ->get()
                 ->map(function ($item) use ($id_kelas, $id_presensi) {
@@ -331,15 +331,15 @@ class DosenPresensiController extends Controller
         }
     }
 
-    public function MahasiswaInOut(Request $request, $id_mahasiswa, $id_presensi)
+    public function MahasiswaInOut(Request $request, $id_presensi)
     {
         try {
-            $request->validate([
+            $data = $request->validate([
                 'kehadiran' => 'required|in:1,0',
+                'id_mhs' => 'required|array',
             ]);
 
             // check if inside pengambilanMk;
-
             $presensiKelas = PresensiKelas::find($id_presensi);
 
             if (empty($presensiKelas)) {
@@ -350,7 +350,7 @@ class DosenPresensiController extends Controller
             }
 
             $PengambilanMk = PengambilanMk::where('id_kelas_mk', $presensiKelas->id_kelas_mk)
-                ->where('id_mhs', $id_mahasiswa)
+                ->whereIn('id_mhs', $data['id_mhs'])
                 ->exists();
 
             if (!$PengambilanMk) {
@@ -362,18 +362,27 @@ class DosenPresensiController extends Controller
 
             $presensi = PresensiMhs::with(['mahasiswa', 'presensiKelas'])
                 ->where('id_presensi_kelas', $id_presensi)
-                ->where('id_mhs', $id_mahasiswa)
-                ->first();
+                ->whereIn('id_mhs', $data['id_mhs'])
+                ->get()
+                ->map(function ($item) use ($data) {
+                    $item->kehadiran = $data['kehadiran'];
+                    return $item->only([
+                        'id_mhs',
+                        'id_presensi_kelas',
+                        'id_presensi_mkmhs',
+                        'kehadiran',
+                        'qr_flag',
+                    ]);
+                })
+                ->toArray();
 
-            if (!$presensi) {
-                $presensi = new PresensiMhs();
-                $presensi->id_presensi_kelas = $id_presensi;
-                $presensi->id_mhs = $id_mahasiswa;
-            }
-
-            $presensi->kehadiran = $request->kehadiran;
-            // $presensi->jam_presensi = Carbon::now();
-            $presensi->save();
+            PresensiMhs::upsert(
+                $presensi,
+                ['id_mhs', 'id_presensi_kelas'],
+                [
+                    'kehadiran',
+                ]
+            );
 
             return response()->json([
                 'status' => true,
