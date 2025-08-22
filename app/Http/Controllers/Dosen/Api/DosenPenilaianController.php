@@ -190,8 +190,10 @@ class DosenPenilaianController extends Controller
             $q = \App\Models\PengambilanMk::when($id_mhs, function ($query, $id_mhs) {
                 return $query->where('pengambilan_mk.id_mhs', $id_mhs);
             })
-                ->where('pengambilan_mk.id_kelas_mk', $id_kelas_mk)
-                ->where('pengambilan_mk.id_semester', $idSemesterAktif)
+                ->where([
+                    'pengambilan_mk.id_kelas_mk' => $id_kelas_mk,
+                    'pengambilan_mk.id_semester' => $idSemesterAktif
+                ])
                 ->join('mahasiswa', 'pengambilan_mk.id_mhs', '=', 'mahasiswa.id_mhs')
                 ->join('pengguna', 'mahasiswa.id_pengguna', '=', 'pengguna.id_pengguna')
                 ->join('program_studi', 'mahasiswa.id_program_studi', '=', 'program_studi.id_program_studi')
@@ -303,7 +305,7 @@ class DosenPenilaianController extends Controller
     {
         $validatedData = $request->validate([
             'id_kelas_mk' => 'required|integer',
-            'nm_komponen_mk' => 'required|string',
+            'id_komponen_mk' => 'required|integer',
             'mahasiswa' => 'required|array',
             'mahasiswa.*.id_mhs' => 'required|integer',
             'mahasiswa.*.besar_nilai_mk' => 'required|numeric|min:0|max:100',
@@ -322,44 +324,54 @@ class DosenPenilaianController extends Controller
 
             // get komponen mk
             $komponenMk = \App\Models\KomponenMk::where([
-                'id_kelas_mk' => $request->id_kelas_mk,
-                'nm_komponen_mk' => $request->nm_komponen_mk,
+                'id_komponen_mk' => $request->id_komponen_mk,
             ])->first();
 
             if (!$komponenMk) {
                 return response()->json([
-                    'message' => 'Komponen MK tidak ditemukan.',
-                    'error' => 'Komponen MK dengan id_kelas_mk: ' . $request->id_kelas_mk . ' dan nm_komponen_mk: ' . $request->nm_komponen_mk . ' tidak ditemukan.'
+                    'message' => 'Komponen MK tidakSeme ditemukan.',
+                    'error' => 'Komponen MK dengan id_kelas_mk: ' . $request->id_kelas_mk . ' dan id_komponen_mk: ' . $request->id_komponen_mk . ' tidak ditemukan.'
                 ], 404);
             }
 
-            $idsMhs = collect($validatedData['mahasiswa'])->pluck('id_mhs')->toArray();
+            $sentMhs = collect($validatedData['mahasiswa']);
+            $semesterActive = Semester::aktif()->id_semester;
 
             // get pengambilan mk with id mhs and make the map by id_mhs
             $pengambilanMks = \App\Models\PengambilanMk::where([
                 'id_kelas_mk' => $request->id_kelas_mk,
-            ])->whereIn('id_mhs', $idsMhs)->get()->keyBy('id_mhs');
+                'id_semester' => $semesterActive,
+            ])->get()->pluck('id_pengambilan_mk', 'id_mhs');
 
             // set id pengambilan mk to each mahasiswa
-            $mahasiswa = collect($request->mahasiswa)->map(function ($item) use ($pengambilanMks, $komponenMk) {
-                if (isset($pengambilanMks[$item['id_mhs']])) {
-                    $item['id_pengambilan_mk'] = $pengambilanMks[$item['id_mhs']]->id_pengambilan_mk;
-                    $item['id_komponen_mk'] = $komponenMk->id_komponen_mk;
-
-                    // calculating the grade by komponen
-                } else {
-                    return response()->json([
-                        'message' => 'Mahasiswa dengan id_mhs: ' . $item['id_mhs'] . ' tidak terdaftar di kelas ini.',
-                        'error' => 'Mahasiswa dengan id_mhs: ' . $item['id_mhs'] . ' tidak terdaftar di kelas ini.'
-                    ], 404);
+            $dataNilai = $sentMhs->map(function ($nilaiMhs) use ($pengambilanMks, $komponenMk) {
+                $id = $nilaiMhs['id_mhs'];
+                if ($pengambilanMks->has($id)) {
+                    $nilaiMhs['id_pengambilan_mk'] = $pengambilanMks->get($id);
+                    $nilaiMhs['id_komponen_mk'] = $komponenMk->id_komponen_mk;
+                    return $nilaiMhs;
                 }
-                return $item;
             });
+
+            // $mahasiswa = collect($request->mahasiswa)->map(function ($item) use ($pengambilanMks, $komponenMk) {
+            //     if (isset($pengambilanMks[$item['id_mhs']])) {
+            //         $item['id_pengambilan_mk'] = $pengambilanMks[$item['id_mhs']]->id_pengambilan_mk;
+            //         $item['id_komponen_mk'] = $komponenMk->id_komponen_mk;
+
+            //         // calculating the grade by komponen
+            //     } else {
+            //         return response()->json([
+            //             'message' => 'Mahasiswa dengan id_mhs: ' . $item['id_mhs'] . ' tidak terdaftar di kelas ini.',
+            //             'error' => 'Mahasiswa dengan id_mhs: ' . $item['id_mhs'] . ' tidak terdaftar di kelas ini.'
+            //         ], 404);
+            //     }
+            //     return $item;
+            // });
 
             // save mahasiswa using upsert
             // dd($mahasiswa->toArray());
             NilaiMk::upsert(
-                $mahasiswa->toArray(),
+                $dataNilai->toArray(),
                 ['id_mhs', 'id_pengambilan_mk', 'id_komponen_mk'],
                 [
                     'besar_nilai_mk',
