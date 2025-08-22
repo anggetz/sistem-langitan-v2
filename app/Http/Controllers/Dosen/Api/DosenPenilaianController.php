@@ -190,8 +190,10 @@ class DosenPenilaianController extends Controller
             $q = \App\Models\PengambilanMk::when($id_mhs, function ($query, $id_mhs) {
                 return $query->where('pengambilan_mk.id_mhs', $id_mhs);
             })
-                ->where('pengambilan_mk.id_kelas_mk', $id_kelas_mk)
-                ->where('pengambilan_mk.id_semester', $idSemesterAktif)
+                ->where([
+                    'pengambilan_mk.id_kelas_mk' => $id_kelas_mk,
+                    'pengambilan_mk.id_semester' => $idSemesterAktif
+                ])
                 ->join('mahasiswa', 'pengambilan_mk.id_mhs', '=', 'mahasiswa.id_mhs')
                 ->join('pengguna', 'mahasiswa.id_pengguna', '=', 'pengguna.id_pengguna')
                 ->join('program_studi', 'mahasiswa.id_program_studi', '=', 'program_studi.id_program_studi')
@@ -303,7 +305,7 @@ class DosenPenilaianController extends Controller
     {
         $validatedData = $request->validate([
             'id_kelas_mk' => 'required|integer',
-            'nm_komponen_mk' => 'required|string',
+            'id_komponen_mk' => 'required|integer',
             'mahasiswa' => 'required|array',
             'mahasiswa.*.id_mhs' => 'required|integer',
             'mahasiswa.*.besar_nilai_mk' => 'required|numeric|min:0|max:100',
@@ -322,8 +324,7 @@ class DosenPenilaianController extends Controller
 
             // get komponen mk
             $komponenMk = \App\Models\KomponenMk::where([
-                'id_kelas_mk' => $request->id_kelas_mk,
-                'nm_komponen_mk' => $request->nm_komponen_mk,
+                'id_komponen_mk' => $request->id_komponen_mk,
             ])->first();
 
             if (!$komponenMk) {
