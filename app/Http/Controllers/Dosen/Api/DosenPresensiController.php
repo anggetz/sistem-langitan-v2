@@ -163,7 +163,28 @@ class DosenPresensiController extends Controller
             $offset = ($page - 1) * $limit;
 
             $presensiKelas = PresensiKelas::where("id_kelas_mk", $id_kelas_mk)
+                ->leftJoin('presensi_mkmhs hadir', function ($join) {
+                    $join->on('hadir.id_presensi_kelas', '=', 'presensi_kelas.id_presensi_kelas')
+                        ->where('hadir.kehadiran', 1);
+                })
+                // total tidak hadir with alias
+                ->leftJoin('presensi_mkmhs as thadir', function ($join) {
+                    $join->on('thadir.id_presensi_kelas', '=', 'presensi_kelas.id_presensi_kelas')
+                        ->where('thadir.kehadiran', 0);
+                })
                 ->orderBy(DB::raw("TO_DATE(TO_CHAR(tgl_presensi_kelas, 'YYYY-MM-DD') || ' ' || waktu_selesai, 'YYYY-MM-DD HH24:MI')"), 'DESC')
+                ->groupBy(
+                    'presensi_kelas.id_presensi_kelas',
+                    'presensi_kelas.tgl_presensi_kelas',
+                    'presensi_kelas.waktu_selesai',
+                )
+                ->select(
+                    'presensi_kelas.id_presensi_kelas',
+                    'presensi_kelas.tgl_presensi_kelas',
+                    'presensi_kelas.waktu_selesai',
+                    DB::raw('COUNT(hadir.id_presensi_mkmhs) as total_hadir'),
+                    DB::raw('COUNT(thadir.id_presensi_mkmhs) as total_absen')
+                )
                 ->with(['materiMk']);
 
             $total = $presensiKelas->count();
@@ -172,23 +193,11 @@ class DosenPresensiController extends Controller
                 ->offset($offset)
                 ->get()
                 ->map(function ($item) use ($id_kelas_mk) {
-                    $totalHadir = PresensiMhs::where('kehadiran', '1')
-                        ->whereHas('presensiKelas', function ($q) use ($id_kelas_mk, $item) {
-                            $q->where('id_kelas_mk', $id_kelas_mk);
-                            $q->where('id_presensi_kelas', $item->id_presensi_kelas);
-                        })
-                        ->count();
 
-                    $totalMhs = PengambilanMk::where('id_kelas_mk', $id_kelas_mk)
-                        ->active()
-                        ->groupBy('id_kelas_mk')
-                        ->count();
-
-                    $dateTglKelasOneWeek = Carbon::parse($item->tgl_presensi_kelas)->addWeek();
-
-                    $item->is_more_than_one_week = $dateTglKelasOneWeek->lt(Carbon::now());
-                    $item->total_hadir = $totalHadir;
-                    $item->total_absen = $totalMhs - $totalHadir;
+                    // $item->is_more_than_one_week = $dateTglKelasOneWeek->lt(Carbon::now());
+                    $item->total_hadir = $item->total_hadir;
+                    $item->total_absen = ($item->total_absen + $item->total_hadir) - $item->total_hadir;
+                    $item->total_mhs = ($item->total_absen + $item->total_hadir);
                     return $item;
                 });
 
@@ -340,13 +349,13 @@ class DosenPresensiController extends Controller
                 'mahasiswa.*.id_mhs' => 'required|integer',
             ]);
 
-            $mhsCollection = collect($data['mahasiswa'])->map(function($item) use ($id_presensi){
+            $mhsCollection = collect($data['mahasiswa'])->map(function ($item) use ($id_presensi) {
                 $item['id_presensi_kelas'] = $id_presensi;
                 $item['qr_flag'] = null;
                 return $item;
             });
-            $idsMhs = $mhsCollection->map(function($item) {
-                    return $item['id_mhs'];
+            $idsMhs = $mhsCollection->map(function ($item) {
+                return $item['id_mhs'];
             })->toArray();
             $keyByIdMhs = $mhsCollection->keyBy('id_mhs');
 
@@ -389,11 +398,15 @@ class DosenPresensiController extends Controller
             PresensiMhs::upsert(
                 array_merge(
                     $presensi->toArray(),
-                    $mhsCollection->whereNotIn('id_mhs', $presensi->map(
-                        function($item){
-                            return $item['id_mhs'];
-                        })
-                    )->toArray()),
+                    $mhsCollection->whereNotIn(
+                        'id_mhs',
+                        $presensi->map(
+                            function ($item) {
+                                return $item['id_mhs'];
+                            }
+                        )
+                    )->toArray()
+                ),
                 ['id_mhs', 'id_presensi_kelas'],
                 [
                     'kehadiran',
