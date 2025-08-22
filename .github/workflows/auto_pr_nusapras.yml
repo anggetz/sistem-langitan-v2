@@ -3,7 +3,7 @@ name: Auto PR from Nusantarapras
 on:
   push:
     branches:
-      - nusantarapras
+      - nusapras
 
 jobs:
   create-pull-request:
