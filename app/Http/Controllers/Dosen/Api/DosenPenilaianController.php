@@ -148,7 +148,9 @@ class DosenPenilaianController extends Controller
                 ])
                 ->with([
                     'nilaiMk:id_pengambilan_mk,id_komponen_mk,besar_nilai_mk',
-                    'kelasMk.komponenMk'
+                    'kelasMk.komponenMk' => function ($query) {
+                        $query->orderBy('urutan_komponen_mk', 'asc');
+                    }
                 ]);
 
             $total = $q->count();
