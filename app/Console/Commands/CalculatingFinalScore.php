@@ -153,7 +153,7 @@ class CalculatingFinalScore extends Command
         PengambilanMk::upsert(
             $dataToUpdate,
             ['id_pengambilan_mk', 'id_mhs'], // Unique keys to check for duplicates
-            ['fd_nilai_angka', 'fd_nilai_huruf'] // Columns to update if a duplicate is found
+            ['fd_nilai_angka', 'fd_nilai_huruf', 'nilai_huruf', 'nilai_angka'] // Columns to update if a duplicate is found
         );
 
         // call each mhs to recalculate ips and ipk
