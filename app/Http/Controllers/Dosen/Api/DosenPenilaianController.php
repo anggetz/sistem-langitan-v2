@@ -229,13 +229,23 @@ class DosenPenilaianController extends Controller
                 ->limit($limit)
                 ->get()
                 ->map(function ($item) use ($kamusNilai) {
-                    $komponen = $item->kelasMk?->komponenMk->pluck('persentase_komponen_mk', 'id_komponen_mk');
+                    $komponen = $item->kelasMk?->komponenMk?->pluck('persentase_komponen_mk', 'id_komponen_mk');
+                    $namaKomponen = $item->kelasMk?->komponenMk?->pluck('nm_komponen_mk', 'id_komponen_mk');
                     $nilai = $item->nilaiMk?->pluck('besar_nilai_mk', 'id_komponen_mk');
 
-                    $totalNilai = $nilai
-                        ->filter(fn($nilai, $id) => $komponen->has($id))
-                        ->map(fn($nilai, $id) => ($nilai * $komponen->get($id)) / 100)
+                    // $totalNilai = $nilai
+                    //     ->filter(fn($nilai, $id) => $komponen->has($id))
+                    //     ->map(fn($nilai, $id) => ($nilai * $komponen->get($id)) / 100)
+                    //     ->sum();
+                    $totalNilai = $komponen->filter(fn($persen, $id) => $nilai->has($id))
+                        ->map(fn($persen, $id) => ($nilai->get($id) * $persen) / 100)
                         ->sum();
+                    $mapKomponen = $namaKomponen->map(function ($nama, $id) use ($nilai) {
+                        return [
+                            'nm_komponen_mk' => $nama,
+                            'besar_nilai_mk' => $nilai->get($id) ?? 0
+                        ];
+                    });
 
                     $nilaiHuruf = $kamusNilai->filter(fn($g, $min) => $totalNilai >= $min)->first() ?? '';
 
@@ -243,7 +253,8 @@ class DosenPenilaianController extends Controller
                         'nama_mhs' => $item->nm_pengguna,
                         'nim_mhs' => $item->nim_mhs,
                         'nilai_akhir' => floor($totalNilai * 100) / 100,
-                        'nilai_huruf' => $nilaiHuruf
+                        'nilai_huruf' => $nilaiHuruf,
+                        'rincian' => $mapKomponen
                     ];
                 });
 
