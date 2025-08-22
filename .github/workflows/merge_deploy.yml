@@ -1,4 +1,4 @@
-name: Auto Merge PR
+name: Auto Merge PR And Deploy
 
 on:
   pull_request:
