@@ -35,7 +35,7 @@ Route::group(
 
         Route::get('list_materi_mk/{id_kelas_mk}', [DosenPresensiController::class, 'listMateriMk']);
 
-        Route::put('mahasiswa/{id_kelas}/presensi/{id_presensi}', [DosenPresensiController::class, 'MahasiswaInOut']);
+        Route::put('mahasiswa/presensi/{id_presensi}', [DosenPresensiController::class, 'MahasiswaInOut']);
 
         Route::group(
             ['prefix' => 'krs', 'controller' => DosenKrsController::class],
