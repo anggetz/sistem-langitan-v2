@@ -27,42 +27,66 @@ class DosenPenilaianController extends Controller
     {
         try {
             // check if the kelas mk has komponen
-            $dbKomponen = \App\Models\KomponenMk::where('id_kelas_mk', $id_kelas_mk)->get();
+            $builder = \App\Models\KomponenMk::where('id_kelas_mk', $id_kelas_mk);
+            $totalKomponen = $builder->count();
+            if (!$totalKomponen) {
+                $komponens = explode(',', env('KOMPONEN_MK', 'Aktivitas Partisipatif,Hasil Proyek,Tugas,Quiz,UTS,UAS'));
 
-            $komponens = explode(',', env('KOMPONEN_MK', 'Aktivitas Partisipatif,Hasil Proyek,Tugas,Quiz,UTS,UAS'));
-            $temporaryForSaving = [];
+                // Map data terlebih dahulu, kemudian batch insert
+                $mappedKomponens = collect($komponens)->map(function ($nm_komponen_mk, $index) use ($id_kelas_mk) {
+                    return [
+                        'id_kelas_mk' => $id_kelas_mk,
+                        'nm_komponen_mk' => trim($nm_komponen_mk), // trim untuk menghilangkan spasi
+                        'persentase_komponen_mk' => 0,
+                        'urutan_komponen_mk' => $index + 1
+                    ];
+                })->toArray();
 
-            foreach ($komponens as $index => $komponenMk) {
-                $ifFound = false;
-                foreach ($dbKomponen as $item) {
-                    if ($item->nm_komponen_mk == $komponenMk) {
-                        $ifFound = true;
-                        break;
-                    }
-                }
-
-                if (!$ifFound) {
-                    $newKomponen = new KomponenMk();
-                    $newKomponen->id_kelas_mk = $id_kelas_mk;
-                    $newKomponen->nm_komponen_mk = $komponenMk;
-                    $newKomponen->persentase_komponen_mk = 0; // default value
-                    $newKomponen->urutan_komponen_mk = $index;
-                    $temporaryForSaving[] = $newKomponen->toArray();
-                }
+                // Single batch insert setelah mapping
+                KomponenMk::insert($mappedKomponens);
             }
 
-            //saving the temporary komponen bulk insert
-            if (count($temporaryForSaving) > 0) {
-                KomponenMk::insert($temporaryForSaving);
-            }
+            $data = $builder->orderBy('urutan_komponen_mk')->get()->toArray();
 
-            // merge the komponent from the database and the temporary komponen
-            array_push($temporaryForSaving, ...$dbKomponen->toArray());
-
+            //if found return data
             return response()->json([
                 'message' => 'Get komponen successfully.',
-                'data' => $temporaryForSaving
+                'data' => $data
             ], 200);
+
+            // $temporaryForSaving = [];
+
+            // foreach ($komponens as $index => $komponenMk) {
+            //     $ifFound = false;
+            //     foreach ($dbKomponen as $item) {
+            //         if ($item->nm_komponen_mk == $komponenMk) {
+            //             $ifFound = true;
+            //             break;
+            //         }
+            //     }
+
+            //     if (!$ifFound) {
+            //         $newKomponen = new KomponenMk();
+            //         $newKomponen->id_kelas_mk = $id_kelas_mk;
+            //         $newKomponen->nm_komponen_mk = $komponenMk;
+            //         $newKomponen->persentase_komponen_mk = 0; // default value
+            //         $newKomponen->urutan_komponen_mk = $index;
+            //         $temporaryForSaving[] = $newKomponen->toArray();
+            //     }
+            // }
+
+            // //saving the temporary komponen bulk insert
+            // if (count($temporaryForSaving) > 0) {
+            //     KomponenMk::insert($temporaryForSaving);
+            // }
+
+            // // merge the komponent from the database and the temporary komponen
+            // array_push($temporaryForSaving, ...$dbKomponen->toArray());
+
+            // return response()->json([
+            //     'message' => 'Get komponen successfully.',
+            //     'data' => $temporaryForSaving
+            // ], 200);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed get komponen.',
@@ -76,6 +100,7 @@ class DosenPenilaianController extends Controller
         try {
             $validatedData = $request->validate([
                 'komponens' => 'required|array',
+                'komponens.*.id_komponen_mk' => 'required|integer',
                 'komponens.*.nm_komponen_mk' => 'required|string|max:255',
                 'komponens.*.persentase_komponen_mk' => 'required|numeric|min:0|max:100',
                 'komponens.*.urutan_komponen_mk' => 'integer'
@@ -83,40 +108,57 @@ class DosenPenilaianController extends Controller
 
             $updatedKomponens = [];
 
-            $actualKomponens = KomponenMk::where('id_kelas_mk', $id_kelas_mk)->get();
+            $updatedKomponens = collect($validatedData['komponens']);
 
-            $totalProsentase = 0;
+            $totalActual = KomponenMk::where('id_kelas_mk', $id_kelas_mk)->count();
+            $totalUpdated = $updatedKomponens->count();
+            $totalProsentase = $updatedKomponens->sum('persentase_komponen_mk');
 
-            if (count($actualKomponens) != count($validatedData['komponens'])) {
+            // $totalProsentase = 0;
+
+            // if ($totalActual != count($validatedData['komponens'])) {
+            if ($totalActual != $totalUpdated) {
                 return response()->json([
                     'message' => 'Jumlah komponen yang diberikan tidak sesuai dengan jumlah komponen yang ada.',
-                    'error' => 'Jumlah komponen yang diberikan: ' . count($validatedData['komponens']) . ', Jumlah komponen yang ada: ' . count($actualKomponens)
+                    'error' => 'Jumlah komponen yang diberikan: ' . $totalUpdated . ', Jumlah komponen yang ada: ' . $totalActual
                 ], 400);
             }
 
-            DB::beginTransaction();
-
-            foreach ($validatedData['komponens'] as $komponenData) {
-                $totalProsentase += $komponenData['persentase_komponen_mk'];
-            }
-
-            if ($totalProsentase != 100) {
-                DB::rollBack();
+            if ($totalProsentase < 100) {
                 return response()->json([
                     'message' => 'Total prosentase komponen harus 100%.',
                     'error' => 'Total prosentase yang diberikan: ' . $totalProsentase
                 ], 400);
             }
 
+            DB::beginTransaction();
             KomponenMk::upsert(
                 $validatedData['komponens'],
-                ['nm_komponen_mk'],
-                [
-                    'nm_komponen_mk',
-                    'persentase_komponen_mk',
-                    'urutan_komponen_mk',
-                ]
+                ['id_komponen_mk'],
+                ['persentase_komponen_mk']
             );
+
+            // foreach ($validatedData['komponens'] as $komponenData) {
+            //     $totalProsentase += floatval($komponenData['persentase_komponen_mk']);
+            // }
+
+            // if ($totalProsentase < 100) {
+            //     DB::rollBack();
+            //     return response()->json([
+            //         'message' => 'Total prosentase komponen harus 100%.',
+            //         'error' => 'Total prosentase yang diberikan: ' . $totalProsentase
+            //     ], 400);
+            // }
+
+            // KomponenMk::upsert(
+            //     $validatedData['komponens'],
+            //     ['nm_komponen_mk'],
+            //     [
+            //         'nm_komponen_mk',
+            //         'persentase_komponen_mk',
+            //         'urutan_komponen_mk',
+            //     ]
+            // );
 
             DB::commit();
 
