@@ -53,40 +53,6 @@ class DosenPenilaianController extends Controller
                 'message' => 'Get komponen successfully.',
                 'data' => $data
             ], 200);
-
-            // $temporaryForSaving = [];
-
-            // foreach ($komponens as $index => $komponenMk) {
-            //     $ifFound = false;
-            //     foreach ($dbKomponen as $item) {
-            //         if ($item->nm_komponen_mk == $komponenMk) {
-            //             $ifFound = true;
-            //             break;
-            //         }
-            //     }
-
-            //     if (!$ifFound) {
-            //         $newKomponen = new KomponenMk();
-            //         $newKomponen->id_kelas_mk = $id_kelas_mk;
-            //         $newKomponen->nm_komponen_mk = $komponenMk;
-            //         $newKomponen->persentase_komponen_mk = 0; // default value
-            //         $newKomponen->urutan_komponen_mk = $index;
-            //         $temporaryForSaving[] = $newKomponen->toArray();
-            //     }
-            // }
-
-            // //saving the temporary komponen bulk insert
-            // if (count($temporaryForSaving) > 0) {
-            //     KomponenMk::insert($temporaryForSaving);
-            // }
-
-            // // merge the komponent from the database and the temporary komponen
-            // array_push($temporaryForSaving, ...$dbKomponen->toArray());
-
-            // return response()->json([
-            //     'message' => 'Get komponen successfully.',
-            //     'data' => $temporaryForSaving
-            // ], 200);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed get komponen.',
@@ -114,9 +80,6 @@ class DosenPenilaianController extends Controller
             $totalUpdated = $updatedKomponens->count();
             $totalProsentase = $updatedKomponens->sum('persentase_komponen_mk');
 
-            // $totalProsentase = 0;
-
-            // if ($totalActual != count($validatedData['komponens'])) {
             if ($totalActual != $totalUpdated) {
                 return response()->json([
                     'message' => 'Jumlah komponen yang diberikan tidak sesuai dengan jumlah komponen yang ada.',
