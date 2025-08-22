@@ -1,6 +1,7 @@
 <?php
 
 use App\Events\QrGenerateEvent;
+use App\Http\Controllers\AkademikController;
 use App\Http\Controllers\Firebase\Api\FcmController;
 use App\Models\Message;
 use Illuminate\Http\Request;
@@ -57,6 +58,8 @@ Route::group([
 });
 
 Route::group(['middleware' => 'auth.token'], function () {
+
+    Route::get('akademik/jadwal_input_nilai', [AkademikController::class, 'JadwalPenilaian']);
 
     Route::group(['prefix' => 'pengguna'], function () {
         Route::post('ganti-password', [AuthController::class, 'gantiPassword']);

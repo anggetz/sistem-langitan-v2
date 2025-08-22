@@ -150,26 +150,34 @@ class AkademikService
     }
 
 
-    public function ValidateKRSScheduleByActiveSemester()
+    public function ValidateInputNilaiScheduleByActiveSemester()
     {
         // get jadwal penilaian current semester in range or not
         $semesterAktif = Semester::aktif();
         if (!$semesterAktif) {
             Log::error("Semester aktif tidak ditemukan.");
-            return false;
+            return [
+                'status' => false,
+                'message' => "Semester aktif tidak ditemukan.",
+                'error' => "Semester aktif tidak ditemukan."
+            ];
         }
 
         $jadwalPenilaian = JadwalKegiatanSemester::where('id_semester', $semesterAktif->id_semester)
-            ->where('id_perguruan_tinggi', env('APP_ID_PERGURUAN_TINGGI_DEFAULT', 1))
+            ->where('id_perguruan_tinggi', pt()->id_perguruan_tinggi)
             ->whereHas('kegiatan', function ($query) {
-                $query->where('id_perguruan_tinggi', env('APP_ID_PERGURUAN_TINGGI_DEFAULT', 1));
+                $query->where('id_perguruan_tinggi', pt()->id_perguruan_tinggi);
                 $query->where('kode_kegiatan', $this->CODE_JADWAL_PENILAIAN);
             })
             ->first();
 
         if (!$jadwalPenilaian) {
             Log::error("Jadwal penilaian tidak ditemukan untuk semester aktif: {$semesterAktif->id_semester}.");
-            return false;
+            return [
+                'status' => false,
+                'message' => "Jadwal penilaian tidak ditemukan untuk semester aktif: {$semesterAktif->id_semester} dan perguruan tinggi ".pt()->id_perguruan_tinggi,
+                'error' => "Jadwal penilaian tidak ditemukan untuk semester aktif: {$semesterAktif->id_semester} dan perguruan tinggi ".pt()->id_perguruan_tinggi
+            ];
         }
 
         $currentDate = now();
@@ -178,8 +186,16 @@ class AkademikService
 
         if ($currentDate < $startDate || $currentDate > $endDate) {
             Log::error("Jadwal penilaian tidak valid untuk tanggal saat ini: {$currentDate}. Jadwal penilaian berlaku dari {$startDate} hingga {$endDate}.");
-            return false;
+            return [
+                'status' => false,
+                'message' => "Jadwal penilaian tidak valid untuk tanggal saat ini: {$currentDate}. Jadwal penilaian berlaku dari {$startDate} hingga {$endDate}.",
+                'error' => "Jadwal penilaian tidak valid untuk tanggal saat ini: {$currentDate}. Jadwal penilaian berlaku dari {$startDate} hingga {$endDate}.",
+                'info' => $jadwalPenilaian
+            ];
         }
-        return true;
+        return [
+            'status' => 'true',
+            'info' => $jadwalPenilaian,
+        ];
     }
 }

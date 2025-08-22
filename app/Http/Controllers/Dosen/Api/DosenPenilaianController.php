@@ -326,7 +326,7 @@ class DosenPenilaianController extends Controller
         $akademikService = new AkademikService();
 
         try {
-            if (!$akademikService->validateKRSScheduleByActiveSemester()) {
+            if (!$akademikService->ValidateInputNilaiScheduleByActiveSemester()) {
                 return response()->json([
                     'message' => 'Penilaian tidak dapat dilakukan di luar jadwal penilaian.',
                     'error' => 'Penilaian tidak dapat dilakukan di luar jadwal penilaian.'
