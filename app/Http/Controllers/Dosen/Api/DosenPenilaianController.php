@@ -216,6 +216,10 @@ class DosenPenilaianController extends Controller
         }
     }
 
+    /*
+    Method untuk menyimpan nilai tiap komponen
+
+*/
     public function saveNilaiMk(Request $request)
     {
         $validatedData = $request->validate([
