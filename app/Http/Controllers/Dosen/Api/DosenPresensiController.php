@@ -335,9 +335,20 @@ class DosenPresensiController extends Controller
     {
         try {
             $data = $request->validate([
-                'kehadiran' => 'required|in:1,0',
-                'id_mhs' => 'required|array',
+                'mahasiswa' => 'required|array',
+                'mahasiswa.*.kehadiran' => 'required|string',
+                'mahasiswa.*.id_mhs' => 'required|integer',
             ]);
+
+            $mhsCollection = collect($data['mahasiswa'])->map(function($item) use ($id_presensi){
+                $item['id_presensi_kelas'] = $id_presensi;
+                $item['qr_flag'] = null;
+                return $item;
+            });
+            $idsMhs = $mhsCollection->map(function($item) {
+                    return $item['id_mhs'];
+            })->toArray();
+            $keyByIdMhs = $mhsCollection->keyBy('id_mhs');
 
             // check if inside pengambilanMk;
             $presensiKelas = PresensiKelas::find($id_presensi);
@@ -350,7 +361,7 @@ class DosenPresensiController extends Controller
             }
 
             $PengambilanMk = PengambilanMk::where('id_kelas_mk', $presensiKelas->id_kelas_mk)
-                ->whereIn('id_mhs', $data['id_mhs'])
+                ->whereIn('id_mhs', $idsMhs)
                 ->exists();
 
             if (!$PengambilanMk) {
@@ -362,10 +373,10 @@ class DosenPresensiController extends Controller
 
             $presensi = PresensiMhs::with(['mahasiswa', 'presensiKelas'])
                 ->where('id_presensi_kelas', $id_presensi)
-                ->whereIn('id_mhs', $data['id_mhs'])
+                ->whereIn('id_mhs', $idsMhs)
                 ->get()
-                ->map(function ($item) use ($data) {
-                    $item->kehadiran = $data['kehadiran'];
+                ->map(function ($item) use ($data, $keyByIdMhs) {
+                    $item->kehadiran = $keyByIdMhs[$item->id_mhs]['kehadiran'];
                     return $item->only([
                         'id_mhs',
                         'id_presensi_kelas',
@@ -373,11 +384,16 @@ class DosenPresensiController extends Controller
                         'kehadiran',
                         'qr_flag',
                     ]);
-                })
-                ->toArray();
+                });;
 
             PresensiMhs::upsert(
-                $presensi,
+                array_merge(
+                    $presensi->toArray(),
+                    $mhsCollection->whereNotIn('id_mhs', $presensi->map(
+                        function($item){
+                            return $item['id_mhs'];
+                        })
+                    )->toArray()),
                 ['id_mhs', 'id_presensi_kelas'],
                 [
                     'kehadiran',
