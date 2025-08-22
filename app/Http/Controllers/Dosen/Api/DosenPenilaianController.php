@@ -179,6 +179,7 @@ class DosenPenilaianController extends Controller
                     $totalNilai = $komponen->filter(fn($persen, $id) => $nilai->has($id))
                         ->map(fn($persen, $id) => ($nilai->get($id) * $persen) / 100)
                         ->sum();
+                    // map komponen    
                     $mapKomponen = $namaKomponen->map(function ($nama, $id) use ($nilai) {
                         return [
                             'nm_komponen_mk' => $nama,
