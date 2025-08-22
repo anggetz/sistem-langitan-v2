@@ -5,6 +5,9 @@ on:
     types: [closed]
     branches:
       - develop
+  push:
+    branches:
+      - develop  # Tambahkan trigger push sebagai backup
 
 jobs:
   deploy:
