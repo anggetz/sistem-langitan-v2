@@ -175,15 +175,6 @@ class DosenPenilaianController extends Controller
         }
     }
 
-    public static function nilaiHuruf($nilai, $idJenjang)
-    {
-        $peraturanNilai = PeraturanNilai::with('standardNilai')
-            ->where('nilai_min_peraturan_nilai', '<=', $nilai)
-            ->where('id_jenjang', $idJenjang)
-            ->first();
-        return $peraturanNilai?->standardNilai->nm_standar_nilai;
-    }
-
     public function calculatingNilaiAkhir(Request $request, $id_kelas_mk)
     {
         $limit = $request->get('perPage', 10);
@@ -196,68 +187,106 @@ class DosenPenilaianController extends Controller
 
         try {
             // get mhs
-            $q = \App\Models\PengambilanMk::where('id_kelas_mk', $id_kelas_mk)
-                ->where('id_semester', $idSemesterAktif)
-                ->with(['mahasiswa.pengguna:id_pengguna,gelar_depan,nm_pengguna,gelar_belakang', 'mahasiswa.programStudi:id_program_studi,id_jenjang']);
-
-            if ($id_mhs) {
-                $q->where('id_mhs', $id_mhs);
-            }
+            $q = \App\Models\PengambilanMk::when($id_mhs, function ($query, $id_mhs) {
+                return $query->where('pengambilan_mk.id_mhs', $id_mhs);
+            })
+                ->where('pengambilan_mk.id_kelas_mk', $id_kelas_mk)
+                ->where('pengambilan_mk.id_semester', $idSemesterAktif)
+                ->join('mahasiswa', 'pengambilan_mk.id_mhs', '=', 'mahasiswa.id_mhs')
+                ->join('pengguna', 'mahasiswa.id_pengguna', '=', 'pengguna.id_pengguna')
+                ->join('program_studi', 'mahasiswa.id_program_studi', '=', 'program_studi.id_program_studi')
+                ->select([
+                    'pengambilan_mk.id_pengambilan_mk',
+                    'pengambilan_mk.id_kelas_mk',
+                    'pengguna.nm_pengguna',
+                    'mahasiswa.nim_mhs',
+                    'program_studi.id_jenjang'
+                ])
+                ->with([
+                    'nilaiMk:id_pengambilan_mk,id_komponen_mk,besar_nilai_mk',
+                    'kelasMk.komponenMk'
+                ]);
+            // ->with(['mahasiswa.pengguna:id_pengguna,gelar_depan,nm_pengguna,gelar_belakang', 'mahasiswa.programStudi:id_program_studi,id_jenjang']);            
 
             $total = $q->count();
 
-            $mhs = $q->offset($offset)
-                ->limit($limit)
-                ->get();
-
-
-            if ($mhs->isEmpty()) {
+            if (!$total) {
                 return response()->json([
                     'status' => Message::FAIL,
                     'message' => 'Tidak ada mahasiswa yang terdaftar di kelas ini.',
                 ], 404);
             }
 
-            $komponenFetched = [];
 
-            $namaMhsMapped = $mhs->map(function ($item) use ($id_kelas_mk, $komponenFetched) {
-                $komponen = KomponenMk::where('id_kelas_mk', $id_kelas_mk)->get();
-                $nilaiAkhir = 0;
+            $kamusNilai = PeraturanNilai::with('standardNilai:id_standar_nilai,nm_standar_nilai')->where('id_jenjang', 1)
+                ->orderBy('nilai_min_peraturan_nilai', 'desc')
+                ->get()
+                ->pluck('standardNilai.nm_standar_nilai', 'nilai_min_peraturan_nilai');
 
-                $nilaiMks = NilaiMk::selectRaw("
-                    id_komponen_mk, SUM(besar_nilai_mk)/count(id_komponen_mk) as besar_nilai_mk
-                ")->where([
-                    'id_pengambilan_mk' => $item->id_pengambilan_mk,
-                    'id_mhs' => $item->id_mhs,
-                ])->groupBy('id_komponen_mk')->get();
+            $data = $q->offset($offset)
+                ->limit($limit)
+                ->get()
+                ->map(function ($item) use ($kamusNilai) {
+                    $komponen = $item->kelasMk?->komponenMk->pluck('persentase_komponen_mk', 'id_komponen_mk');
+                    $nilai = $item->nilaiMk?->pluck('besar_nilai_mk', 'id_komponen_mk');
 
-                foreach ($nilaiMks as $nilaiMk) {
-                    if ($komponenFetched[$nilaiMk->id_komponen_mk] ?? null) {
-                        $komponen = $komponenFetched[$nilaiMk->id_komponen_mk];
-                    } else {
-                        $komponen = KomponenMk::find($nilaiMk->id_komponen_mk);
-                        $komponenFetched[$nilaiMk->id_komponen_mk] = $komponen;
-                    }
-                    if ($komponen) {
-                        $nilaiAkhir += $nilaiMk->besar_nilai_mk * ($komponen->persentase_komponen_mk / 100);
-                    }
-                }
+                    $totalNilai = $nilai
+                        ->filter(fn($nilai, $id) => $komponen->has($id))
+                        ->map(fn($nilai, $id) => ($nilai * $komponen->get($id)) / 100)
+                        ->sum();
 
-                $mahasiswa = $item->mahasiswa ?? new Mahasiswa();
-                $pengguna = $mahasiswa->pengguna ?? new \App\Models\Pengguna();
+                    $nilaiHuruf = $kamusNilai->filter(fn($g, $min) => $totalNilai >= $min)->first() ?? '';
 
-                return [
-                    'nama_mhs' => $pengguna->nama_lengkap,
-                    'nim_mhs' => $mahasiswa->nim_mhs ?? '',
-                    'nilai_akhir' => floor($nilaiAkhir),
-                    'nilai_huruf' => static::nilaiHuruf(floor($nilaiAkhir), $mahasiswa?->programStudi?->id_jenjang)
-                ];
-            });
+                    return [
+                        'nama_mhs' => $item->nm_pengguna,
+                        'nim_mhs' => $item->nim_mhs,
+                        'nilai_akhir' => floor($totalNilai * 100) / 100,
+                        'nilai_huruf' => $nilaiHuruf
+                    ];
+                });
+
+
+
+            // $komponenFetched = [];
+
+            // $namaMhsMapped = $mhs->map(function ($item) use ($id_kelas_mk, $komponenFetched) {
+            //     $komponen = KomponenMk::where('id_kelas_mk', $id_kelas_mk)->get();
+            //     $nilaiAkhir = 0;
+
+            //     $nilaiMks = NilaiMk::selectRaw("
+            //         id_komponen_mk, SUM(besar_nilai_mk)/count(id_komponen_mk) as besar_nilai_mk
+            //     ")->where([
+            //         'id_pengambilan_mk' => $item->id_pengambilan_mk,
+            //         'id_mhs' => $item->id_mhs,
+            //     ])->groupBy('id_komponen_mk')->get();
+
+            //     foreach ($nilaiMks as $nilaiMk) {
+            //         if ($komponenFetched[$nilaiMk->id_komponen_mk] ?? null) {
+            //             $komponen = $komponenFetched[$nilaiMk->id_komponen_mk];
+            //         } else {
+            //             $komponen = KomponenMk::find($nilaiMk->id_komponen_mk);
+            //             $komponenFetched[$nilaiMk->id_komponen_mk] = $komponen;
+            //         }
+            //         if ($komponen) {
+            //             $nilaiAkhir += $nilaiMk->besar_nilai_mk * ($komponen->persentase_komponen_mk / 100);
+            //         }
+            //     }
+
+            //     $mahasiswa = $item->mahasiswa ?? new Mahasiswa();
+            //     $pengguna = $mahasiswa->pengguna ?? new \App\Models\Pengguna();
+
+            //     return [
+            //         'nama_mhs' => $pengguna->nama_lengkap,
+            //         'nim_mhs' => $mahasiswa->nim_mhs ?? '',
+            //         'nilai_akhir' => floor($nilaiAkhir),
+            //         'nilai_huruf' => static::nilaiHuruf(floor($nilaiAkhir), $mahasiswa?->programStudi?->id_jenjang)
+            //     ];
+            // });
 
             return response()->json([
                 'status' => Message::OK,
                 'message' => 'Perhitungan nilai akhir berhasil.',
-                'data' => $namaMhsMapped,
+                'data' => $data,
                 'total' => $total,
                 'per_page' => $limit,
                 'page' => $page,

@@ -62,7 +62,7 @@ class PengambilanMk extends Model
     public function activePresensiKelas()
     {
         return $this->belongsTo(PresensiKelas::class, "id_kelas_mk", "id_kelas_mk")
-             ->whereRaw("tgl_entry >= SYSDATE - (5 / 1440)");
+            ->whereRaw("tgl_entry >= SYSDATE - (5 / 1440)");
     }
 
     public function namaKelas()
@@ -85,5 +85,10 @@ class PengambilanMk extends Model
             '',
             [KelasMk::class => "id_kelas_mk", MataKuliah::class => "id_mata_kuliah"]
         );
+    }
+
+    public function nilaiMk()
+    {
+        return $this->hasMany(NilaiMk::class, "id_pengambilan_mk", "id_pengambilan_mk");
     }
 }
