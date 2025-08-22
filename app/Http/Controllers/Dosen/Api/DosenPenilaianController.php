@@ -148,7 +148,9 @@ class DosenPenilaianController extends Controller
                 ])
                 ->with([
                     'nilaiMk:id_pengambilan_mk,id_komponen_mk,besar_nilai_mk',
-                    'kelasMk.komponenMk'
+                    'kelasMk.komponenMk' => function ($query) {
+                        $query->orderBy('urutan_komponen_mk', 'asc');
+                    }
                 ]);
 
             $total = $q->count();
@@ -177,6 +179,7 @@ class DosenPenilaianController extends Controller
                     $totalNilai = $komponen->filter(fn($persen, $id) => $nilai->has($id))
                         ->map(fn($persen, $id) => ($nilai->get($id) * $persen) / 100)
                         ->sum();
+                    // map komponen    
                     $mapKomponen = $namaKomponen->map(function ($nama, $id) use ($nilai) {
                         return [
                             'nm_komponen_mk' => $nama,
