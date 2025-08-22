@@ -109,7 +109,7 @@ class DosenPenilaianController extends Controller
 
             KomponenMk::upsert(
                 $validatedData['komponens'],
-                ['nm_komponen_mk'],
+                ['nm_komponen_mk', 'id_kelas_mk'],
                 [
                     'nm_komponen_mk',
                     'persentase_komponen_mk',
