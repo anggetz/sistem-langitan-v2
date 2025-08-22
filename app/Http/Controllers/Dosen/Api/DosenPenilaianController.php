@@ -138,27 +138,6 @@ class DosenPenilaianController extends Controller
                 ['persentase_komponen_mk']
             );
 
-            // foreach ($validatedData['komponens'] as $komponenData) {
-            //     $totalProsentase += floatval($komponenData['persentase_komponen_mk']);
-            // }
-
-            // if ($totalProsentase < 100) {
-            //     DB::rollBack();
-            //     return response()->json([
-            //         'message' => 'Total prosentase komponen harus 100%.',
-            //         'error' => 'Total prosentase yang diberikan: ' . $totalProsentase
-            //     ], 400);
-            // }
-
-            // KomponenMk::upsert(
-            //     $validatedData['komponens'],
-            //     ['nm_komponen_mk'],
-            //     [
-            //         'nm_komponen_mk',
-            //         'persentase_komponen_mk',
-            //         'urutan_komponen_mk',
-            //     ]
-            // );
 
             DB::commit();
 
@@ -208,7 +187,6 @@ class DosenPenilaianController extends Controller
                     'nilaiMk:id_pengambilan_mk,id_komponen_mk,besar_nilai_mk',
                     'kelasMk.komponenMk'
                 ]);
-            // ->with(['mahasiswa.pengguna:id_pengguna,gelar_depan,nm_pengguna,gelar_belakang', 'mahasiswa.programStudi:id_program_studi,id_jenjang']);
 
             $total = $q->count();
 
@@ -233,10 +211,6 @@ class DosenPenilaianController extends Controller
                     $namaKomponen = $item->kelasMk?->komponenMk?->pluck('nm_komponen_mk', 'id_komponen_mk');
                     $nilai = $item->nilaiMk?->pluck('besar_nilai_mk', 'id_komponen_mk');
 
-                    // $totalNilai = $nilai
-                    //     ->filter(fn($nilai, $id) => $komponen->has($id))
-                    //     ->map(fn($nilai, $id) => ($nilai * $komponen->get($id)) / 100)
-                    //     ->sum();
                     $totalNilai = $komponen->filter(fn($persen, $id) => $nilai->has($id))
                         ->map(fn($persen, $id) => ($nilai->get($id) * $persen) / 100)
                         ->sum();
@@ -259,42 +233,6 @@ class DosenPenilaianController extends Controller
                 });
 
 
-
-            // $komponenFetched = [];
-
-            // $namaMhsMapped = $mhs->map(function ($item) use ($id_kelas_mk, $komponenFetched) {
-            //     $komponen = KomponenMk::where('id_kelas_mk', $id_kelas_mk)->get();
-            //     $nilaiAkhir = 0;
-
-            //     $nilaiMks = NilaiMk::selectRaw("
-            //         id_komponen_mk, SUM(besar_nilai_mk)/count(id_komponen_mk) as besar_nilai_mk
-            //     ")->where([
-            //         'id_pengambilan_mk' => $item->id_pengambilan_mk,
-            //         'id_mhs' => $item->id_mhs,
-            //     ])->groupBy('id_komponen_mk')->get();
-
-            //     foreach ($nilaiMks as $nilaiMk) {
-            //         if ($komponenFetched[$nilaiMk->id_komponen_mk] ?? null) {
-            //             $komponen = $komponenFetched[$nilaiMk->id_komponen_mk];
-            //         } else {
-            //             $komponen = KomponenMk::find($nilaiMk->id_komponen_mk);
-            //             $komponenFetched[$nilaiMk->id_komponen_mk] = $komponen;
-            //         }
-            //         if ($komponen) {
-            //             $nilaiAkhir += $nilaiMk->besar_nilai_mk * ($komponen->persentase_komponen_mk / 100);
-            //         }
-            //     }
-
-            //     $mahasiswa = $item->mahasiswa ?? new Mahasiswa();
-            //     $pengguna = $mahasiswa->pengguna ?? new \App\Models\Pengguna();
-
-            //     return [
-            //         'nama_mhs' => $pengguna->nama_lengkap,
-            //         'nim_mhs' => $mahasiswa->nim_mhs ?? '',
-            //         'nilai_akhir' => floor($nilaiAkhir),
-            //         'nilai_huruf' => static::nilaiHuruf(floor($nilaiAkhir), $mahasiswa?->programStudi?->id_jenjang)
-            //     ];
-            // });
 
             return response()->json([
                 'status' => Message::OK,
@@ -364,23 +302,6 @@ class DosenPenilaianController extends Controller
                 }
             });
 
-            // $mahasiswa = collect($request->mahasiswa)->map(function ($item) use ($pengambilanMks, $komponenMk) {
-            //     if (isset($pengambilanMks[$item['id_mhs']])) {
-            //         $item['id_pengambilan_mk'] = $pengambilanMks[$item['id_mhs']]->id_pengambilan_mk;
-            //         $item['id_komponen_mk'] = $komponenMk->id_komponen_mk;
-
-            //         // calculating the grade by komponen
-            //     } else {
-            //         return response()->json([
-            //             'message' => 'Mahasiswa dengan id_mhs: ' . $item['id_mhs'] . ' tidak terdaftar di kelas ini.',
-            //             'error' => 'Mahasiswa dengan id_mhs: ' . $item['id_mhs'] . ' tidak terdaftar di kelas ini.'
-            //         ], 404);
-            //     }
-            //     return $item;
-            // });
-
-            // save mahasiswa using upsert
-            // dd($mahasiswa->toArray());
             NilaiMk::upsert(
                 $dataNilai->toArray(),
                 ['id_mhs', 'id_pengambilan_mk', 'id_komponen_mk'],
