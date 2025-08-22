@@ -9,48 +9,25 @@ on:
 jobs:
   auto-merge:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pull-requests: write
-      checks: read
-      
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
       - name: Enable Auto-merge
-        if: ${{ !github.event.pull_request.draft }}
+        uses: peter-evans/enable-pull-request-automerge@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          pull-request-number: ${{ github.event.number }}
+          merge-method: merge
+          
+      - name: Add Comment
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const { owner, repo } = context.repo;
-            const pull_number = context.payload.pull_request.number;
-            
-            try {
-              // Enable auto-merge
-              await github.rest.pulls.createAutoMerge({
-                owner,
-                repo,
-                pull_number,
-                merge_method: 'merge'
-              });
-              
-              console.log('✅ Auto-merge enabled for PR #' + pull_number);
-              
-              // Add success comment
-              await github.rest.issues.createComment({
-                issue_number: pull_number,
-                owner,
-                repo,
-                body: '🤖 **Auto-merge enabled!** This PR will be automatically merged when all checks pass and requirements are met.'
-              });
-              
-            } catch (error) {
-              console.log('Error:', error.message);
-              
-              // Add error comment
-              await github.rest.issues.createComment({
-                issue_number: pull_number,
-                owner,
-                repo,
-                body: `⚠️ **Auto-merge failed**: ${error.message}\n\nPlease check repository settings or merge manually.`
-              });
-            }
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '🤖 **Auto-merge enabled!** This PR will be merged automatically when all requirements are met.'
+            });
