@@ -78,68 +78,61 @@ class DosenKrsController extends Controller
             $offset = ($page - 1) * $limit;
             $idSemesterAktif = Semester::aktif()->id_semester;
 
-            $query = DosenWali::with([
-                'mahasiswa' => function ($j) use ($idSemesterAktif) {
-                    //list mahasiswa yang memiliki pengambilan_mk di id_semester aktif
-                    $j->with([
-                        'pengguna' => function ($q) {
-                            $q->select('id_pengguna', 'nm_pengguna');
-                        },
-                        'programStudi' => function ($q) {
-                            $q->select('id_program_studi', 'nm_program_studi', 'id_fakultas', 'id_jenjang');
-                        },
-                        'programStudi.fakultas' => function ($q) {
-                            $q->select('id_fakultas', 'nm_fakultas');
-                        },
-                        'programStudi.jenjang' => function ($q) {
-                            $q->select('id_jenjang', 'nm_jenjang');
-                        },
-                        'mahasiswaKrsApprovalSign' => function ($q) use ($idSemesterAktif) {
-                            $q->with('mahasiswaStatus')->where('id_semester', $idSemesterAktif);
-                        }
-                    ])
-                        ->select('id_mhs', 'id_pengguna', 'id_program_studi', 'thn_angkatan_mhs')
-                        ->whereHas('pengambilanMk', function ($q) use ($idSemesterAktif) {
-                            $q->where('id_semester', $idSemesterAktif);
-                        });
-                },
-                'semester' => function ($j) {
-                    $j->select('id_semester', 'nm_semester');
-                }
-            ])
-                ->where('id_dosen', auth()->user()->dosen?->id_dosen)
-                ->where('id_semester', $idSemesterAktif);
+            $query = DosenWali::join('mahasiswa', 'dosen_wali.id_mhs', '=', 'mahasiswa.id_mhs')
+                ->join('pengguna', 'mahasiswa.id_pengguna', '=', 'pengguna.id_pengguna')
+                ->join('program_studi', 'mahasiswa.id_program_studi', '=', 'program_studi.id_program_studi')
+                ->join('fakultas', 'program_studi.id_fakultas', '=', 'fakultas.id_fakultas')
+                ->join('jenjang', 'program_studi.id_jenjang', '=', 'jenjang.id_jenjang')
+                ->join(DB::raw('(SELECT DISTINCT id_mhs FROM pengambilan_mk WHERE id_semester = ' . $idSemesterAktif . ') mahasiswa_daftar'), 'mahasiswa.id_mhs', '=', 'mahasiswa_daftar.id_mhs')
+                ->leftJoin('mahasiswa_krs_approval_sign', function ($join) use ($idSemesterAktif) {
+                    $join->on('mahasiswa.id_mhs', '=', 'mahasiswa_krs_approval_sign.id_mhs')
+                        ->where('mahasiswa_krs_approval_sign.id_semester', $idSemesterAktif);
+                })
+                ->leftJoin('mahasiswa_status', function ($join) use ($idSemesterAktif) {
+                    $join->on('mahasiswa.id_mhs', '=', 'mahasiswa_status.id_mhs')
+                        ->where('mahasiswa_status.id_semester', $idSemesterAktif);
+                })
+                ->join('semester', 'dosen_wali.id_semester', '=', 'semester.id_semester')
+                ->where('dosen_wali.id_dosen', auth()->user()->dosen?->id_dosen)
+                ->where('dosen_wali.id_semester', $idSemesterAktif)
+                ->select([
+                    'mahasiswa_krs_approval_sign.id_mahasiswa_krs_approval_sign as id',
+                    'mahasiswa.id_mhs',
+                    'pengguna.nm_pengguna as nama_mahasiswa',
+                    'program_studi.nm_program_studi as program_studi',
+                    'fakultas.nm_fakultas as fakultas',
+                    'jenjang.nm_jenjang as jenjang',
+                    'mahasiswa.thn_angkatan_mhs as angkatan',
+                    'semester.nm_semester as semester',
+                    'semester.id_semester',
+                    'mahasiswa_status.ipk',
+                    'mahasiswa_status.ips',
+                    'mahasiswa_krs_approval_sign.limit_sks',
+                    'mahasiswa_krs_approval_sign.kredit_sks',
+                    'mahasiswa_krs_approval_sign.sign_path'
+                ]);
 
             $total = $query->count();
 
             $data = $query
                 ->limit($limit)
                 ->offset($offset)
-                // ->get();
+                ->orderByRaw('CASE WHEN mahasiswa_krs_approval_sign.sign_path IS NULL THEN 0 ELSE 1 END DESC') // yang kosong dulu
+                ->orderBy('pengguna.nm_pengguna', 'ASC') // lalu nama
                 ->get()
-                ->map(function ($krs, $key) {
-                    $approval = $krs->mahasiswa?->mahasiswaKrsApprovalSign;
-                    if ($approval) $approval = $approval[0];
-                    return [
-                        'id' => $approval?->id_mahasiswa_krs_approval_sign,
-                        'id_mhs' => $krs->mahasiswa?->id_mhs,
-                        'nama_mahasiswa' => $krs->mahasiswa?->pengguna->nama_lengkap,
-                        'program_studi' => $krs->mahasiswa?->programStudi?->nm_program_studi,
-                        'fakultas' => $krs->mahasiswa?->programStudi?->fakultas?->nm_fakultas,
-                        'jenjang' => $krs->mahasiswa?->programStudi?->jenjang?->nm_jenjang,
-                        'angkatan' => $krs->mahasiswa?->thn_angkatan_mhs,
-                        'semester' => $krs->semester?->nm_semester ?? 'N/A',
-                        'id_semester' => $krs->id_semester,
-                        'ipk' => (float)$approval?->mahasiswaStatus?->ipk ?? 0,
-                        'limit_sks' => $approval?->limit_sks,
-                        'kredit_sks' => $approval?->kredit_sks,
-                        'is_approved' => empty($approval?->sign_path) ? false : true,
-                        'ips' => (float)$approval?->mahasiswaStatus?->ips ?? 0,
-                    ];
+                ->map(function ($item) {
+                    unset($item['rn']);
+                    $item['ipk'] = (float) $item['ipk'] ?? 0;
+                    $item['ips'] = (float) $item['ips'] ?? 0;
+                    $item['limit_sks'] = (int) $item['limit_sks'] ?? 0;
+                    $item['kredit_sks'] = (int) $item['kredit_sks'] ?? 0;
+                    $item['semester'] = $item['semester'] ?? 'N/A';
+                    $item['is_approved'] = !empty($item['sign_path']);
+                    unset($item['sign_path']);
+                    return $item;
                 });
 
-
-            return response()->json([
+          return response()->json([
                 'message' => 'Get data approved krs successfull',
                 'status' => Message::OK,
                 'data' => $data,
@@ -254,8 +247,8 @@ class DosenKrsController extends Controller
                 ]);
 
             $mataKuliah = PengambilanMkKprs::where('id_mhs', $validatedData['id_mhs'])
-                                ->where('id_semester', $semesterAktif->id_semester)
-                                ->get();
+                ->where('id_semester', $semesterAktif->id_semester)
+                ->get();
 
             $sksData = PengambilanMk::where('id_mhs', $validatedData['id_mhs'])
                 ->join('kelas_mk', 'pengambilan_mk.id_kelas_mk', '=', 'kelas_mk.id_kelas_mk')
