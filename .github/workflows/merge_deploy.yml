@@ -31,3 +31,22 @@ jobs:
               repo: context.repo.repo,
               body: '🤖 **Auto-merge enabled!** This PR will be merged automatically when all requirements are met.'
             });
+            
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 2246
+          script: |
+            # Ganti dengan path direktori proyek Anda di server
+            cd /var/www/sistem-langitan-v2
+            
+            # Update kode dari git
+            git pull origin develop
+            
+            echo "Deployment berhasil!"
