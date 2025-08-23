@@ -330,12 +330,12 @@ class DosenPenilaianController extends Controller
             ])->where('pengambilan_mk.id_kelas_mk', $id_kelas_mk)
                 ->with([
                     'mahasiswa.pengguna:id_pengguna,gelar_depan,nm_pengguna,gelar_belakang',
-                    'nilaiMk' => function ($q) {
+                    'nilaiMk' => function ($q) use ($id_komponen_mk)  {
                         if (!empty($id_komponen_mk)) {
                             $q->where('id_komponen_mk', '=', $id_komponen_mk);
                         }
                     },
-                    'nilaiMk.komponenMk' => function ($q) {
+                    'nilaiMk.komponenMk' => function ($q) use ($id_komponen_mk) {
                         if (!empty($id_komponen_mk)) {
                             $q->where('id_komponen_mk', '=', $id_komponen_mk);
                         }
