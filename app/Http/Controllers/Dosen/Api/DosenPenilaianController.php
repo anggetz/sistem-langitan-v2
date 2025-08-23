@@ -341,8 +341,11 @@ class DosenPenilaianController extends Controller
                 ->leftJoin('komponen_mk', function ($join) use ($id_kelas_mk) {
                     $join->on('komponen_mk.id_komponen_mk', '=', 'nilai_mk.id_komponen_mk')
                         ->where('komponen_mk.id_kelas_mk', $id_kelas_mk);
+
+                    if (!empty($id_komponen_mk)) {
+                        $join->where('nilai_mk.id_komponen_mk', '=', $id_komponen_mk);
+                    }
                 })
-                ->where('nilai_mk.id_komponen_mk', '=', $id_komponen_mk)
                 ->when($id_semester, function ($query) use ($id_semester) {
                     return $query->where('id_semester', $id_semester);
                 }, function ($query) {
