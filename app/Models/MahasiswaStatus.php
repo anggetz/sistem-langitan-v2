@@ -21,4 +21,12 @@ class MahasiswaStatus extends Model
     public function semester(){
         return $this->belongsTo(Semester::class,'id_semester','id_semester');
     }
+
+     protected function casts(): array
+    {
+        return [
+            'ips' => 'float',
+            'ipk' => 'float',
+        ];
+    }
 }
