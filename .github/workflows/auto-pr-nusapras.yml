@@ -23,6 +23,7 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
+          ref: nusapras
           
       - name: 📊 Setup Git Config
         run: |
@@ -31,27 +32,29 @@ jobs:
           
       - name: 🔄 Fetch Latest Changes
         run: |
-          git fetch origin develop:develop
-          git fetch origin nusapras:nusapras
+          echo "=== Fetching latest changes ==="
+          git fetch origin develop:refs/remotes/origin/develop
+          git fetch origin nusapras:refs/remotes/origin/nusapras
+          echo "✅ Fetch completed successfully"
           
       - name: 📈 Analyze Changes
         id: analyze
         run: |
           echo "=== Analyzing changes between nusapras and develop ==="
           
-          # Get commit info
+          # Get commit info from current HEAD (nusapras)
           LATEST_COMMIT_HASH=$(git rev-parse HEAD)
           LATEST_COMMIT_MSG=$(git log -1 --pretty=format:"%s" HEAD)
-          LATEST_COMMIT_AUTHOR=$(git log -1 --pretty=format:"%an" HEAD)
+          LATEST_COMMIT_AUTHOR=$(git log -1 --pretty=format:"%an" HEAD)  
           COMMIT_DATE=$(git log -1 --pretty=format:"%ci" HEAD)
           
           echo "commit-hash=${LATEST_COMMIT_HASH:0:8}" >> $GITHUB_OUTPUT
-          echo "commit-message=$LATEST_COMMIT_MSG" >> $GITHUB_OUTPUT
-          echo "commit-author=$LATEST_COMMIT_AUTHOR" >> $GITHUB_OUTPUT
-          echo "commit-date=$COMMIT_DATE" >> $GITHUB_OUTPUT
+          echo "commit-message=${LATEST_COMMIT_MSG}" >> $GITHUB_OUTPUT
+          echo "commit-author=${LATEST_COMMIT_AUTHOR}" >> $GITHUB_OUTPUT
+          echo "commit-date=${COMMIT_DATE}" >> $GITHUB_OUTPUT
           
-          # Check for differences
-          if git diff --quiet develop...nusapras; then
+          # Check for differences using remote refs
+          if git diff --quiet origin/develop...HEAD; then
             echo "has-changes=false" >> $GITHUB_OUTPUT
             echo "❌ No differences found between nusapras and develop"
           else
@@ -59,26 +62,34 @@ jobs:
             echo "✅ Changes detected between branches"
             
             # Get file changes
-            CHANGED_FILES=$(git diff --name-only develop...nusapras | head -20)
-            TOTAL_CHANGES=$(git diff --name-only develop...nusapras | wc -l)
-            ADDITIONS=$(git diff --numstat develop...nusapras | awk '{add+=$1} END {print add+0}')
-            DELETIONS=$(git diff --numstat develop...nusapras | awk '{del+=$2} END {print del+0}')
+            CHANGED_FILES=$(git diff --name-only origin/develop...HEAD | head -20)
+            TOTAL_CHANGES=$(git diff --name-only origin/develop...HEAD | wc -l)
+            ADDITIONS=$(git diff --numstat origin/develop...HEAD | awk '{add+=$1} END {print add+0}')
+            DELETIONS=$(git diff --numstat origin/develop...HEAD | awk '{del+=$2} END {print del+0}')
             
-            echo "changed-files<<EOF" >> $GITHUB_OUTPUT
-            echo "$CHANGED_FILES" >> $GITHUB_OUTPUT
-            echo "EOF" >> $GITHUB_OUTPUT
+            # Handle multiline output properly
+            {
+              echo "changed-files<<EOF"
+              echo "$CHANGED_FILES"
+              echo "EOF"
+            } >> $GITHUB_OUTPUT
+            
             echo "total-changes=$TOTAL_CHANGES" >> $GITHUB_OUTPUT
             echo "additions=$ADDITIONS" >> $GITHUB_OUTPUT
             echo "deletions=$DELETIONS" >> $GITHUB_OUTPUT
+            
+            echo "📋 Summary: $TOTAL_CHANGES files changed, +$ADDITIONS/-$DELETIONS lines"
           fi
           
       - name: 🔍 Check Existing PR
         id: check-pr
+        if: steps.analyze.outputs.has-changes == 'true'
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             try {
+              console.log('Checking for existing PRs...');
               const { data: pulls } = await github.rest.pulls.list({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
@@ -95,17 +106,14 @@ jobs:
                 core.setOutput('pr-number', pr.number);
                 core.setOutput('pr-url', pr.html_url);
                 core.setOutput('pr-title', pr.title);
-                console.log(`Existing PR found: #${pr.number} - ${pr.title}`);
-                return true;
+                console.log(`✅ Existing PR found: #${pr.number} - ${pr.title}`);
               } else {
                 core.setOutput('pr-exists', 'false');
-                console.log('No existing PR found');
-                return false;
+                console.log('❌ No existing PR found');
               }
             } catch (error) {
-              console.error('Error checking for existing PR:', error);
+              console.error('❌ Error checking for existing PR:', error.message);
               core.setOutput('pr-exists', 'false');
-              return false;
             }
 
       - name: 🚀 Create New Pull Request
@@ -122,7 +130,7 @@ jobs:
             
             **Source:** `nusapras` → `develop`  
             **Triggered by:** Push to nusapras branch  
-            **Created:** $(date '+%Y-%m-%d %H:%M:%S UTC')
+            **Created:** $(date -u '+%Y-%m-%d %H:%M:%S UTC')
             
             ---
             
@@ -149,9 +157,9 @@ jobs:
             ---
             
             ### 🔄 Automatic Workflow Details
-            - **Workflow:** ${{ github.workflow }}
-            - **Run ID:** [${{ github.run_id }}](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
-            - **Triggered by:** ${{ github.actor }}
+            - **Workflow:** ${{ github.workflow }}  
+            - **Run ID:** [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            - **Triggered by:** @${{ github.actor }}
             - **Event:** ${{ github.event_name }}
             
             > 💡 **This PR was automatically created when changes were pushed to the `nusapras` branch.**
@@ -168,14 +176,4 @@ jobs:
 
       - name: 🔄 Update Existing Pull Request  
         if: steps.analyze.outputs.has-changes == 'true' && steps.check-pr.outputs.pr-exists == 'true'
-        uses: actions/github-script@v7
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const prNumber = ${{ steps.check-pr.outputs.pr-number }};
-            const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 19) + ' UTC';
-            
-            try {
-              // Add update comment
-              await github.rest.issues.createComment({
-                owner: context.
+        
