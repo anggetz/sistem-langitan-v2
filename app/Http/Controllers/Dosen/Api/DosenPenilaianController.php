@@ -148,6 +148,7 @@ class DosenPenilaianController extends Controller
                 ])
                 ->with([
                     'nilaiMk:id_pengambilan_mk,id_komponen_mk,besar_nilai_mk',
+                    'kelasMk:id_kelas_mk',
                     'kelasMk.komponenMk' => function ($query) {
                         $query->orderBy('urutan_komponen_mk', 'asc');
                     }
