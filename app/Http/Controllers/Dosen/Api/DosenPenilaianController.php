@@ -15,6 +15,7 @@ use App\Services\Mahasiswa\AkademikService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class DosenPenilaianController extends Controller
 {
@@ -326,25 +327,22 @@ class DosenPenilaianController extends Controller
                 'pengambilan_mk.id_mhs',
                 'pengambilan_mk.id_kelas_mk',
                 'pengambilan_mk.id_semester',
-                'nilai_mk.id_nilai_mk',
-                'nilai_mk.besar_nilai_mk',
-                'komponen_mk.id_komponen_mk',
             ])->where('pengambilan_mk.id_kelas_mk', $id_kelas_mk)
-                ->with(['mahasiswa.pengguna:id_pengguna,gelar_depan,nm_pengguna,gelar_belakang'])
+                ->with([
+                    'mahasiswa.pengguna:id_pengguna,gelar_depan,nm_pengguna,gelar_belakang',
+                    'nilaiMk' => function ($q) {
+                        if (!empty($id_komponen_mk)) {
+                            $q->where('id_komponen_mk', '=', $id_komponen_mk);
+                        }
+                    },
+                    'nilaiMk.komponenMk' => function ($q) {
+                        if (!empty($id_komponen_mk)) {
+                            $q->where('id_komponen_mk', '=', $id_komponen_mk);
+                        }
+                    }
+                ])
                 ->when($id_mhs, function ($query) use ($id_mhs) {
                     return $query->where('id_mhs', $id_mhs);
-                })
-                ->leftJoin('nilai_mk', function ($join) {
-                    $join->on('nilai_mk.id_pengambilan_mk', '=', 'pengambilan_mk.id_pengambilan_mk')
-                        ->on('nilai_mk.id_mhs', '=', 'pengambilan_mk.id_mhs');
-                })
-                ->leftJoin('komponen_mk', function ($join) use ($id_kelas_mk) {
-                    $join->on('komponen_mk.id_komponen_mk', '=', 'nilai_mk.id_komponen_mk')
-                        ->where('komponen_mk.id_kelas_mk', $id_kelas_mk);
-
-                    if (!empty($id_komponen_mk)) {
-                        $join->where('nilai_mk.id_komponen_mk', '=', $id_komponen_mk);
-                    }
                 })
                 ->when($id_semester, function ($query) use ($id_semester) {
                     return $query->where('id_semester', $id_semester);
@@ -358,14 +356,15 @@ class DosenPenilaianController extends Controller
                 'data' => $data->offset($offset)
                     ->limit($limit)
                     ->get()->map(function ($item) {
+                        Log::info("hello");
                         return [
                             'id_mhs' => $item->id_mhs,
-                            'id_nilai_mk' => $item->id_nilai_mk,
+                            'id_nilai_mk' => count($item->nilaiMk) > 0 ? $item->nilaiMk[0]->id_nilai_mk : null,
                             'nama_mhs' => $item->mahasiswa?->pengguna?->nama_lengkap ?? '',
                             'nim_mhs' => $item->mahasiswa?->nim_mhs ?? '',
-                            'nilai' => (int)$item->besar_nilai_mk,
+                            'nilai' => count($item->nilaiMk) > 0 ? (int)$item->nilaiMk[0]->besar_nilai_mk : 0,
                             'id_pengambilan_mk' => $item->id_pengambilan_mk,
-                            'id_komponen_mk' => $item->id_komponen_mk,
+                            'id_komponen_mk' => count($item->nilaiMk) > 0 && !empty($item->nilaiMk[0]->komponenMk) ? $item->nilaiMk[0]->komponenMk->id_komponen_mk : null,
                         ];
                     }),
                 'total' => $data->count(),
@@ -373,9 +372,12 @@ class DosenPenilaianController extends Controller
                 'page' => $page,
             ], 200);
         } catch (\Exception $e) {
+            dd($e);
             return response()->json([
                 'message' => 'Failed to get Nilai.',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
+                'line' => $e->getLine(),
+
             ], 500);
         }
     }
