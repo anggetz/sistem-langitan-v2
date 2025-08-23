@@ -7,6 +7,7 @@ use App\Models\MahasiswaStatus;
 use App\Models\NilaiMk;
 use App\Models\PengambilanMk;
 use App\Models\PeraturanNilai;
+use App\Models\Semester;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
@@ -58,6 +59,7 @@ class CalculatingFinalScore extends Command
         $nilaiMk = NilaiMk::with(['komponenMk', 'pengambilanMk'])
             ->whereHas('pengambilanMk', function ($query) use ($idKelasMk) {
                 $query->where('id_kelas_mk', $idKelasMk);
+                $query->where('id_semester', Semester::aktif()->id_semester);
             })
             ->get()->groupBy('id_mhs');
 

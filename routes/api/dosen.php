@@ -88,7 +88,7 @@ Route::group(
                 Route::get('nilai_akhir/{id_kelas_mk}', 'calculatingNilaiAkhir');
                 Route::post('save_nilai', 'saveNilaiMk');
                 Route::get('get_nilai/{id_kelas_mk}', 'getNilai');
-                Route::get('trigger_calc_ips/{id_kelas_mk}', 'triggerCalcIps');
+                Route::post('trigger_calc_ips/{id_kelas_mk}', 'triggerCalcIps');
             }
         );
 
