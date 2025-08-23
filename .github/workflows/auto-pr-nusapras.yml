@@ -1,0 +1,181 @@
+name: Auto PR - Nusapras to Develop
+
+on:
+  push:
+    branches:
+      - nusapras
+  workflow_dispatch:
+    inputs:
+      force_update:
+        description: 'Force update existing PR'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  auto-pull-request:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/nusapras'
+    
+    steps:
+      - name: 🔍 Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: 📊 Setup Git Config
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          
+      - name: 🔄 Fetch Latest Changes
+        run: |
+          git fetch origin develop:develop
+          git fetch origin nusapras:nusapras
+          
+      - name: 📈 Analyze Changes
+        id: analyze
+        run: |
+          echo "=== Analyzing changes between nusapras and develop ==="
+          
+          # Get commit info
+          LATEST_COMMIT_HASH=$(git rev-parse HEAD)
+          LATEST_COMMIT_MSG=$(git log -1 --pretty=format:"%s" HEAD)
+          LATEST_COMMIT_AUTHOR=$(git log -1 --pretty=format:"%an" HEAD)
+          COMMIT_DATE=$(git log -1 --pretty=format:"%ci" HEAD)
+          
+          echo "commit-hash=${LATEST_COMMIT_HASH:0:8}" >> $GITHUB_OUTPUT
+          echo "commit-message=$LATEST_COMMIT_MSG" >> $GITHUB_OUTPUT
+          echo "commit-author=$LATEST_COMMIT_AUTHOR" >> $GITHUB_OUTPUT
+          echo "commit-date=$COMMIT_DATE" >> $GITHUB_OUTPUT
+          
+          # Check for differences
+          if git diff --quiet develop...nusapras; then
+            echo "has-changes=false" >> $GITHUB_OUTPUT
+            echo "❌ No differences found between nusapras and develop"
+          else
+            echo "has-changes=true" >> $GITHUB_OUTPUT
+            echo "✅ Changes detected between branches"
+            
+            # Get file changes
+            CHANGED_FILES=$(git diff --name-only develop...nusapras | head -20)
+            TOTAL_CHANGES=$(git diff --name-only develop...nusapras | wc -l)
+            ADDITIONS=$(git diff --numstat develop...nusapras | awk '{add+=$1} END {print add+0}')
+            DELETIONS=$(git diff --numstat develop...nusapras | awk '{del+=$2} END {print del+0}')
+            
+            echo "changed-files<<EOF" >> $GITHUB_OUTPUT
+            echo "$CHANGED_FILES" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+            echo "total-changes=$TOTAL_CHANGES" >> $GITHUB_OUTPUT
+            echo "additions=$ADDITIONS" >> $GITHUB_OUTPUT
+            echo "deletions=$DELETIONS" >> $GITHUB_OUTPUT
+          fi
+          
+      - name: 🔍 Check Existing PR
+        id: check-pr
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            try {
+              const { data: pulls } = await github.rest.pulls.list({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                head: `${context.repo.owner}:nusapras`,
+                base: 'develop',
+                state: 'open'
+              });
+              
+              console.log(`Found ${pulls.length} existing open PRs`);
+              
+              if (pulls.length > 0) {
+                const pr = pulls[0];
+                core.setOutput('pr-exists', 'true');
+                core.setOutput('pr-number', pr.number);
+                core.setOutput('pr-url', pr.html_url);
+                core.setOutput('pr-title', pr.title);
+                console.log(`Existing PR found: #${pr.number} - ${pr.title}`);
+                return true;
+              } else {
+                core.setOutput('pr-exists', 'false');
+                console.log('No existing PR found');
+                return false;
+              }
+            } catch (error) {
+              console.error('Error checking for existing PR:', error);
+              core.setOutput('pr-exists', 'false');
+              return false;
+            }
+
+      - name: 🚀 Create New Pull Request
+        if: steps.analyze.outputs.has-changes == 'true' && steps.check-pr.outputs.pr-exists == 'false'
+        id: create-pr
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: nusapras
+          base: develop
+          title: "🔄 Auto PR: ${{ steps.analyze.outputs.commit-message }}"
+          body: |
+            ## 🤖 Automatic Pull Request
+            
+            **Source:** `nusapras` → `develop`  
+            **Triggered by:** Push to nusapras branch  
+            **Created:** $(date '+%Y-%m-%d %H:%M:%S UTC')
+            
+            ---
+            
+            ### 📋 Latest Commit Information
+            | Field | Value |
+            |-------|-------|
+            | **Hash** | `${{ steps.analyze.outputs.commit-hash }}` |
+            | **Message** | ${{ steps.analyze.outputs.commit-message }} |
+            | **Author** | ${{ steps.analyze.outputs.commit-author }} |
+            | **Date** | ${{ steps.analyze.outputs.commit-date }} |
+            
+            ### 📊 Changes Summary
+            | Metric | Count |
+            |--------|-------|
+            | **Files Changed** | ${{ steps.analyze.outputs.total-changes }} |
+            | **Lines Added** | +${{ steps.analyze.outputs.additions }} |
+            | **Lines Deleted** | -${{ steps.analyze.outputs.deletions }} |
+            
+            ### 📁 Modified Files
+            ```
+            ${{ steps.analyze.outputs.changed-files }}
+            ```
+            
+            ---
+            
+            ### 🔄 Automatic Workflow Details
+            - **Workflow:** ${{ github.workflow }}
+            - **Run ID:** [${{ github.run_id }}](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            - **Triggered by:** ${{ github.actor }}
+            - **Event:** ${{ github.event_name }}
+            
+            > 💡 **This PR was automatically created when changes were pushed to the `nusapras` branch.**
+            
+            ### ✅ Ready for Review
+            Please review the changes and merge when ready. All commits from `nusapras` branch will be included.
+          labels: |
+            auto-pr
+            nusapras-sync
+            ready-for-review
+          assignees: |
+            ${{ github.actor }}
+          draft: false
+
+      - name: 🔄 Update Existing Pull Request  
+        if: steps.analyze.outputs.has-changes == 'true' && steps.check-pr.outputs.pr-exists == 'true'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const prNumber = ${{ steps.check-pr.outputs.pr-number }};
+            const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 19) + ' UTC';
+            
+            try {
+              // Add update comment
+              await github.rest.issues.createComment({
+                owner: context.
