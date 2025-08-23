@@ -355,7 +355,7 @@ class DosenPenilaianController extends Controller
                 'message' => 'Get Nilai successfully.',
                 'data' => $data->offset($offset)
                     ->limit($limit)
-                    ->get()->map(function ($item) {
+                    ->get()->map(function ($item) use ($id_komponen_mk) {
                         Log::info("hello");
                         return [
                             'id_mhs' => $item->id_mhs,
@@ -364,7 +364,7 @@ class DosenPenilaianController extends Controller
                             'nim_mhs' => $item->mahasiswa?->nim_mhs ?? '',
                             'nilai' => count($item->nilaiMk) > 0 ? (int)$item->nilaiMk[0]->besar_nilai_mk : 0,
                             'id_pengambilan_mk' => $item->id_pengambilan_mk,
-                            'id_komponen_mk' => count($item->nilaiMk) > 0 && !empty($item->nilaiMk[0]->komponenMk) ? $item->nilaiMk[0]->komponenMk->id_komponen_mk : null,
+                            'id_komponen_mk' => count($item->nilaiMk) > 0 && !empty($item->nilaiMk[0]->komponenMk) ? $item->nilaiMk[0]->komponenMk->id_komponen_mk :  (int)$id_komponen_mk,
                         ];
                     }),
                 'total' => $data->count(),
