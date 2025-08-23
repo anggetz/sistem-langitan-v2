@@ -108,20 +108,25 @@ class AkademikController extends Controller
         $semester = $request->get("semester", null);
 
         $data = auth()->user()->mahasiswa;
-        $history = $data->historyNilai()->with(['semester:id_semester,nm_semester,thn_akademik_semester'])->orderBy('id_mhs_status', 'asc');
+        $history = $data->historyNilai()
+            ->with(['semester:id_semester,nm_semester,thn_akademik_semester'])->orderBy('id_mhs_status', 'asc')
+            ->orderBy('created_on', 'desc');
         if (!empty($semester)) {
             $history = $history->where('id_semester', $semester);
         }
         $historyData = $history->get(['id_mhs_status', 'ips', 'ipk', 'sks_semester', 'sks_total', 'id_semester']);
         $historyCount = $history->count();
         $sks_tempuh = 0;
+        $ipk = 0;
         if ($historyCount) {
-            $lastSemester = $historyData[$historyCount - 1];
-            $sks_tempuh = $lastSemester->sks_total;
+            // $lastSemester = $historyData[$historyCount - 1];
+            $sks_tempuh = (int)$historyData[$historyCount - 1]->sks_total;
+            $ipk = $historyData[$historyCount - 1]->ipk;
         }
         return response()->json([
             'status' => Message::OK,
             'data' => $data,
+            'ipk' => $ipk,
             "sks_tempuh" => $sks_tempuh,
             "semester" => $historyCount,
             "history" => $historyData,
