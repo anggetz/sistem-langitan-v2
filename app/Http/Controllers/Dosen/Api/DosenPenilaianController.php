@@ -117,6 +117,13 @@ class DosenPenilaianController extends Controller
         }
     }
 
+    public function triggerCalcIps(Request $request, $id_kelas_mk)
+    {
+        Artisan::queue('app:calculating-final-score', [
+            '--id_kelas_mk' => $request->id_kelas_mk,
+        ]);
+    }
+
     public function calculatingNilaiAkhir(Request $request, $id_kelas_mk)
     {
         $limit = $request->get('perPage', 10);

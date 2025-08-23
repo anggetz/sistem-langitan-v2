@@ -162,7 +162,7 @@ class DosenPresensiController extends Controller
             $page = $request->get('page', 1);
             $offset = ($page - 1) * $limit;
 
-            $presensiKelas = PresensiKelas::where("id_kelas_mk", $id_kelas_mk)
+            $presensiKelas = PresensiKelas::where("presensi_kelas.id_kelas_mk", $id_kelas_mk)
                 ->leftJoin('presensi_mkmhs hadir', function ($join) {
                     $join->on('hadir.id_presensi_kelas', '=', 'presensi_kelas.id_presensi_kelas')
                         ->where('hadir.kehadiran', 1);
@@ -172,20 +172,24 @@ class DosenPresensiController extends Controller
                     $join->on('thadir.id_presensi_kelas', '=', 'presensi_kelas.id_presensi_kelas')
                         ->where('thadir.kehadiran', 0);
                 })
+                ->join('materi_mk', 'materi_mk.id_materi_mk', '=', 'presensi_kelas.id_materi_mk')
                 ->orderBy(DB::raw("TO_DATE(TO_CHAR(tgl_presensi_kelas, 'YYYY-MM-DD') || ' ' || waktu_selesai, 'YYYY-MM-DD HH24:MI')"), 'DESC')
                 ->groupBy(
                     'presensi_kelas.id_presensi_kelas',
                     'presensi_kelas.tgl_presensi_kelas',
+                    'presensi_kelas.waktu_mulai',
                     'presensi_kelas.waktu_selesai',
+                    'materi_mk.isi_materi_mk',
                 )
                 ->select(
                     'presensi_kelas.id_presensi_kelas',
                     'presensi_kelas.tgl_presensi_kelas',
+                    'presensi_kelas.waktu_mulai',
                     'presensi_kelas.waktu_selesai',
+                    'materi_mk.isi_materi_mk',
                     DB::raw('COUNT(hadir.id_presensi_mkmhs) as total_hadir'),
                     DB::raw('COUNT(thadir.id_presensi_mkmhs) as total_absen')
-                )
-                ->with(['materiMk']);
+                );
 
             $total = $presensiKelas->count();
 
@@ -198,6 +202,13 @@ class DosenPresensiController extends Controller
                     $item->total_hadir = $item->total_hadir;
                     $item->total_absen = ($item->total_absen + $item->total_hadir) - $item->total_hadir;
                     $item->total_mhs = ($item->total_absen + $item->total_hadir);
+                    $item->id_kelas_mk = $id_kelas_mk;
+                    $item->materi_mk = [
+                        'isi_materi_mk' => $item->isi_materi_mk,
+                    ];
+                    $item->persentase_presensi_kelas = $item->total_mhs > 0 ? round(($item->total_hadir / $item->total_mhs) * 100, 2) : 0;
+                    $item->is_more_than_one_week = Carbon::parse($item->tgl_presensi_kelas)->addWeek()->lt(Carbon::now());
+                    $item->tgl_presensi_kelas = Carbon::parse($item->tgl_presensi_kelas)->format('Y-m-d');
                     return $item;
                 });
 
