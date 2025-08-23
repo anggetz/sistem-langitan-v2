@@ -81,16 +81,27 @@ class CalculatingIpsByMahasiswa extends Command
 
         $countDataIpk = 0;
         $sumTheTotalScoreIpk = 0;
-        PengambilanMk::where('id_mhs', $idMhs)
-            ->with('kelasMk')
+        $data = PengambilanMk::where('id_mhs', $idMhs)
+             ->with(['kelasMk' => function ($query) {
+                $query->with('mataKuliah');
+            }])
+            ->orderBy('created_on', 'desc')
             ->get()
-            ->each(function ($pengambilanMk) use (&$countDataIpk, $standarNilai, &$sumTheTotalScoreIpk) {
-                if (!empty($standarNilai[$pengambilanMk->nilai_huruf])) {
-                    $sumTheTotalScoreIpk += $standarNilai[$pengambilanMk->fd_nilai_huruf]->nilai_standar_nilai * $pengambilanMk->kelasMk->kredit_semester;
-                }
-                // Calculate the IPS
-                $countDataIpk += $pengambilanMk->kelasMk->kredit_semester;
-            });
+            ->unique('kelasMk.mataKuliah.id_mata_kuliah');
+
+
+        $data->each(function ($pengambilanMk) use (&$countDataIpk, $standarNilai, &$sumTheTotalScoreIpk) {
+            if (!empty($standarNilai[$pengambilanMk->nilai_huruf])) {
+                $sumTheTotalScoreIpk += $standarNilai[$pengambilanMk->fd_nilai_huruf]->nilai_standar_nilai * $pengambilanMk->kelasMk->kredit_semester;
+            }
+            // Calculate the IPS
+            $countDataIpk += $pengambilanMk->kelasMk->kredit_semester;
+        });
+
+        Log::info("check");
+        Log::info($sumTheTotalScoreIpk);
+        Log::info($countDataIpk);
+        Log::info($data);
 
 
         $ipk = $countDataIpk > 0 ? floor(($sumTheTotalScoreIpk / $countDataIpk) * 100)/100 : 0;
