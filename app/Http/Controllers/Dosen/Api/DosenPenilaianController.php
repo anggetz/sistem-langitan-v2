@@ -173,9 +173,10 @@ class DosenPenilaianController extends Controller
                 ->limit($limit)
                 ->get()
                 ->map(function ($item) use ($kamusNilai) {
-                    $komponen = $item->kelasMk?->komponenMk?->pluck('persentase_komponen_mk', 'id_komponen_mk');
-                    $namaKomponen = $item->kelasMk?->komponenMk?->pluck('nm_komponen_mk', 'id_komponen_mk');
-                    $nilai = $item->nilaiMk?->pluck('besar_nilai_mk', 'id_komponen_mk');
+                    $komponenMk = $item->kelasMk?->komponenMk?->filter(fn($record) => $record->persentase_komponen_mk > 0) ?? collect([]);
+                    $komponen = $komponenMk?->pluck('persentase_komponen_mk', 'id_komponen_mk');
+                    $namaKomponen = $komponenMk?->pluck('nm_komponen_mk', 'id_komponen_mk');
+                    $nilai = $item->nilaiMk?->pluck('besar_nilai_mk', 'id_komponen_mk') ?? collect([]);
 
                     $totalNilai = $komponen->filter(fn($persen, $id) => $nilai->has($id))
                         ->map(fn($persen, $id) => ($nilai->get($id) * $persen) / 100)
