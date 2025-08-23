@@ -79,10 +79,21 @@ class CalculatingIpsByMahasiswa extends Command
             ->where('id_semester', '<', $idSemester)
             ->get();
 
-        $ips = $mhsStatuses->sum('ips');
-        $ipsTotal = $mhsStatuses->count();
+        $countDataIpk = 0;
+        $sumTheTotalScoreIpk = 0;
+        PengambilanMk::where('id_mhs', $idMhs)
+            ->with('kelasMk')
+            ->get()
+            ->each(function ($pengambilanMk) use (&$countDataIpk, $standarNilai, &$sumTheTotalScoreIpk) {
+                if (!empty($standarNilai[$pengambilanMk->nilai_huruf])) {
+                    $sumTheTotalScoreIpk += $standarNilai[$pengambilanMk->fd_nilai_huruf]->nilai_standar_nilai * $pengambilanMk->kelasMk->kredit_semester;
+                }
+                // Calculate the IPS
+                $countDataIpk += $pengambilanMk->kelasMk->kredit_semester;
+            });
 
-        $ipk = $ipsTotal > 0 ? floor(($ips / $ipsTotal) * 100)/100 : 0;
+
+        $ipk = $countDataIpk > 0 ? floor(($sumTheTotalScoreIpk / $countDataIpk) * 100)/100 : 0;
 
         // update mahasiswa status
         MahasiswaStatus::upsert(
