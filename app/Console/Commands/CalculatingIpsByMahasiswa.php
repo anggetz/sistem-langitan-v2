@@ -61,7 +61,7 @@ class CalculatingIpsByMahasiswa extends Command
                 // Calculate the IPS
 
                 if (!empty($standarNilai[$pengambilanMk->nilai_huruf])) {
-                    $sumTheTotalScore += $standarNilai[$pengambilanMk->fd_nilai_huruf]->nilai_standar_nilai;
+                    $sumTheTotalScore += $standarNilai[$pengambilanMk->fd_nilai_huruf]->nilai_standar_nilai * $pengambilanMk->kelasMk->kredit_semester;
                 }
 
                 $countData += $pengambilanMk->kelasMk->kredit_semester;
