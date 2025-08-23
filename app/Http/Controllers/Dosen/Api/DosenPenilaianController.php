@@ -120,7 +120,7 @@ class DosenPenilaianController extends Controller
     public function triggerCalcIps(Request $request, $id_kelas_mk)
     {
         Artisan::queue('app:calculating-final-score', [
-            '--id_kelas_mk' => $request->id_kelas_mk,
+            '--id_kelas_mk' => $id_kelas_mk,
         ]);
     }
 
@@ -188,7 +188,7 @@ class DosenPenilaianController extends Controller
                     $totalNilai = $komponen->filter(fn($persen, $id) => $nilai->has($id))
                         ->map(fn($persen, $id) => ($nilai->get($id) * $persen) / 100)
                         ->sum();
-                    // map komponen    
+                    // map komponen
                     $mapKomponen = $namaKomponen->map(function ($nama, $id) use ($nilai) {
                         return [
                             'nm_komponen_mk' => $nama,

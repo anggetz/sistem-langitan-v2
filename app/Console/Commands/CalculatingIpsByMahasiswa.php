@@ -7,6 +7,7 @@ use App\Models\PengambilanMk;
 use App\Models\PeraturanNilai;
 use App\Models\StandarNilai;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 
 class CalculatingIpsByMahasiswa extends Command
 {
@@ -54,21 +55,22 @@ class CalculatingIpsByMahasiswa extends Command
         // get all the pengambilan by id mhs
         PengambilanMk::where('id_mhs', $idMhs)
             ->where('id_semester', $idSemester)
+            ->with('kelasMk')
             ->get()
             ->each(function ($pengambilanMk) use (&$countData, $standarNilai, &$sumTheTotalScore) {
                 // Calculate the IPS
 
-                if (!empty($standarNilai[$pengambilanMk->fd_nilai_huruf])) {
+                if (!empty($standarNilai[$pengambilanMk->nilai_huruf])) {
                     $sumTheTotalScore += $standarNilai[$pengambilanMk->fd_nilai_huruf]->nilai_standar_nilai;
                 }
 
-                $countData++;
+                $countData += $pengambilanMk->kelasMk->kredit_semester;
             });
 
         // pengambilan mk total sks yang tidak berulang idkelas mk duplicate kita ambil yang akhir
         // di divide by total sks
-        $this->info("Total Data: $countData");
-        $this->info("Sum Total Score: $sumTheTotalScore");
+        Log::info("Total Data: $countData");
+        Log::info("Sum Total Score: $sumTheTotalScore");
 
         // calculte the ipk get the mahassiswa status below the semester
         // TODO: Reivise
@@ -80,14 +82,14 @@ class CalculatingIpsByMahasiswa extends Command
         $ips = $mhsStatuses->sum('ips');
         $ipsTotal = $mhsStatuses->count();
 
-        $ipk = $ipsTotal > 0 ? round($ips / $ipsTotal, 2) : 0;
+        $ipk = $ipsTotal > 0 ? floor(($ips / $ipsTotal) * 100)/100 : 0;
 
         // update mahasiswa status
         MahasiswaStatus::upsert(
             [
                 'id_mhs' => $idMhs,
                 'id_semester' => $idSemester,
-                'ips' => $countData > 0 ? round($sumTheTotalScore / $countData, 2) : 0,
+                'ips' => $countData > 0 ? floor(($sumTheTotalScore / $countData) * 100)/100 : 0,
                 'ipk' => $ipk,
             ],
             ['id_mhs', 'id_semester'],

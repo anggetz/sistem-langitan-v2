@@ -133,7 +133,8 @@ class AkademikService
         $data = auth()->user()->mahasiswa->pengambilanMk()
             ->with([
                 "namaKelas:nama_kelas.nama_kelas",
-                "mataKuliah:mata_kuliah.nm_mata_kuliah,mata_kuliah.kredit_semester,kd_mata_kuliah",
+                "mataKuliah:mata_kuliah.nm_mata_kuliah,kd_mata_kuliah",
+                "kelasMk:kelas_mk.id_kelas_mk,kelas_mk.kredit_semester"
             ])
             ->whereSemester($idSemester)
             // multi on
