@@ -114,12 +114,15 @@ class AkademikService
                 }
             });
 
-            return collect($jadwalResponse)
+            if (!collect($jadwalResponse)->count()) return null;
+
+            return  collect($jadwalResponse)
                 ->sortBy([
                     fn($a, $b) => $a['id_jadwal_hari'] <=> $b['id_jadwal_hari'],
                     fn($a, $b) => $a['jam_mulai_ord'] <=> $b['jam_selesai_ord'],
                 ])
                 ->groupBy('hari')->toArray();
+            //dd($arrReturn);
         } catch (Exception $e) {
             return response()->json([
                 'status' => 'error',
@@ -176,8 +179,8 @@ class AkademikService
             Log::error("Jadwal penilaian tidak ditemukan untuk semester aktif: {$semesterAktif->id_semester}.");
             return [
                 'status' => false,
-                'message' => "Jadwal penilaian tidak ditemukan untuk semester aktif: {$semesterAktif->id_semester} dan perguruan tinggi ".pt()->id_perguruan_tinggi,
-                'error' => "Jadwal penilaian tidak ditemukan untuk semester aktif: {$semesterAktif->id_semester} dan perguruan tinggi ".pt()->id_perguruan_tinggi
+                'message' => "Jadwal penilaian tidak ditemukan untuk semester aktif: {$semesterAktif->id_semester} dan perguruan tinggi " . pt()->id_perguruan_tinggi,
+                'error' => "Jadwal penilaian tidak ditemukan untuk semester aktif: {$semesterAktif->id_semester} dan perguruan tinggi " . pt()->id_perguruan_tinggi
             ];
         }
 
