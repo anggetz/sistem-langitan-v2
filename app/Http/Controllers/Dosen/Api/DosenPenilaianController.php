@@ -150,17 +150,23 @@ class DosenPenilaianController extends Controller
                 ->select([
                     'pengambilan_mk.id_pengambilan_mk',
                     'pengambilan_mk.id_kelas_mk',
+                    'pengambilan_mk.nilai_angka',
+                    'pengambilan_mk.nilai_huruf',
                     'pengguna.nm_pengguna',
                     'mahasiswa.nim_mhs',
                     'program_studi.id_jenjang'
                 ])
                 ->with([
-                    'nilaiMk:id_pengambilan_mk,id_komponen_mk,besar_nilai_mk',
+                    'nilaiMk' => function ($subQ) {
+                        $subQ->select(['id_pengambilan_mk', 'id_komponen_mk', 'besar_nilai_mk'])->whereNotNull('besar_nilai_mk');
+                    },
                     'kelasMk:id_kelas_mk',
                     'kelasMk.komponenMk' => function ($query) {
-                        $query->orderBy('urutan_komponen_mk', 'asc');
+                        $query->select(['id_komponen_mk', 'nm_komponen_mk', 'id_kelas_mk'])->where('persentase_komponen_mk', '>', 0)->orderBy('urutan_komponen_mk', 'asc');
                     }
                 ]);
+
+            // dd($q->toSql(), $id_kelas_mk, $idSemesterAktif);
 
             $total = $q->count();
 
@@ -172,24 +178,26 @@ class DosenPenilaianController extends Controller
             }
 
 
-            $kamusNilai = PeraturanNilai::with('standardNilai:id_standar_nilai,nm_standar_nilai')->where('id_jenjang', 1)
-                ->orderBy('nilai_min_peraturan_nilai', 'desc')
-                ->get()
-                ->pluck('standardNilai.nm_standar_nilai', 'nilai_min_peraturan_nilai');
+            // $kamusNilai = PeraturanNilai::with('standardNilai:id_standar_nilai,nm_standar_nilai')->where('id_jenjang', 1)
+            //     ->orderBy('nilai_min_peraturan_nilai', 'desc')
+            //     ->get()
+            //     ->pluck('standardNilai.nm_standar_nilai', 'nilai_min_peraturan_nilai');
 
             $data = $q->offset($offset)
                 ->limit($limit)
                 ->get()
-                ->map(function ($item) use ($kamusNilai) {
-                    $komponenMk = $item->kelasMk?->komponenMk?->filter(fn($record) => $record->persentase_komponen_mk > 0) ?? collect([]);
-                    $komponen = $komponenMk?->pluck('persentase_komponen_mk', 'id_komponen_mk');
-                    $namaKomponen = $komponenMk?->pluck('nm_komponen_mk', 'id_komponen_mk');
+                ->map(function ($item) {
+                    //dd($item);
+                    //$komponenMk = $item->kelasMk?->komponenMk?->filter(fn($record) => $record->persentase_komponen_mk > 0) ?? collect([]);
+                    // $komponenMk = $item->kelasMk?->komponenMk ?? collect([]);
+                    // $komponen = $komponenMk?->pluck('persentase_komponen_mk', 'id_komponen_mk');
+                    $namaKomponen = $item->kelasMk?->komponenMk?->pluck('nm_komponen_mk', 'id_komponen_mk');
                     $nilai = $item->nilaiMk?->pluck('besar_nilai_mk', 'id_komponen_mk') ?? collect([]);
 
-                    $totalNilai = $komponen->filter(fn($persen, $id) => $nilai->has($id))
-                        ->map(fn($persen, $id) => ($nilai->get($id) * $persen) / 100)
-                        ->sum();
-                    // map komponen
+                    // $totalNilai = $komponen->filter(fn($persen, $id) => $nilai->has($id))
+                    //     ->map(fn($persen, $id) => ($nilai->get($id) * $persen) / 100)
+                    //     ->sum();
+                    // // map komponen
                     $mapKomponen = $namaKomponen->map(function ($nama, $id) use ($nilai) {
                         return [
                             'nm_komponen_mk' => $nama,
@@ -197,13 +205,13 @@ class DosenPenilaianController extends Controller
                         ];
                     });
 
-                    $nilaiHuruf = $kamusNilai->filter(fn($g, $min) => $totalNilai >= $min)->first() ?? '';
+                    // $nilaiHuruf = $kamusNilai->filter(fn($g, $min) => $totalNilai >= $min)->first() ?? '';
 
                     return [
                         'nama_mhs' => $item->nm_pengguna,
                         'nim_mhs' => $item->nim_mhs,
-                        'nilai_akhir' => floor($totalNilai * 100) / 100,
-                        'nilai_huruf' => $nilaiHuruf,
+                        'nilai_akhir' => floor($item->nilai_angka * 100) / 100,
+                        'nilai_huruf' => $item->nilai_huruf,
                         'rincian' => $mapKomponen
                     ];
                 });
@@ -330,7 +338,7 @@ class DosenPenilaianController extends Controller
             ])->where('pengambilan_mk.id_kelas_mk', $id_kelas_mk)
                 ->with([
                     'mahasiswa.pengguna:id_pengguna,gelar_depan,nm_pengguna,gelar_belakang',
-                    'nilaiMk' => function ($q) use ($id_komponen_mk)  {
+                    'nilaiMk' => function ($q) use ($id_komponen_mk) {
                         if (!empty($id_komponen_mk)) {
                             $q->where('id_komponen_mk', '=', $id_komponen_mk);
                         }
