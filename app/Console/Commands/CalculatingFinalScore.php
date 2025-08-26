@@ -147,6 +147,7 @@ class CalculatingFinalScore extends Command
                 'nilai_angka' => $finalScore['nilai'],
                 'nilai_huruf' =>  $peraturanNilaiMinMax ? $peraturanNilaiMinMax->standardNilai->nm_standar_nilai : '',
             ]);
+            // nilai huruf is based on the peraturan nilai kosong bila tidak ada
         }
 
         // Log::info($dataToUpdate);
