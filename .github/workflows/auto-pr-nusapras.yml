@@ -1,0 +1,23 @@
+name: Auto PR to Develop for nusapras branches
+
+on:
+  push:
+    branches:
+      - "nusapras*"
+
+jobs:
+  create-pull-request:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create Pull Request to Develop
+        uses: repo-sync/pull-request@v2
+        with:
+          source_branch: ${{ github.ref_name }}
+          destination_branch: develop
+          pr_title: "Auto PR: ${{ github.ref_name }} -> develop"
+          pr_body: "Automatisasi PR dari branch ${{ github.ref_name }} ke develop"
+          pr_label: "auto-pr"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
