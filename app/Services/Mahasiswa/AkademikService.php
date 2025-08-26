@@ -46,6 +46,7 @@ class AkademikService
     public function jadwalKuliah($hari = null)
     {
         try {
+            //kurang approval
             $jadwal = auth()->user()->mahasiswa->pengambilanMk()
                 ->with([
                     "namaKelas:nama_kelas.nama_kelas",
@@ -61,6 +62,7 @@ class AkademikService
                     }
                 ])
                 ->semesterAktif()
+                ->where('status_apv_pengambilan_mk', 1) // jadwal kuliah hanya yang sudah di approve
                 ->whereHas("kelasMk.jadwalKelas", function ($q) use ($hari) {
                     $q->when($hari, function ($query) use ($hari) {
                         $query->where('id_jadwal_hari', $hari);
