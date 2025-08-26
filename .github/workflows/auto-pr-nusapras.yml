@@ -3,7 +3,7 @@ name: Auto PR to Develop for nusapras branches
 on:
   push:
     branches:
-      - "nusapras*"
+      - "nusapras"
 
 jobs:
   create-pull-request:
