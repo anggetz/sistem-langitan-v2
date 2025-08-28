@@ -166,11 +166,12 @@ class DosenPenilaianController extends Controller
 
             if (!$total) {
                 return response()->json([
-                    'nama_mhs' => '-',
-                    'nim_mhs' => '-',
-                    'nilai_akhir' => 0,
-                    'nilai_huruf' => '-',
-                    'message' => 'No students found in this class.',
+                    'status' => Message::OK,
+                    'message' => 'Perhitungan nilai akhir berhasil.',
+                    'data' => [],
+                    'total' => $total,
+                    'per_page' => $limit,
+                    'page' => $page,
                 ], 200);
             }
 
@@ -333,7 +334,7 @@ class DosenPenilaianController extends Controller
             ])->where('pengambilan_mk.id_kelas_mk', $id_kelas_mk)
                 ->with([
                     'mahasiswa.pengguna:id_pengguna,gelar_depan,nm_pengguna,gelar_belakang',
-                    'nilaiMk' => function ($q) use ($id_komponen_mk)  {
+                    'nilaiMk' => function ($q) use ($id_komponen_mk) {
                         if (!empty($id_komponen_mk)) {
                             $q->where('id_komponen_mk', '=', $id_komponen_mk);
                         }
