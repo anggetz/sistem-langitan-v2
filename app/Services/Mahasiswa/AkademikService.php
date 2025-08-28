@@ -21,7 +21,7 @@ class AkademikService
 
     public function __construct()
     {
-        $this->CODE_JADWAL_PENILAIAN = env('CODE_JADWAL_PENILAIAN', 'Input Nilai');
+        $this->CODE_JADWAL_PENILAIAN = env('CODE_JADWAL_PENILAIAN', 'INPUT_NILAI');
     }
 
     public function kalender()
@@ -61,7 +61,7 @@ class AkademikService
                     }
                 ])
                 ->semesterAktif()
-                ->whereHas("kelasMk.jadwalKelas", function($q) use ($hari) {
+                ->whereHas("kelasMk.jadwalKelas", function ($q) use ($hari) {
                     $q->when($hari, function ($query) use ($hari) {
                         $query->where('id_jadwal_hari', $hari);
                     });
@@ -115,11 +115,11 @@ class AkademikService
             });
 
             return collect($jadwalResponse)
-                    ->sortBy([
-                        fn($a, $b) => $a['id_jadwal_hari'] <=> $b['id_jadwal_hari'],
-                        fn($a, $b) => $a['jam_mulai_ord'] <=> $b['jam_selesai_ord'],
-                    ])
-                    ->groupBy('hari')->toArray();
+                ->sortBy([
+                    fn($a, $b) => $a['id_jadwal_hari'] <=> $b['id_jadwal_hari'],
+                    fn($a, $b) => $a['jam_mulai_ord'] <=> $b['jam_selesai_ord'],
+                ])
+                ->groupBy('hari')->toArray();
         } catch (Exception $e) {
             return response()->json([
                 'status' => 'error',
@@ -133,7 +133,8 @@ class AkademikService
         $data = auth()->user()->mahasiswa->pengambilanMk()
             ->with([
                 "namaKelas:nama_kelas.nama_kelas",
-                "mataKuliah:mata_kuliah.nm_mata_kuliah,mata_kuliah.kredit_semester,kd_mata_kuliah",
+                "mataKuliah:mata_kuliah.nm_mata_kuliah,kd_mata_kuliah",
+                "kelasMk:kelas_mk.id_kelas_mk,kelas_mk.kredit_semester"
             ])
             ->whereSemester($idSemester)
             // multi on
@@ -150,26 +151,34 @@ class AkademikService
     }
 
 
-    public function ValidateKRSScheduleByActiveSemester()
+    public function ValidateInputNilaiScheduleByActiveSemester()
     {
         // get jadwal penilaian current semester in range or not
         $semesterAktif = Semester::aktif();
         if (!$semesterAktif) {
             Log::error("Semester aktif tidak ditemukan.");
-            return false;
+            return [
+                'status' => false,
+                'message' => "Semester aktif tidak ditemukan.",
+                'error' => "Semester aktif tidak ditemukan."
+            ];
         }
 
         $jadwalPenilaian = JadwalKegiatanSemester::where('id_semester', $semesterAktif->id_semester)
-            ->where('id_perguruan_tinggi', env('APP_ID_PERGURUAN_TINGGI_DEFAULT', 1))
+            ->where('id_perguruan_tinggi', pt()->id_perguruan_tinggi)
             ->whereHas('kegiatan', function ($query) {
-                $query->where('id_perguruan_tinggi', env('APP_ID_PERGURUAN_TINGGI_DEFAULT', 1));
-                $query->where('nm_kegiatan', $this->CODE_JADWAL_PENILAIAN);
+                $query->where('id_perguruan_tinggi', pt()->id_perguruan_tinggi);
+                $query->where('kode_kegiatan', $this->CODE_JADWAL_PENILAIAN);
             })
             ->first();
 
         if (!$jadwalPenilaian) {
             Log::error("Jadwal penilaian tidak ditemukan untuk semester aktif: {$semesterAktif->id_semester}.");
-            return false;
+            return [
+                'status' => false,
+                'message' => "Jadwal penilaian tidak ditemukan untuk semester aktif: {$semesterAktif->id_semester} dan perguruan tinggi ".pt()->id_perguruan_tinggi,
+                'error' => "Jadwal penilaian tidak ditemukan untuk semester aktif: {$semesterAktif->id_semester} dan perguruan tinggi ".pt()->id_perguruan_tinggi
+            ];
         }
 
         $currentDate = now();
@@ -178,8 +187,16 @@ class AkademikService
 
         if ($currentDate < $startDate || $currentDate > $endDate) {
             Log::error("Jadwal penilaian tidak valid untuk tanggal saat ini: {$currentDate}. Jadwal penilaian berlaku dari {$startDate} hingga {$endDate}.");
-            return false;
+            return [
+                'status' => false,
+                'message' => "Jadwal penilaian tidak valid untuk tanggal saat ini: {$currentDate}. Jadwal penilaian berlaku dari {$startDate} hingga {$endDate}.",
+                'error' => "Jadwal penilaian tidak valid untuk tanggal saat ini: {$currentDate}. Jadwal penilaian berlaku dari {$startDate} hingga {$endDate}.",
+                'info' => $jadwalPenilaian
+            ];
         }
-        return true;
+        return [
+            'status' => 'true',
+            'info' => $jadwalPenilaian,
+        ];
     }
 }

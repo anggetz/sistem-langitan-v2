@@ -35,7 +35,7 @@ Route::group(
 
         Route::get('list_materi_mk/{id_kelas_mk}', [DosenPresensiController::class, 'listMateriMk']);
 
-        Route::put('mahasiswa/{id_kelas}/presensi/{id_presensi}', [DosenPresensiController::class, 'MahasiswaInOut']);
+        Route::put('mahasiswa/presensi/{id_presensi}', [DosenPresensiController::class, 'MahasiswaInOut']);
 
         Route::group(
             ['prefix' => 'krs', 'controller' => DosenKrsController::class],
@@ -88,6 +88,7 @@ Route::group(
                 Route::get('nilai_akhir/{id_kelas_mk}', 'calculatingNilaiAkhir');
                 Route::post('save_nilai', 'saveNilaiMk');
                 Route::get('get_nilai/{id_kelas_mk}', 'getNilai');
+                Route::post('trigger_calc_ips/{id_kelas_mk}', 'triggerCalcIps');
             }
         );
 
@@ -106,5 +107,3 @@ Route::group(
         Route::post('qr-presensi/reset/{id_presensi}', [DosenQrController::class, 'ResetQR']);
     }
 );
-
-

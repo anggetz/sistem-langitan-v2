@@ -7,6 +7,7 @@ use App\Models\MahasiswaStatus;
 use App\Models\NilaiMk;
 use App\Models\PengambilanMk;
 use App\Models\PeraturanNilai;
+use App\Models\Semester;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
@@ -58,6 +59,7 @@ class CalculatingFinalScore extends Command
         $nilaiMk = NilaiMk::with(['komponenMk', 'pengambilanMk'])
             ->whereHas('pengambilanMk', function ($query) use ($idKelasMk) {
                 $query->where('id_kelas_mk', $idKelasMk);
+                $query->where('id_semester', Semester::aktif()->id_semester);
             })
             ->get()->groupBy('id_mhs');
 
@@ -153,7 +155,7 @@ class CalculatingFinalScore extends Command
         PengambilanMk::upsert(
             $dataToUpdate,
             ['id_pengambilan_mk', 'id_mhs'], // Unique keys to check for duplicates
-            ['fd_nilai_angka', 'fd_nilai_huruf'] // Columns to update if a duplicate is found
+            ['fd_nilai_angka', 'fd_nilai_huruf', 'nilai_huruf', 'nilai_angka'] // Columns to update if a duplicate is found
         );
 
         // call each mhs to recalculate ips and ipk
