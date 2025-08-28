@@ -159,9 +159,12 @@ class DosenPenilaianController extends Controller
 
             if ($mhs->isEmpty()) {
                 return response()->json([
-                    'status' => Message::FAIL,
-                    'message' => 'Tidak ada mahasiswa yang terdaftar di kelas ini.',
-                ], 404);
+                    'nama_mhs' => '-',
+                    'nim_mhs' => '-',
+                    'nilai_akhir' => 0,
+                    'nilai_huruf' => '-',
+                    'message' => 'No students found in this class.',
+                ], 200);
             }
 
             $komponenFetched = [];
