@@ -172,9 +172,13 @@ class DosenPenilaianController extends Controller
 
             if (!$total) {
                 return response()->json([
-                    'status' => Message::FAIL,
-                    'message' => 'Tidak ada mahasiswa yang terdaftar di kelas ini.',
-                ], 404);
+                    'status' => Message::OK,
+                    'message' => 'Perhitungan nilai akhir berhasil.',
+                    'data' => [],
+                    'total' => $total,
+                    'per_page' => $limit,
+                    'page' => $page,
+                ], 200);
             }
 
 
