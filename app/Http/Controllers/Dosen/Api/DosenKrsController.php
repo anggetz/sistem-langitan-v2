@@ -122,7 +122,7 @@ class DosenKrsController extends Controller
                 ->get()
                 ->map(function ($item) {
                     unset($item['rn']);
-                    $item['id'] = (int) $item['id'] ?? 9999;
+                    $item['id'] = $item['id'] ?? $item['id_mhs'];
                     $item['ipk'] = (float) $item['ipk'] ?? 0;
                     $item['ips'] = (float) $item['ips'] ?? 0;
                     $item['limit_sks'] = (int) $item['limit_sks'] ?? 0;
