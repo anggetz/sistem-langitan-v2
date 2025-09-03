@@ -70,6 +70,17 @@ Route::group(['middleware' => 'auth.token'], function () {
         Route::post('fcm-send-pengumuman', [FcmController::class, 'sendNotificationByPengumumanId']);
     });
 
+    // Message API Routes
+    Route::group(['prefix' => 'messages', 'controller' => \App\Http\Controllers\Api\MessageController::class], function () {
+        Route::get('/', 'index');                    // Get all conversations
+        Route::get('/unread-count', 'unreadCount');  // Get unread messages count
+        Route::get('/search', 'search');             // Search messages
+        Route::get('/{partnerId}', 'show');          // Get messages with specific user
+        Route::post('/', 'store');                   // Send new message
+        Route::patch('/{messageId}/read', 'markAsRead'); // Mark message as read
+        Route::delete('/{messageId}', 'destroy');    // Delete message
+    });
+
     Route::group(['prefix' => '/beasiswa', 'controller' => BeasiswaController::class], function () {
         Route::get('/', 'Index');
         Route::get('/{id}', 'Detail');
@@ -124,7 +135,6 @@ Route::group(['middleware' => 'auth.token'], function () {
     require_once(__DIR__ . "/api/mahasiswa.php");
     require_once(__DIR__ . "/api/rektor.php");
     require_once(__DIR__ . "/api/dosen.php");
-
 });
 
 Route::fallback(function () {
