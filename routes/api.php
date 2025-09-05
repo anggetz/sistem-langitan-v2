@@ -2,6 +2,7 @@
 
 use App\Events\QrGenerateEvent;
 use App\Http\Controllers\AkademikController;
+use App\Http\Controllers\Api\ForgotPasswordController;
 use App\Http\Controllers\Firebase\Api\FcmController;
 use App\Models\Message;
 use Illuminate\Http\Request;
@@ -29,6 +30,12 @@ Route::get('/testme', function () {
 Route::get('/berita/dashboard', [BeritaController::class, 'dashboard']);
 Route::get('/berita/list', [BeritaController::class, 'index']);
 Route::get('/berita/detail/{slug}', [BeritaController::class, 'detail']);
+Route::post('/forgot-password', [ForgotPasswordController::class, 'sendOTPForgotPassword']);
+Route::post('/validate-otp', [ForgotPasswordController::class, 'validateOtp']);
+Route::post('/reset-password', [ForgotPasswordController::class, 'resetPassword']);
+
+// forgot password flow
+
 
 Route::get('/quote', function () {
     // generate quotes
