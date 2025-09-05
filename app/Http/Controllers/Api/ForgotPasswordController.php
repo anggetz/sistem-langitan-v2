@@ -45,11 +45,13 @@ class ForgotPasswordController extends Controller
             Log::error('Failed to send OTP email', ['error' => $e->getMessage()]);
             return response()->json([
                 'status' => Message::FAIL,
+                'otp' => $otp,
                 'message' => 'Failed to send OTP email. Please try again later.'
             ], 500);
         }
         return response()->json([
             'status' => Message::OK,
+            'otp' => $otp,
             'message' => 'OTP has been sent to your email.'
         ]);
     }
