@@ -3,6 +3,7 @@
 use App\Events\QrGenerateEvent;
 use App\Http\Controllers\AkademikController;
 use App\Http\Controllers\Api\ForgotPasswordController;
+use App\Http\Controllers\Api\LoginCounterController;
 use App\Http\Controllers\Firebase\Api\FcmController;
 use App\Models\Message;
 use Illuminate\Http\Request;
@@ -58,9 +59,9 @@ Route::group([
 ], function () {
     Route::post('login', 'login');
     Route::post('refresh-token', 'refreshToken');
-    Route::post('forgot-password', 'forgotPassword')->name('forgot-password');
-    Route::get('get-info-reset-password', 'getInfoResetPassword');
-    Route::post('reset-password', 'resetPassword');
+    // Route::post('forgot-password', 'forgotPassword')->name('forgot-password');
+    // Route::get('get-info-reset-password', 'getInfoResetPassword');
+    // Route::post('reset-password', 'resetPassword');
     Route::post('logout', 'destroy')->middleware("auth");
 });
 
@@ -69,6 +70,8 @@ Route::group(['middleware' => 'auth.token'], function () {
     Route::get('akademik/jadwal_input_nilai', [AkademikController::class, 'JadwalPenilaian']);
 
     Route::group(['prefix' => 'pengguna'], function () {
+        Route::post('set-login-counter', [LoginCounterController::class, 'setLoginCounter']);
+        Route::post('change-password-login-counter-zero', [LoginCounterController::class, 'changePasswordLoginCounterZero']);
         Route::post('ganti-password', [AuthController::class, 'gantiPassword']);
         Route::get('/', function (Request $request) {
             return Pengguna::with('role')->where('id_pengguna', $request->user()->id_pengguna)->first();
