@@ -33,10 +33,21 @@ class ForgotPasswordController extends Controller
             ]);
         }
 
+        // dd($user->otp_requested_at->diffInSeconds(now()), $user->otp_requested_at, now());
+
+        // check delay request otp
+        if ($user->otp_requested_at && $user->otp_requested_at->diffInSeconds(now()) < 60) {
+            return response()->json([
+                'status' => Message::FAIL,
+                'message' => 'You can only request OTP once every 60 seconds.'
+            ], 400);
+        }
+
         // send the otp to email
         $otp = rand(100000, 999999);
         $user->otp_forgot_password = $otp;
         $user->expired_otp_forgot_password = now()->addMinutes(10);
+        $user->otp_requested_at = now();
         $user->save();
 
         try {

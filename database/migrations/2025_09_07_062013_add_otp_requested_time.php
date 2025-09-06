@@ -11,10 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        //
         Schema::table('pengguna', function (Blueprint $table) {
             // Adding a new column for FCM token
-            $table->bigInteger('login_counter')->nullable();
+            $table->date('otp_requested_at')->nullable();
         });
     }
 
@@ -26,7 +25,7 @@ return new class extends Migration
         //
         Schema::table('pengguna', function (Blueprint $table) {
             // Adding a new column for FCM token
-            $table->dropColumn('login_counter');
+            $table->dropColumn('otp_requested_at');
         });
     }
 };
