@@ -88,7 +88,6 @@ class ForgotPasswordController extends Controller
             'username' => 'required|string',
             'new_password' => 'required|string|min:6|confirmed',
             'new_password_confirmation' => 'required|string|min:6',
-            'old_password' => 'required|required|string|min:6',
         ]);
 
         $user = Pengguna::
@@ -101,15 +100,6 @@ class ForgotPasswordController extends Controller
                 'status' => Message::FAIL,
                 'message' => 'User not found or OTP is not valid or OTP is Expired.'
             ], 404);
-        }
-        $old_password_hash = sha1($request->old_password);
-
-        // validate the old password
-        if ($user->password_hash !== $old_password_hash) {
-            return response()->json([
-                'status' => Message::FAIL,
-                'message' => 'Old password is incorrect.'
-            ], 400);
         }
 
         // update the otp and expired_otp_forgot_password to null
