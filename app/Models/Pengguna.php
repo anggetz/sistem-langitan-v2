@@ -35,7 +35,7 @@ class Pengguna extends Authenticatable implements JWTSubject
     protected function casts(): array
     {
         return [
-            'otp_requested_at' => 'datetime',
+            'otp_requested_at' => 'datetime:Y-m-d H:i:s.uP',
         ];
     }
 
