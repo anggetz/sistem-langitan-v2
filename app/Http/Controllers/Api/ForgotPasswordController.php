@@ -6,6 +6,7 @@ use App\Models\Message;
 use App\Models\Pengguna;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -33,22 +34,27 @@ class ForgotPasswordController extends Controller
             ]);
         }
 
-        // dd($user->otp_requested_at->diffInSeconds(now()), $user->otp_requested_at, now());
+        $timePart = substr($user->otp_requested_at ?? now('UTC'), 11, 8); // '05:13:07'
 
-        // check delay request otp
-        if ($user->otp_requested_at && now()->lessThan($user->otp_requested_at)) {
+        // This creates a NEW Carbon instance with the desired time and timezone
+        $newUtcCarbon = Carbon::createFromFormat(
+            'Y-m-d H:i:s',
+            '2025-09-07 ' . $timePart,
+            'UTC'
+        );
+
+        if ($user->otp_requested_at && now('UTC')->lessThan(Carbon::parse($newUtcCarbon))) {
             return response()->json([
                 'status' => Message::FAIL,
-                'timestamp' => $user->otp_requested_at,
+                'timestamp' => $newUtcCarbon,
                 'message' => 'You can only request OTP once every 60 seconds.'
             ], 400);
         }
-
         // send the otp to email
         $otp = rand(100000, 999999);
         $user->otp_forgot_password = $otp;
         $user->expired_otp_forgot_password = now()->addMinutes(10);
-        $user->otp_requested_at = now()->addMinutes(1);
+        $user->otp_requested_at = now('UTC')->addMinutes(1);
         $user->save();
 
         try {
@@ -58,14 +64,14 @@ class ForgotPasswordController extends Controller
             return response()->json([
                 'status' => Message::FAIL,
                 'otp' => $otp,
-                'timestamp' => $user->otp_requested_at,
+                'timestamp' => $newUtcCarbon,
                 'message' => 'Failed to send OTP email. Please try again later.'
             ], 500);
         }
         return response()->json([
             'status' => Message::OK,
             'otp' => $otp,
-            'timestamp' => $user->otp_requested_at,
+            'timestamp' => $newUtcCarbon,
             'message' => 'OTP has been sent to your email.'
         ]);
     }
