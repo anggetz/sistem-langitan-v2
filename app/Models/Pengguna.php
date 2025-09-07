@@ -32,13 +32,6 @@ class Pengguna extends Authenticatable implements JWTSubject
         'fd_sync_on'
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'otp_requested_at' => 'datetime:Y-m-d H:i:s.uP',
-        ];
-    }
-
     public const CREATED_AT = 'created_on';
     public const UPDATED_AT = 'updated_on';
 
