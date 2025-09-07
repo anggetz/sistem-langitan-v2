@@ -35,7 +35,7 @@ class ForgotPasswordController extends Controller
             ]);
         }
 
-        $timePart = substr($user->otp_requested_at ?? now('UTC'), 11, 8); // '05:13:07'
+        $timePart = substr($user->otp_requested_at ?? now('UTC')->addMinutes(1), 11, 8); // '05:13:07'
 
         // This creates a NEW Carbon instance with the desired time and timezone
         $newUtcCarbon = Carbon::createFromFormat(
@@ -43,8 +43,6 @@ class ForgotPasswordController extends Controller
             '2025-09-07 ' . $timePart,
             'UTC'
         );
-
-
 
         $result = DB::select("
             SELECT
@@ -101,14 +99,13 @@ class ForgotPasswordController extends Controller
             ->where('expired_otp_forgot_password', '>', now())
             ->first();
 
+
         if (!$user) {
             return response()->json([
                 'status' => Message::FAIL,
                 'message' => 'Invalid OTP or OTP has expired.'
             ], 400);
         }
-
-
 
         return response()->json([
             'status' => Message::OK,
