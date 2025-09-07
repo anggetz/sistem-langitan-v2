@@ -36,10 +36,10 @@ class ForgotPasswordController extends Controller
         // dd($user->otp_requested_at->diffInSeconds(now()), $user->otp_requested_at, now());
 
         // check delay request otp
-        if ($user->otp_requested_at && $user->otp_requested_at->diffInSeconds(now()) < 60) {
+        if ($user->otp_requested_at && now()->lessThan($user->otp_requested_at)) {
             return response()->json([
                 'status' => Message::FAIL,
-                'time_remaining' => floor(60 - $user->otp_requested_at->diffInSeconds(now())),
+                'timestamp' => $user->otp_requested_at,
                 'message' => 'You can only request OTP once every 60 seconds.'
             ], 400);
         }
@@ -48,7 +48,7 @@ class ForgotPasswordController extends Controller
         $otp = rand(100000, 999999);
         $user->otp_forgot_password = $otp;
         $user->expired_otp_forgot_password = now()->addMinutes(10);
-        $user->otp_requested_at = now();
+        $user->otp_requested_at = now()->addMinutes(1);
         $user->save();
 
         try {
@@ -58,12 +58,14 @@ class ForgotPasswordController extends Controller
             return response()->json([
                 'status' => Message::FAIL,
                 'otp' => $otp,
+                'timestamp' => $user->otp_requested_at,
                 'message' => 'Failed to send OTP email. Please try again later.'
             ], 500);
         }
         return response()->json([
             'status' => Message::OK,
             'otp' => $otp,
+            'timestamp' => $user->otp_requested_at,
             'message' => 'OTP has been sent to your email.'
         ]);
     }
