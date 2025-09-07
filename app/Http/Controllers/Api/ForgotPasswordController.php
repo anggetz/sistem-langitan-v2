@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
@@ -43,7 +44,20 @@ class ForgotPasswordController extends Controller
             'UTC'
         );
 
-        if ($user->otp_requested_at && now('UTC')->lessThan(Carbon::parse($newUtcCarbon))) {
+
+
+        $result = DB::select("
+            SELECT
+                FROM_TZ(CAST(otp_requested_at AS TIMESTAMP), 'UTC') AT TIME ZONE 'UTC' AS otp_requested_at_utc
+            FROM
+                pengguna
+            WHERE
+                id_pengguna = ?
+                AND SYSTIMESTAMP < FROM_TZ(CAST(otp_requested_at AS TIMESTAMP), 'UTC') AT TIME ZONE 'UTC'
+        ", [$user->id_pengguna]);
+
+
+        if (count($result) > 0) {
             return response()->json([
                 'status' => Message::FAIL,
                 'timestamp' => $newUtcCarbon,
