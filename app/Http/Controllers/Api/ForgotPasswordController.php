@@ -76,14 +76,14 @@ class ForgotPasswordController extends Controller
             return response()->json([
                 'status' => Message::FAIL,
                 'otp' => $otp,
-                'timestamp' => $newUtcCarbon,
+                'timestamp' => now('UTC')->addMinutes(1),
                 'message' => 'Failed to send OTP email. Please try again later.'
             ], 500);
         }
         return response()->json([
             'status' => Message::OK,
             'otp' => $otp,
-            'timestamp' => $newUtcCarbon,
+            'timestamp' => now('UTC')->addMinutes(1),
             'message' => 'OTP has been sent to your email.'
         ]);
     }
