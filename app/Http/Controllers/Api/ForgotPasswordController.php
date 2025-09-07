@@ -39,6 +39,7 @@ class ForgotPasswordController extends Controller
         if ($user->otp_requested_at && $user->otp_requested_at->diffInSeconds(now()) < 60) {
             return response()->json([
                 'status' => Message::FAIL,
+                'time_remaining' => floor(60 - $user->otp_requested_at->diffInSeconds(now())),
                 'message' => 'You can only request OTP once every 60 seconds.'
             ], 400);
         }
