@@ -19,12 +19,10 @@ class ForgotPasswordController extends Controller
     {
         $request->validate([
                 'username' => 'required|string',
-                'email' => 'required|email',
                 'tgllahir' => 'required|date_format:Y-m-d'
             ]);
 
         $user = Pengguna::where('username', $request->username)
-            ->where('email_pengguna', $request->email)
             ->where('tgl_lahir_pengguna', $request->tgllahir)
             ->first();
         if (!$user) {
@@ -109,7 +107,10 @@ class ForgotPasswordController extends Controller
 
         return response()->json([
             'status' => Message::OK,
-            'message' => 'OTP is valid.'
+            'message' => 'OTP is valid.',
+            'data' => [
+               'nm_pengguna' => substr($user->nm_pengguna, 0, 5) . '*************',
+            ]
         ]);
     }
 

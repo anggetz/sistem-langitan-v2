@@ -28,7 +28,7 @@ class ForgotPasswordOtpEmail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Forgot Password Otp Email',
+            subject: 'Kode OTP untuk Lupa Kata Sandi',
         );
     }
 
