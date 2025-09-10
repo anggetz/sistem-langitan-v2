@@ -17,6 +17,8 @@ class PresensiMhs extends Model
         'id_presensi_kelas',
         'kehadiran',
         'qr_flag',
+        'latitude',
+        'longitude'
     ];
 
 

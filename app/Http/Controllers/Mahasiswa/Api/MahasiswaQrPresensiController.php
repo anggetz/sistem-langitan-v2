@@ -71,7 +71,7 @@ class MahasiswaQrPresensiController extends Controller
     }
 
     // qr key dari hasil scan qr code yang di generate oleh dosen
-    public function qrPresensi() {
+    public function qrPresensi(Request $request) {
         try {
             $qr_key = request()->input('qr_key');
             if (empty($qr_key)) {
@@ -130,6 +130,14 @@ class MahasiswaQrPresensiController extends Controller
                 $presensiMhs = new PresensiMhs();
                 $presensiMhs->id_presensi_kelas = $presensi->id_presensi_kelas;
                 $presensiMhs->id_mhs = $mhs->id_mhs;
+            }
+
+            if ($request->has('latitude')) {
+                $presensiMhs->latitude = $request->input('latitude');
+            }
+
+            if ($request->has('longitude')) {
+                $presensiMhs->longitude = $request->input('longitude');
             }
 
             $presensiMhs->kehadiran = 1;
