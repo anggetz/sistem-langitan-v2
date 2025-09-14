@@ -28,9 +28,9 @@ class FreshLoginController extends Controller
 
         if (!$defExpectPasswordValue) {
             return response()->json([
-                'status' => Message::FAIL,
+                'status' => Message::OK,
                 'message' => 'User role not recognized for default password check.',
-            ], 400);
+            ], 200);
         }
 
         if ($user->password_hash === $defExpectPasswordValue) {
