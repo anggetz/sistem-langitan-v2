@@ -12,20 +12,28 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 
-class FreshLoginCountroller extends Controller
+class FreshLoginController extends Controller
 {
     public function validateDefaultPassword(Request $request)
     {
         $user = Pengguna::find(Auth::id());
 
-        $mahasiswa = $user->mahasiswa;
+        $defExpectPasswordValue = null;
 
-        // sha1 nim
-        $defaultPassword = sha1($mahasiswa->nim_mhs);
+        if ($user->mahasiswa) {
+            $defExpectPasswordValue = sha1($user->mahasiswa->nim_mhs);
+        } elseif ($user->dosen) {
+            $defExpectPasswordValue = sha1($user->dosen->nidn_dosen);
+        }
 
-        // dd($defaultPassword);
+        if (!$defExpectPasswordValue) {
+            return response()->json([
+                'status' => Message::FAIL,
+                'message' => 'User role not recognized for default password check.',
+            ], 400);
+        }
 
-        if ($user->password_hash === $defaultPassword) {
+        if ($user->password_hash === $defExpectPasswordValue) {
              return response()->json([
                 'status' => Message::OK,
                 'redirect' => 'change-password',
