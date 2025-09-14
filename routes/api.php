@@ -3,8 +3,7 @@
 use App\Events\QrGenerateEvent;
 use App\Http\Controllers\AkademikController;
 use App\Http\Controllers\Api\ForgotPasswordController;
-use App\Http\Controllers\Api\FreshLoginCountroller;
-use App\Http\Controllers\Api\LoginCounterController;
+use App\Http\Controllers\Api\FreshLoginController;
 use App\Http\Controllers\Firebase\Api\FcmController;
 use App\Models\Message;
 use Illuminate\Http\Request;
@@ -71,8 +70,8 @@ Route::group(['middleware' => 'auth.token'], function () {
     Route::get('akademik/jadwal_input_nilai', [AkademikController::class, 'JadwalPenilaian']);
 
     Route::group(['prefix' => 'pengguna'], function () {
-        Route::post('validate-default-password', [FreshLoginCountroller::class, 'validateDefaultPassword']);
-        Route::post('change-password-default', [FreshLoginCountroller::class, 'changePasswordDefault']);
+        Route::post('validate-default-password', [FreshLoginController::class, 'validateDefaultPassword']);
+        Route::post('change-password-default', [FreshLoginController::class, 'changePasswordDefault']);
         Route::post('ganti-password', [AuthController::class, 'gantiPassword']);
         Route::get('/', function (Request $request) {
             return Pengguna::with('role')->where('id_pengguna', $request->user()->id_pengguna)->first();
