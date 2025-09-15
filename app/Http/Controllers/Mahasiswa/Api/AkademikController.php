@@ -127,7 +127,7 @@ class AkademikController extends Controller
             'status' => Message::OK,
             'data' => $data,
             // make 2 digit after comma
-            'ipk' => number_format($ipk, 2),
+            'ipk' => (float)number_format($ipk, 2),
             "sks_tempuh" => $sks_tempuh,
             "semester" => $historyCount,
             "history" => $historyData,
