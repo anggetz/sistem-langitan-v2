@@ -126,7 +126,8 @@ class AkademikController extends Controller
         return response()->json([
             'status' => Message::OK,
             'data' => $data,
-            'ipk' => $ipk,
+            // make 2 digit after comma
+            'ipk' => number_format($ipk, 2),
             "sks_tempuh" => $sks_tempuh,
             "semester" => $historyCount,
             "history" => $historyData,
