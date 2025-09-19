@@ -46,6 +46,16 @@ class DosenPresensiController extends Controller
                 'waktu_selesai' => 'required', // format: HH:mm
                 'materi_mk' => 'required',
                 'id_kelas_mk' => 'required',
+                // tipe_presensi
+                'tipe_presensi' => 'required|in:OFFLINE,ONLINE,HYBRID',
+                // platform conditional if online or hybrid
+                'platform' => 'nullable|required_if:tipe_presensi,ONLINE,HYBRID|string',
+                // link_meeting conditional if online or hybrid
+                'link_meeting' => 'nullable|required_if:tipe_presensi,ONLINE,HYBRID|string',
+                // meeting_id conditional if online or hybrid
+                'meeting_id' => 'nullable|required_if:tipe_presensi,ONLINE,HYBRID|string',
+                // meeting_passcode conditional if online or hybrid
+                'meeting_passcode' => 'nullable|required_if:tipe_presensi,ONLINE,HYBRID|string'
             ]);
 
             $materi = MateriMk::firstOrCreate([
@@ -86,6 +96,11 @@ class DosenPresensiController extends Controller
                 'waktu_mulai' => $input['waktu_mulai'],
                 'waktu_selesai' => $input['waktu_selesai'],
                 'id_materi_mk' => $materi->id_materi_mk,
+                'tipe_presensi' => $input['tipe_presensi'],
+                'platform' => $input['platform'] ?? null,
+                'link_meeting' => $input['link_meeting'] ?? null,
+                'meeting_id' => $input['meeting_id'] ?? null,
+                'meeting_passcode' => $input['meeting_passcode'] ?? null,
             ]);
 
             return response()->json([
@@ -186,6 +201,11 @@ class DosenPresensiController extends Controller
                     'presensi_kelas.tgl_presensi_kelas',
                     'presensi_kelas.waktu_mulai',
                     'presensi_kelas.waktu_selesai',
+                    'presensi_kelas.tipe_presensi',
+                    'presensi_kelas.platform',
+                    'presensi_kelas.link_meeting',
+                    'presensi_kelas.meeting_id',
+                    'presensi_kelas.meeting_passcode',
                     'materi_mk.isi_materi_mk',
                     DB::raw('COUNT(hadir.id_presensi_mkmhs) as total_hadir'),
                     DB::raw('COUNT(thadir.id_presensi_mkmhs) as total_absen')
