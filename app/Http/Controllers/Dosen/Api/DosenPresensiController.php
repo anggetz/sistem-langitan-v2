@@ -46,6 +46,8 @@ class DosenPresensiController extends Controller
                 'waktu_selesai' => 'required', // format: HH:mm
                 'materi_mk' => 'required',
                 'id_kelas_mk' => 'required',
+                'latitude' => 'nullable|numeric',
+                'longitude' => 'nullable|numeric',
                 // tipe_presensi
                 'tipe_presensi' => 'required|in:OFFLINE,ONLINE,HYBRID',
                 // platform conditional if online or hybrid
@@ -101,6 +103,8 @@ class DosenPresensiController extends Controller
                 'link_meeting' => $input['link_meeting'] ?? null,
                 'meeting_id' => $input['meeting_id'] ?? null,
                 'meeting_passcode' => $input['meeting_passcode'] ?? null,
+                'latitude' => $input['latitude'] ?? null,
+                'longitude' => $input['longitude'] ?? null,
             ]);
 
             return response()->json([
@@ -199,6 +203,8 @@ class DosenPresensiController extends Controller
                     'presensi_kelas.link_meeting',
                     'presensi_kelas.meeting_id',
                     'presensi_kelas.meeting_passcode',
+                    'presensi_kelas.latitude',
+                    'presensi_kelas.longitude',
                     'materi_mk.isi_materi_mk',
                 )
                 ->select(
@@ -211,6 +217,8 @@ class DosenPresensiController extends Controller
                     'presensi_kelas.link_meeting',
                     'presensi_kelas.meeting_id',
                     'presensi_kelas.meeting_passcode',
+                    'presensi_kelas.latitude',
+                    'presensi_kelas.longitude',
                     'materi_mk.isi_materi_mk',
                     DB::raw('COUNT(hadir.id_presensi_mkmhs) as total_hadir'),
                     DB::raw('COUNT(thadir.id_presensi_mkmhs) as total_absen')
@@ -224,6 +232,8 @@ class DosenPresensiController extends Controller
                 ->map(function ($item) use ($id_kelas_mk) {
 
                     // $item->is_more_than_one_week = $dateTglKelasOneWeek->lt(Carbon::now());
+                    $item->latitude = (float)$item->latitude;
+                    $item->longitude = (float)$item->longitude;
                     $item->total_hadir = $item->total_hadir;
                     $item->total_absen = ($item->total_absen + $item->total_hadir) - $item->total_hadir;
                     $item->total_mhs = ($item->total_absen + $item->total_hadir);

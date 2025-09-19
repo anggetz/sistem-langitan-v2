@@ -19,6 +19,8 @@ return new class extends Migration
             $table->string('LINK_MEETING')->nullable()->after('PLATFORM');
             $table->string('MEETING_ID')->nullable()->after('LINK_MEETING');
             $table->string('MEETING_PASSCODE')->nullable()->after('MEETING_ID');
+            $table->double("LATITUDE")->nullable()->after("TANGGAL_PRESENSI");
+            $table->double("LONGITUDE")->nullable()->after("LATITUDE");
         });
     }
 
@@ -29,7 +31,7 @@ return new class extends Migration
     {
         //
         Schema::table('PRESENSI_KELAS', function (Blueprint $table) {
-            $table->dropColumn(['TIPE_PRESENSI', 'PLATFORM', 'LINK_MEETING', 'MEETING_ID', 'MEETING_PASSCODE']);
+            $table->dropColumn(['TIPE_PRESENSI', 'PLATFORM', 'LINK_MEETING', 'MEETING_ID', 'MEETING_PASSCODE', 'LATITUDE', 'LONGITUDE']);
         });
     }
 };

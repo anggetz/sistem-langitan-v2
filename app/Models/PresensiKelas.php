@@ -24,6 +24,8 @@ class PresensiKelas extends Model
         'link_meeting',
         'meeting_id',
         'meeting_passcode',
+        'latitude',
+        'longitude',
     ];
 
     public function kelasMk()
