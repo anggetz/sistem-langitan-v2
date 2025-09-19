@@ -194,6 +194,11 @@ class DosenPresensiController extends Controller
                     'presensi_kelas.tgl_presensi_kelas',
                     'presensi_kelas.waktu_mulai',
                     'presensi_kelas.waktu_selesai',
+                    'presensi_kelas.tipe_presensi',
+                    'presensi_kelas.platform',
+                    'presensi_kelas.link_meeting',
+                    'presensi_kelas.meeting_id',
+                    'presensi_kelas.meeting_passcode',
                     'materi_mk.isi_materi_mk',
                 )
                 ->select(
