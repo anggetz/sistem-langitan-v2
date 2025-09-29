@@ -18,7 +18,14 @@ class PresensiKelas extends Model
         'waktu_mulai',
         'waktu_selesai',
         'id_materi_mk',
-        'tgl_presensi_kelas'
+        'tgl_presensi_kelas',
+        'tipe_presensi',
+        'platform',
+        'link_meeting',
+        'meeting_id',
+        'meeting_passcode',
+        'latitude',
+        'longitude',
     ];
 
     public function kelasMk()

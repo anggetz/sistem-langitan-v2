@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\JadwalKegiatanSemester;
 use App\Services\Mahasiswa\BerandaService;
 use App\Http\Resources\Mahasiswa\JadwalKuliahResource;
+use App\Models\Config;
+use App\Models\ConfigPT;
 use App\Models\PresensiMhs;
 use App\Services\Mahasiswa\AkademikService;
 use Exception;
@@ -37,6 +39,15 @@ class AkademikController extends Controller
     public function jadwalKuliah()
     {
         $data = $this->akademikService->jadwalKuliah();
+        return response()->json([
+            'status' => Message::OK,
+            'data' => $data
+        ], 200);
+    }
+
+    public function jadwalKuliahHariIni()
+    {
+        $data = $this->akademikService->jadwalKuliah(date('w') + 1);
         return response()->json([
             'status' => Message::OK,
             'data' => $data
@@ -92,20 +103,31 @@ class AkademikController extends Controller
         ], 200);
     }
 
-    public function historyNilai()
+    public function historyNilai(Request $request)
     {
+        $semester = $request->get("semester", null);
+
         $data = auth()->user()->mahasiswa;
-        $history = $data->historyNilai()->with(['semester:id_semester,nm_semester,thn_akademik_semester'])->orderBy('id_mhs_status', 'asc');
+        $history = $data->historyNilai()
+            ->with(['semester:id_semester,nm_semester,thn_akademik_semester'])->orderBy('id_mhs_status', 'asc')
+            ->orderBy('created_on', 'desc');
+        if (!empty($semester)) {
+            $history = $history->where('id_semester', $semester);
+        }
         $historyData = $history->get(['id_mhs_status', 'ips', 'ipk', 'sks_semester', 'sks_total', 'id_semester']);
         $historyCount = $history->count();
         $sks_tempuh = 0;
+        $ipk = 0;
         if ($historyCount) {
-            $lastSemester = $historyData[$historyCount - 1];
-            $sks_tempuh = $lastSemester->sks_total;
+            // $lastSemester = $historyData[$historyCount - 1];
+            $sks_tempuh = (int)$historyData[$historyCount - 1]->sks_total;
+            $ipk = $historyData[$historyCount - 1]->ipk;
         }
         return response()->json([
             'status' => Message::OK,
             'data' => $data,
+            // make 2 digit after comma
+            'ipk' => (float)number_format($ipk, 2),
             "sks_tempuh" => $sks_tempuh,
             "semester" => $historyCount,
             "history" => $historyData,
@@ -191,6 +213,50 @@ class AkademikController extends Controller
             return response()->json([
                 'status' => Message::FAIL,
                 'message' => 'Gagal mendapatkan data rekap mahasiswa',
+                'error' => $err->getMessage()
+            ], 500);
+        }
+    }
+
+    // get semester active group by table pengambilan_mk
+    public function getSemesterActive()
+    {
+        $data = auth()->user()->mahasiswa
+            ->pengambilanMkKprs()
+            ->with("semester:id_semester,nm_semester,tahun_ajaran,status_aktif_semester")
+            ->groupBy("id_semester")
+            ->orderByDesc('id_semester')
+            ->get(["id_semester"]);
+
+        return response()->json([
+            'status' => Message::OK,
+            'data' => $data
+        ], 200);
+    }
+
+    public function isAllowAddMkKrs()
+    {
+        try {
+            $configPt = ConfigPT::where('KD_CONFIG', 'IS_ALLOW_ADD_MK_KRS')
+                ->where('id_perguruan_tinggi', env('APP_ID_PERGURUAN_TINGGI_DEFAULT', '1'))
+                ->first();
+
+            if (!$configPt) {
+                // check if kd_config inside config table
+               return response()->json([
+                    'status' => Message::OK,
+                    'message' => 'Config not found',
+                    'data' => false
+                ], 200);
+            }
+            return response()->json([
+                'status' => Message::OK,
+                'data' => $configPt->config_value == 'Y' ? true : false,
+            ], 200);
+        } catch (Exception $err) {
+            return response()->json([
+                'status' => Message::FAIL,
+                'message' => 'Gagal mendapatkan config pt',
                 'error' => $err->getMessage()
             ], 500);
         }

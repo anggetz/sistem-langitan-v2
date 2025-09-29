@@ -15,7 +15,7 @@ class DosenWali extends Model
         return $this->belongsTo(Dosen::class,'id_dosen','id_dosen');
     }
 
-    public function mahasiwa(){
+    public function mahasiswa(){
         return $this->belongsTo(Mahasiswa::class,'id_mhs','id_mhs');
     }
 

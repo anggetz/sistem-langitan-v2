@@ -10,4 +10,9 @@ class KrsProdi extends Model
     use HasFactory;
     protected $table = 'krs_prodi';
     protected $primaryKey = 'id_krs_prodi';
+
+    public function kelasMk()
+    {
+        return $this->belongsTo(KelasMk::class, 'id_kelas_mk', 'id_kelas_mk');
+    }
 }

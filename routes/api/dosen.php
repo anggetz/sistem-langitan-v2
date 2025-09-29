@@ -6,6 +6,7 @@ use App\Http\Controllers\Dosen\Api\DosenKrsController;
 use App\Http\Controllers\Dosen\Api\DosenPenelitianApprovalController;
 use App\Http\Controllers\Dosen\Api\DosenPenelitianController;
 use App\Http\Controllers\Dosen\Api\DosenPenelitianMasterController;
+use App\Http\Controllers\Dosen\Api\DosenPenilaianController;
 use App\Http\Controllers\Dosen\Api\DosenPresensiController;
 use App\Http\Controllers\Dosen\Api\DosenQrController;
 use App\Models\Role;
@@ -17,8 +18,6 @@ Route::group(
 
         Route::get('profile', [DosenController::class, 'profile']);
         Route::put('profile', [DosenController::class, 'EditProfile']);
-        // this dev only password please coment this function in production
-        // Route::get('resetpassworddev', [DosenController::class, 'resetPasswordDev']);
 
         Route::post('profile-photo', [DosenController::class, 'EditPhotoProfile']);
 
@@ -36,13 +35,20 @@ Route::group(
 
         Route::get('list_materi_mk/{id_kelas_mk}', [DosenPresensiController::class, 'listMateriMk']);
 
-        Route::put('mahasiswa/{id_kelas}/presensi/{id_presensi}', [DosenPresensiController::class, 'MahasiswaInOut']);
+        Route::put('mahasiswa/presensi/{id_presensi}', [DosenPresensiController::class, 'MahasiswaInOut']);
 
         Route::group(
             ['prefix' => 'krs', 'controller' => DosenKrsController::class],
             function () {
+                Route::get('check-krs-schedule', 'CheckKRSScheduleOnCurrentSemester');
                 Route::post('approve_course', 'approveKprsMk');
                 Route::get('list_course_approval', 'listCourseApproval');
+                Route::get('list_student_approval', 'listStudentNeedApproval');
+                Route::get('detail_approved_student/{id_mhs}/{id_semester}', 'detailApprovalMahasiswa');
+                Route::get('list_course_krs', 'listMataKuliahByActiveSemesterAndProdi');
+                Route::get('list_krs', 'getListKrs');
+                Route::post('take_course', 'takeCourse');
+                Route::post('leave_course', 'leaveCourse');
             }
         );
 
@@ -58,12 +64,31 @@ Route::group(
         );
 
         Route::group(
+            ['prefix' => 'akademik', 'controller' => DosenController::class],
+            function () {
+                Route::get('kalender', 'kalender');
+            }
+        );
+
+        Route::group(
             ['prefix' => 'penelitian_approval', 'controller' => DosenPenelitianApprovalController::class],
             function () {
                 Route::post('approval_prodi', 'approvalProdi');
                 Route::post('approval_dekan', 'approvalDekan');
                 Route::post('approval_akademik', 'approvalAkademik');
                 Route::post('approval_lppm', 'approvalLPPM');
+            }
+        );
+
+        Route::group(
+            ['prefix' => 'penilaian', 'controller' => DosenPenilaianController::class],
+            function () {
+                Route::get('get_komponen_mk/{id_kelas_mk}', 'getKomponenByIdKelasMk');
+                Route::put('update_komponen/{id_kelas_mk}', 'updateKomponen');
+                Route::get('nilai_akhir/{id_kelas_mk}', 'calculatingNilaiAkhir');
+                Route::post('save_nilai', 'saveNilaiMk');
+                Route::get('get_nilai/{id_kelas_mk}', 'getNilai');
+                Route::post('trigger_calc_ips/{id_kelas_mk}', 'triggerCalcIps');
             }
         );
 
@@ -82,5 +107,3 @@ Route::group(
         Route::post('qr-presensi/reset/{id_presensi}', [DosenQrController::class, 'ResetQR']);
     }
 );
-
-

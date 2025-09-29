@@ -30,6 +30,7 @@ Route::group(['prefix' => 'mahasiswa', 'middleware' => 'role:' . Role::MAHASISWA
         function () {
             Route::get('kalender', 'kalender');
             Route::get('jadwal-kuliah', 'jadwalKuliah');
+            Route::get('jadwal-kuliah-hariini', 'jadwalKuliahHariIni');
             Route::get('jadwal-ujian', 'jadwalUjian');
             Route::get('history-nilai', 'historyNilai');
             Route::get('khs', 'khs');
@@ -54,12 +55,18 @@ Route::group(['prefix' => 'mahasiswa', 'middleware' => 'role:' . Role::MAHASISWA
         ['prefix' => 'krs', 'controller' => MahasiswaKrsController::class],
         function () {
             Route::get('check-krs-schedule', 'CheckKRSScheduleOnCurrentSemester');
+            Route::get('check-tagihan', 'CheckTagihanValidation');
             Route::get('list_mk', 'listMataKuliahByActiveSemesterAndProdi');
             Route::get('riwayat', 'getHistoryKrs');
             Route::post('take_course', 'takeCourse');
+            Route::post('leave_course', 'leaveCourse');
+            Route::get('limit_sks', 'getLimitSksPerSemester');
         });
 
     Route::post('qr-presensi/show/{id_presensi}', [DosenQrController::class, 'ShowCurrentQR']);
+
+    Route::get('semester/aktif', [AkademikController::class, 'getSemesterActive']);
+    Route::get('config-allow-add-mk', [AkademikController::class, 'isAllowAddMkKrs']);
 
     Route::group(
         ['prefix' => 'presensi', 'controller' => MahasiswaQrPresensiController::class],

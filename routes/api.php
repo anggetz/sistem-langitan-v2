@@ -1,6 +1,10 @@
 <?php
 
 use App\Events\QrGenerateEvent;
+use App\Http\Controllers\AkademikController;
+use App\Http\Controllers\Api\ForgotPasswordController;
+use App\Http\Controllers\Api\FreshLoginController;
+use App\Http\Controllers\Firebase\Api\FcmController;
 use App\Models\Message;
 use Illuminate\Http\Request;
 use App\Models\PerguruanTinggi;
@@ -13,6 +17,7 @@ use App\Http\Controllers\KegiatanKelompokController;
 use App\Http\Controllers\MasterController;
 use App\Http\Controllers\Pengumuman\PengumumanController;
 use App\Models\Pengguna;
+use App\Models\Semester;
 
 Route::get('/', function () {
     return "Laravel Version : " . app()->version();
@@ -26,6 +31,12 @@ Route::get('/testme', function () {
 Route::get('/berita/dashboard', [BeritaController::class, 'dashboard']);
 Route::get('/berita/list', [BeritaController::class, 'index']);
 Route::get('/berita/detail/{slug}', [BeritaController::class, 'detail']);
+Route::post('/forgot-password', [ForgotPasswordController::class, 'sendOTPForgotPassword']);
+Route::post('/validate-otp', [ForgotPasswordController::class, 'validateOtp']);
+Route::post('/reset-password', [ForgotPasswordController::class, 'resetPassword']);
+
+// forgot password flow
+
 
 Route::get('/quote', function () {
     // generate quotes
@@ -48,32 +59,36 @@ Route::group([
 ], function () {
     Route::post('login', 'login');
     Route::post('refresh-token', 'refreshToken');
-    Route::post('forgot-password', 'forgotPassword')->name('forgot-password');
-    Route::get('get-info-reset-password', 'getInfoResetPassword');
-    Route::post('reset-password', 'resetPassword');
+    // Route::post('forgot-password', 'forgotPassword')->name('forgot-password');
+    // Route::get('get-info-reset-password', 'getInfoResetPassword');
+    // Route::post('reset-password', 'resetPassword');
     Route::post('logout', 'destroy')->middleware("auth");
 });
 
-
-Route::get('/trigger-qr-event-test', function () {
-    // Ganti dengan data id_presensi dan id_kelas_mk yang sesuai
-    $idPresensi = 123; // Contoh ID Presensi
-    $idKelasMk = 456;  // Contoh ID Kelas MK
-
-    // Dispatch event
-    event(new QrGenerateEvent($idPresensi, $idKelasMk));
-
-    return "Event 'QrGenerateEvent' disiarkan ke channel 'qr-generator-0-1' dengan nama event '.test'!";
-});
-
-
 Route::group(['middleware' => 'auth.token'], function () {
 
+    Route::get('akademik/jadwal_input_nilai', [AkademikController::class, 'JadwalPenilaian']);
+
     Route::group(['prefix' => 'pengguna'], function () {
+        Route::post('validate-default-password', [FreshLoginController::class, 'validateDefaultPassword']);
+        Route::post('change-password-default', [FreshLoginController::class, 'changePasswordDefault']);
         Route::post('ganti-password', [AuthController::class, 'gantiPassword']);
         Route::get('/', function (Request $request) {
             return Pengguna::with('role')->where('id_pengguna', $request->user()->id_pengguna)->first();
         });
+        Route::post('fcm-token', [FcmController::class, 'storeFcmToken']);
+        Route::post('fcm-send-pengumuman', [FcmController::class, 'sendNotificationByPengumumanId']);
+    });
+
+    // Message API Routes
+    Route::group(['prefix' => 'messages', 'controller' => \App\Http\Controllers\Api\MessageController::class], function () {
+        Route::get('/', 'index');                    // Get all conversations
+        Route::get('/unread-count', 'unreadCount');  // Get unread messages count
+        Route::get('/search', 'search');             // Search messages
+        Route::get('/{partnerId}', 'show');          // Get messages with specific user
+        Route::post('/', 'store');                   // Send new message
+        Route::patch('/{messageId}/read', 'markAsRead'); // Mark message as read
+        Route::delete('/{messageId}', 'destroy');    // Delete message
     });
 
     Route::group(['prefix' => '/beasiswa', 'controller' => BeasiswaController::class], function () {
@@ -111,10 +126,25 @@ Route::group(['middleware' => 'auth.token'], function () {
         Route::get('/semester', 'GetSemester');
     });
 
+    // get active semester
+    Route::get('/semester/aktif', function () {
+        $semester = Semester::aktif();
+        if ($semester) {
+            return response()->json([
+                'status' => Message::OK,
+                'data' => $semester
+            ]);
+        } else {
+            return response()->json([
+                'status' => Message::FAIL,
+                'message' => 'Semester aktif tidak ditemukan.'
+            ], 404);
+        }
+    });
+
     require_once(__DIR__ . "/api/mahasiswa.php");
     require_once(__DIR__ . "/api/rektor.php");
     require_once(__DIR__ . "/api/dosen.php");
-
 });
 
 Route::fallback(function () {

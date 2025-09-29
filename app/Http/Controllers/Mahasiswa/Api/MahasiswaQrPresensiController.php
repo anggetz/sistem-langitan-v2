@@ -71,7 +71,7 @@ class MahasiswaQrPresensiController extends Controller
     }
 
     // qr key dari hasil scan qr code yang di generate oleh dosen
-    public function qrPresensi() {
+    public function qrPresensi(Request $request) {
         try {
             $qr_key = request()->input('qr_key');
             if (empty($qr_key)) {
@@ -132,6 +132,14 @@ class MahasiswaQrPresensiController extends Controller
                 $presensiMhs->id_mhs = $mhs->id_mhs;
             }
 
+            if ($request->has('latitude')) {
+                $presensiMhs->latitude = $request->input('latitude');
+            }
+
+            if ($request->has('longitude')) {
+                $presensiMhs->longitude = $request->input('longitude');
+            }
+
             $presensiMhs->kehadiran = 1;
             $presensiMhs->qr_flag = 1;
             $presensiMhs->save();
@@ -144,7 +152,11 @@ class MahasiswaQrPresensiController extends Controller
             // event(new QrGenerateEvent($presensi->id_presensi_kelas, $presensi->id_kelas_mk, $presensi->qr_key));
             $response = Http::post(env('WS_HOOK_ADDRESS').'/broadcast', [ // Changed endpoint to /broadcast
                 'topic' => 'qr-generator-' . $presensi->id_presensi_kelas, // Use the topic for the specific presensi
-                'message' => 'triggerQrGenerator',
+                'message' => json_encode([
+                    'qr_key' => $presensi->qr_key,
+                    'id_presensi_kelas' => $presensi->id_presensi_kelas,
+                    'id_kelas_mk' => $presensi->id_kelas_mk,
+                ]),
             ]);
 
 

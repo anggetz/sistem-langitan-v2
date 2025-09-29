@@ -43,44 +43,58 @@ class DosenJadwalController extends Controller
             })->map(function ($item) {
                 $mataKuliah = $item->kelas_mk->mataKuliah;
                 $jadwalKelas = $item->kelas_mk->jadwalKelas;
-                $jadwalJam = $jadwalKelas->jadwalJam ?? new JadwalJam();
-                $ruangan = $jadwalKelas->ruangan ?? new Ruangan();
-                $gedung = $ruangan->gedung ?? new Gedung();
+
+                $jadwallAll = [];
+                foreach ($jadwalKelas as $jadwal) {
+                    $jadwallAll[] = [
+                        'id_jadwal_hari' => $jadwal->id_jadwal_hari,
+                        'nama_hari' => $jadwal->nama_hari,
+                        'jam_mulai' => $jadwal->jadwalJam->jam_mulai . ":" . $jadwal->jadwalJam->menit_mulai,
+                        'jam_selesai' => $jadwal->jadwalJam->jam_selesai . ":" . $jadwal->jadwalJam->menit_selesai,
+                        'jam_mulai_ord' => $jadwal->jadwalJam->jam_mulai * 100 +  $jadwal->jadwalJam->menit_mulai,
+                        'jam_selesai_ord' =>  $jadwal->jadwalJam->jam_selesai * 100 +  $jadwal->menit_selesai,
+                        'gedung' => $jadwal->ruangan->gedung->nm_gedung ?? '-',
+                        'ruangan' => $jadwal->ruangan->nm_ruangan ?? '-',
+                    ];
+                }
+
                 return [
                     'nama_mk' => $mataKuliah->nm_mata_kuliah ?? '-',
-                    'hari' => $jadwalKelas->nama_hari ?? '-',
                     'id_kelas_mk' => $item->kelas_mk->id_kelas_mk ?? 0,
-                    'id_jadwal_hari' => $jadwalKelas->id_jadwal_hari ?? 0,
-                    'jam_mulai' => $jadwalJam->jam_mulai . ":" . $jadwalJam->menit_mulai,
-                    'jam_selesai' => $jadwalJam->jam_selesai . ":" . $jadwalJam->menit_selesai,
-                    'jam_mulai_ord' => $jadwalJam->jam_mulai * 100 + $jadwalJam->menit_mulai,
-                    'jam_selesai_ord' => $jadwalJam->jam_selesai * 100 + $jadwalJam->menit_selesai,
-                    'ruangan' => $ruangan->nm_ruangan ?? '-',
-                    'gedung' => $gedung->nm_gedung ?? '-',
+                    'jadwalAll' => $jadwallAll,
                 ];
-            }))
-                ->sortBy([
-                    fn($a, $b) => $a['id_jadwal_hari'] <=> $b['id_jadwal_hari'],
-                    fn($a, $b) => $a['jam_mulai_ord'] <=> $b['jam_selesai_ord'],
-                ])
-                ->groupBy('hari')
-                ->map(function ($items) {
-                    return $items->map(function ($item) {
-                        return [
-                            'nama_mk' => $item['nama_mk'],
-                            'id_kelas_mk' => $item['id_kelas_mk'],
-                            'ruangan' => $item['ruangan'],
-                            'gedung' => $item['gedung'],
-                            'jadwal' => [
-                                'jam' => $item['jam_mulai'] . ' - ' . $item['jam_selesai'],
-                            ],
-                        ];
-                    })->values();
-                });
+            }));
+
+            $jadwalResponse = [];
+            // make the jadwal as single array
+            $jadwal = $jadwal->map(function ($item) use (&$jadwalResponse) {
+                foreach ($item['jadwalAll'] as $jadwal) {
+                    # code...
+                    array_push($jadwalResponse, [
+                        'nama_mk' => $item['nama_mk'],
+                        'id_kelas_mk' => $item['id_kelas_mk'],
+                        'id_jadwal_hari' => $jadwal['id_jadwal_hari'],
+                        'hari' => $jadwal['nama_hari'],
+                        'jam_mulai' => $jadwal['jam_mulai'],
+                        'jam_selesai' => $jadwal['jam_selesai'],
+                        'jam_mulai_ord' => $jadwal['jam_mulai_ord'],
+                        'jam_selesai_ord' => $jadwal['jam_selesai_ord'],
+                        'gedung' => $jadwal['gedung'],
+                        'ruangan' => $jadwal['ruangan'],
+                    ]);
+                }
+            });
+
+            $jadwalDosen = collect($jadwalResponse)
+                    ->sortBy([
+                        fn($a, $b) => $a['id_jadwal_hari'] <=> $b['id_jadwal_hari'],
+                        fn($a, $b) => $a['jam_mulai_ord'] <=> $b['jam_selesai_ord'],
+                    ])
+                    ->groupBy('hari')->toArray();
 
             return response()->json([
                 'message' => Message::OK,
-                'data' => $jadwal
+                'data' => count($jadwalDosen) > 0 ? $jadwalDosen : json_decode('{}'),
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -100,7 +114,7 @@ class DosenJadwalController extends Controller
                     });
 
                     $query->whereHas('jadwalKelas', function ($q) {
-                        $q->where('id_jadwal_hari', date('w') + 2);
+                        $q->where('id_jadwal_hari', date('w') + 1);
                     });
                 },
             ])->find(auth()->user()->id_pengguna);
@@ -118,44 +132,58 @@ class DosenJadwalController extends Controller
             })->map(function ($item) {
                 $mataKuliah = $item->kelas_mk->mataKuliah;
                 $jadwalKelas = $item->kelas_mk->jadwalKelas;
-                $jadwalJam = $jadwalKelas->jadwalJam;
-                $ruangan = $jadwalKelas->ruangan ?? new Ruangan();
-                $gedung = $ruangan->gedung ?? new Gedung();
+                // $jadwalJam = $jadwalKelas->jadwalJam;
+                $jadwallAll = [];
+
+                foreach ($jadwalKelas as $jadwal) {
+                    $jadwallAll[] = [
+                        'id_jadwal_hari' => $jadwal->id_jadwal_hari,
+                        'nama_hari' => $jadwal->nama_hari,
+                        'jam_mulai' => $jadwal->jadwalJam->jam_mulai . ":" . $jadwal->jadwalJam->menit_mulai,
+                        'jam_selesai' => $jadwal->jadwalJam->jam_selesai . ":" . $jadwal->jadwalJam->menit_selesai,
+                        'jam_mulai_ord' => $jadwal->jadwalJam->jam_mulai * 100 +  $jadwal->jadwalJam->menit_mulai,
+                        'jam_selesai_ord' =>  $jadwal->jadwalJam->jam_selesai * 100 +  $jadwal->menit_selesai,
+                        'gedung' => $jadwal->ruangan->gedung->nm_gedung ?? '-',
+                        'ruangan' => $jadwal->ruangan->nm_ruangan ?? '-',
+                    ];
+                }
                 return [
                     'nama_mk' => $mataKuliah->nm_mata_kuliah ?? '-',
                     'id_kelas_mk' => $item->kelas_mk->id_kelas_mk,
-                    'hari' => $jadwalKelas->nama_hari,
-                    'id_jadwal_hari' => $jadwalKelas->id_jadwal_hari,
-                    'jam_mulai' => $jadwalJam->jam_mulai . ":" . $jadwalJam->menit_mulai,
-                    'jam_selesai' => $jadwalJam->jam_selesai . ":" . $jadwalJam->menit_selesai,
-                    'jam_mulai_ord' => $jadwalJam->jam_mulai * 100 + $jadwalJam->menit_mulai,
-                    'jam_selesai_ord' => $jadwalJam->jam_selesai * 100 + $jadwalJam->menit_selesai,
-                    'ruangan' => $ruangan->nm_ruangan ?? '-',
-                    'gedung' => $gedung->nm_gedung ?? '-',
+                    'jadwalAll' => $jadwallAll,
                 ];
-            }))
-                ->sortBy([
-                    fn($a, $b) => $a['id_jadwal_hari'] <=> $b['id_jadwal_hari'],
-                    fn($a, $b) => $a['jam_mulai_ord'] <=> $b['jam_selesai_ord'],
-                ])
-                ->groupBy('hari')
-                ->map(function ($items) {
-                    return $items->map(function ($item) {
-                        return [
-                            'id_kelas_mk' => $item['id_kelas_mk'],
-                            'nama_mk' => $item['nama_mk'],
-                            'ruangan' => $item['ruangan'],
-                            'gedung' => $item['gedung'],
-                            'jadwal' => [
-                                'jam' => $item['jam_mulai'] . ' - ' . $item['jam_selesai'],
-                            ],
-                        ];
-                    })->values();
-                });
+            }));
+
+             $jadwalResponse = [];
+            // make the jadwal as single array
+            $jadwal = $jadwal->map(function ($item) use (&$jadwalResponse) {
+                foreach ($item['jadwalAll'] as $jadwal) {
+                    # code...
+                    array_push($jadwalResponse, [
+                        'nama_mk' => $item['nama_mk'],
+                        'id_kelas_mk' => $item['id_kelas_mk'],
+                        'id_jadwal_hari' => $jadwal['id_jadwal_hari'],
+                        'hari' => $jadwal['nama_hari'],
+                        'jam_mulai' => $jadwal['jam_mulai'],
+                        'jam_selesai' => $jadwal['jam_selesai'],
+                        'jam_mulai_ord' => $jadwal['jam_mulai_ord'],
+                        'jam_selesai_ord' => $jadwal['jam_selesai_ord'],
+                        'gedung' => $jadwal['gedung'],
+                        'ruangan' => $jadwal['ruangan'],
+                    ]);
+                }
+            });
+
+            $jadwalDosenToday = collect($jadwalResponse)
+                    ->sortBy([
+                        fn($a, $b) => $a['id_jadwal_hari'] <=> $b['id_jadwal_hari'],
+                        fn($a, $b) => $a['jam_mulai_ord'] <=> $b['jam_selesai_ord'],
+                    ])
+                    ->groupBy('hari')->toArray();
 
             return response()->json([
                 'message' => Message::OK,
-                'data' => $jadwal
+                'data' => count($jadwalDosenToday) > 0 ? $jadwalDosenToday : json_decode('{}'),
             ]);
         } catch (\Exception $e) {
             return response()->json([

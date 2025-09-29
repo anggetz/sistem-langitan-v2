@@ -7,6 +7,7 @@ use App\Models\Jenjang;
 use App\Models\Message;
 use App\Models\Pengguna;
 use App\Models\ProgramStudi;
+use App\Services\Mahasiswa\AkademikService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -14,24 +15,11 @@ use Illuminate\Support\Facades\Storage;
 
 class DosenController extends Controller
 {
-    public function __construct() {}
-
-    /**
-     * this dev only password please coment this function in production
-     */
-    // public function resetPasswordDev() {
-    //     try {
-    //         $pengguna = Pengguna::where('username', '0706045501')->first();
-    //         if ($pengguna) {
-
-    //             $pengguna->password_hash = sha1('12345678');
-    //             $pengguna->save();
-    //         }
-    //         return response()->json(['message' => 'Password reset successfully']);
-    //     } catch (\Exception $e) {
-    //         return response()->json(['message' => 'Error resetting password: ' . $e->getMessage()], 500);
-    //     }
-    // }
+    private $akademikService;
+    public function __construct(AkademikService $akademikService)
+    {
+        $this->akademikService = $akademikService;
+    }
 
     public function profile()
     {
@@ -181,5 +169,14 @@ class DosenController extends Controller
                 'message' => $e->getMessage()
             ], 500);
         }
+    }
+
+    public function kalender()
+    {
+        $data = $this->akademikService->kalender();
+        return response()->json([
+            'status' => Message::OK,
+            'data' => $data
+        ], 200);
     }
 }

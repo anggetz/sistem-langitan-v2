@@ -10,7 +10,7 @@ class PenggunaController extends Controller
 {
     public function me(Request $request)
     {
-        $pengguna = Pengguna::with(['mahasiswa'])
+        $pengguna = Pengguna::with(['mahasiswa.programStudi.jenjang'])
             ->find($request->user("api")->id_pengguna);
 
         if($pengguna->mahasiswa){

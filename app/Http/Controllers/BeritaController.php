@@ -10,18 +10,50 @@ class BeritaController extends Controller
 {
     //
     public function dashboard(){
-        $data = Berita::where('active',"True")->orderBy('pinned','desc')->orderBy('waktu_berita','desc')->limit(5)->get();
+        // pagination parameter
+        $page = request()->get('page', 1);
+        $limit = request()->get('perPage', 5);
+        $offset = ($page - 1) * $limit;
+
+        $q = Berita::where('active',"Y");
+
+        $total = $q->count();
+
+        $data = $q->orderBy('pinned','desc')
+            ->orderBy('waktu_berita','desc')
+            ->limit($limit)
+            ->offset($offset)
+            ->get();
         return response()->json([
             'message' => Message::OK,
-            'data' => $data
+            'data' => $data,
+            'total' => $total,
+            'page' => $page,
+            'perPage' => $limit
         ],200);
     }
 
     public function index(){
-        $data = Berita::where('active',"True")->orderBy('pinned','desc')->orderBy('waktu_berita','desc')->get();
+        $page = request()->get('page', 1);
+        $limit = request()->get('perPage', 10);
+        $offset = ($page - 1) * $limit;
+
+        $q = Berita::where('active',"Y");
+
+        $total = $q->count();
+
+        $data = $q->orderBy('pinned','desc')
+            ->orderBy('waktu_berita','desc')
+            ->limit($limit)
+            ->offset($offset)
+            ->get();
+
         return response()->json([
             'message' => Message::OK,
-            'data' => $data
+            'data' => $data,
+            'total' => $total,
+            'page' => $page,
+            'perPage' => $limit
         ],200);
     }
 
