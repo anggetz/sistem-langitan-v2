@@ -116,7 +116,7 @@ class DosenPresensiController extends Controller
                 'status' => false,
                 'message' => 'Gagal membuat presensi',
                 'error' => $e->getMessage()
-            ]);
+            ], 400);
         }
     }
 
