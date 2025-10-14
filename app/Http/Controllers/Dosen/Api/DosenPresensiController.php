@@ -126,7 +126,7 @@ class DosenPresensiController extends Controller
             $now = Carbon::now();
             $semester = Semester::aktif();
 
-            $mahasiswas = PengambilanMk::select('pengambilan_mk.persen_presensi', 'pengambilan_mk.id_kelas_mk', 'pengambilan_mk.id_mhs', 'presensi_mkmhs.id_presensi_mkmhs', 'presensi_mkmhs.qr_flag')
+            $mahasiswas = PengambilanMk::select('pengambilan_mk.persen_presensi', 'pengambilan_mk.id_kelas_mk', 'pengambilan_mk.id_mhs', 'presensi_mkmhs.id_presensi_mkmhs', 'presensi_mkmhs.qr_flag', 'presensi_mkmhs.latitude', 'presensi_mkmhs.longitude')
                 ->where('pengambilan_mk.id_kelas_mk', $id_kelas)
                 ->where('pengambilan_mk.id_semester', $semester->id_semester)
                 ->with([
@@ -153,7 +153,6 @@ class DosenPresensiController extends Controller
                 ->map(function ($item) use ($id_kelas, $id_presensi) {
 
                     $presensiMhs = $item->id_presensi_mkmhs;
-
                     $item->sudah_presensi = !empty($presensiMhs);
                     $item->qr_flag = !empty($item->qr_flag) ? true : false;
                     return $item;
