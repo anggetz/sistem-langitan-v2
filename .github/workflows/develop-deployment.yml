@@ -48,12 +48,41 @@ jobs:
           push: true
 
       # Ref: https://github.com/docker/build-push-action
-      # - name: Build and push Docker image
-      #   id: build-and-push
-      #   uses: docker/build-push-action@v6
-      #   with:
-      #     context: .
-      #     tags: ${{ vars.DOCKERHUB_USER }}/${{ vars.IMAGE_NAME }}:develop
-      #     cache-from: type=gha
-      #     cache-to: type=gha,mode=max
-      #     push: true
+      - name: Build and push Docker image
+        id: build-and-push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          tags: ${{ vars.DOCKERHUB_USER }}/${{ vars.IMAGE_NAME }}:develop
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          push: true
+          
+  deploy-langitan-v2:
+    name: Deploy Ke Server Umaha
+    needs: build
+    runs-on: umaha-development
+
+    steps:
+      - name: Run Deployment Script Pendaftaran
+        run: |
+          cd ${{ vars.UMAHA_DEV_APP_PATH }}
+          docker compose pull ${{ vars.SERVICE_NAME_DEV_UMAHA }}
+          docker compose up -d --force-recreate --no-deps ${{ vars.SERVICE_NAME_DEV_UMAHA }}
+            
+  # deploy-unulampung-pmb:
+  #   name: Deploy Ke Server Unulampung
+  #   needs: build
+  #   runs-on: ubuntu-latest
+
+  #   steps:
+  #     - name: Execute command on the remote server
+  #       uses: appleboy/ssh-action@v1.2.0
+  #       with:
+  #         host: ${{ vars.SSH_HOST_UNULA }}
+  #         username: ${{ vars.SSH_USER_UNULA }}
+  #         key: ${{ secrets.SSH_KEY_UNULA }}
+  #         script: |
+  #           cd ${{ vars.UNULA_DEV_APP_PATH }}
+  #           docker compose pull ${{ vars.SERVICE_NAME_DEV_UNULA }}
+  #           docker compose up -d --force-recreate --no-deps ${{ vars.SERVICE_NAME_DEV_UNULA }}
