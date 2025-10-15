@@ -55,5 +55,3 @@ RUN sed -i 's/^error_reporting = .*/error_reporting = E_ALL \& ~E_NOTICE/g' "$PH
 
 # Set default workdir
 WORKDIR /var/www/html
-
-test
