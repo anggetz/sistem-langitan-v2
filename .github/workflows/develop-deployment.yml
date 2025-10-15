@@ -64,7 +64,7 @@ jobs:
     runs-on: umaha-development
 
     steps:
-      - name: Run Deployment Script Pendaftaran
+      - name: Run Deployment Script langitan-v2
         run: |
           cd ${{ vars.UMAHA_DEV_APP_PATH }}
           docker compose pull ${{ vars.SERVICE_NAME_DEV_UMAHA }}
