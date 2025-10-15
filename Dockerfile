@@ -1,4 +1,4 @@
-FROM umaha/sistem-langitan-pendaftaran:base
+FROM umaha/sistem-langitan-v2:base
 
 COPY . .
 
