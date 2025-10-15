@@ -28,7 +28,7 @@ jobs:
           username: ${{ vars.DOCKERHUB_USER }}
           password: ${{ secrets.DOCKERHUB_PASS }}
 
-      - name: Check if php81.Dockerfile has changed
+      - name: Check if base.Dockerfile has changed
         run: |
           if git diff --name-only HEAD~1 | grep -q "base.Dockerfile"; then
           echo "base_dockerfile_changed=true" >> $GITHUB_ENV
@@ -36,8 +36,8 @@ jobs:
           echo "base_dockerfile_changed=false" >> $GITHUB_ENV
           fi
 
-      - name: Build base image if php81.Dockerfile changed
-        if: env.php81_dockerfile_changed == 'true'
+      - name: Build base image if base.Dockerfile changed
+        if: env.base_dockerfile_changed == 'true'
         uses: docker/build-push-action@v6
         with:
           context: .
