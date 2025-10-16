@@ -3,7 +3,6 @@ FROM umaha/sistem-langitan-v2:base
 COPY . .
 
 RUN npm i && \
-    npm run build && \
     composer install --no-dev --optimize-autoloader && \
     php artisan config:cache && \
     php artisan route:cache && \
