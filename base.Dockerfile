@@ -29,6 +29,14 @@ RUN echo 'instantclient,/opt/oracle/instantclient_19_28/' | pecl install oci8 \
     && docker-php-ext-configure pdo_oci --with-pdo-oci=instantclient,/opt/oracle/instantclient_19_28,19.28 \
     && docker-php-ext-install pdo_oci
 
+# Enable mod_rewrite
+RUN a2enmod rewrite
+
+# Ubah konfigurasi document_root ke public Laravel
+ENV APACHE_DOCUMENT_ROOT /var/www/html/public
+RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf \
+    && sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
+
 # Install GD
 RUN docker-php-ext-configure gd --with-jpeg --with-freetype \
     && docker-php-ext-install gd
@@ -50,6 +58,7 @@ RUN docker-php-ext-install intl
 
 # Set PHP Production Setting
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
+
 # Hilangkan notice
 RUN sed -i 's/^error_reporting = .*/error_reporting = E_ALL \& ~E_NOTICE/g' "$PHP_INI_DIR/php.ini"
 
