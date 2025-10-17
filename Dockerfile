@@ -4,4 +4,4 @@ COPY . .
 
 RUN npm i && \
     composer install && \
-    chmod -R 775 /var/www/html/storage
+    chmod -R 777 /var/www/html/storage
