@@ -2,9 +2,6 @@ FROM umaha/sistem-langitan-v2:base
 
 COPY . .
 
-RUN npm i && \
-    composer install && \
-    php artisan config:cache && \
-    php artisan route:cache && \
-    php artisan view:cache && \
-    chown -R 775 /var/www/html/storage
+RUN chown -R 775 /var/www/html/storage && \
+    npm i && \
+    composer install 
