@@ -78,7 +78,7 @@ class ForgotPasswordController extends Controller
         $user->save();
 
         try {
-            Mail::to($emailAddress)->send(new \App\Mail\ForgotPasswordOtpEmail($otp));
+            Mail::to($emailAddress)->queue(new \App\Mail\ForgotPasswordOtpEmail($otp));
         } catch (\Exception $e) {
             Log::error('Failed to send OTP email', ['error' => $e->getMessage()]);
 
