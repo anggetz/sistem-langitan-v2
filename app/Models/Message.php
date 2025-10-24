@@ -2,17 +2,19 @@
 
 namespace App\Models;
 
-use App\Traits\Blameable;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Message extends Model
 {
-    use HasFactory, Blameable;
+    use HasFactory;
 
     protected $table = 'messages';
+
     protected $primaryKey = 'id_message';
+
     const CREATED_AT = 'created_at';
+
     const UPDATED_AT = 'updated_at';
 
     protected $fillable = [
@@ -25,7 +27,7 @@ class Message extends Model
         'waktu_kirim',
         'waktu_baca',
         'status_hapus_pengirim',
-        'status_hapus_penerima'
+        'status_hapus_penerima',
     ];
 
     protected $casts = [
@@ -33,11 +35,12 @@ class Message extends Model
         'status_hapus_pengirim' => 'boolean',
         'status_hapus_penerima' => 'boolean',
         'waktu_kirim' => 'datetime',
-        'waktu_baca' => 'datetime'
+        'waktu_baca' => 'datetime',
     ];
 
     // Status constants
     public const OK = 'OK';
+
     public const FAIL = 'FAIL';
 
     /**
@@ -119,7 +122,7 @@ class Message extends Model
     {
         $this->update([
             'status_terbaca' => true,
-            'waktu_baca' => now()
+            'waktu_baca' => now(),
         ]);
     }
 
