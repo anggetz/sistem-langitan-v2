@@ -2,11 +2,10 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use App\Models\Message;
 use App\Models\Pengguna;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
 class MessageController extends Controller
@@ -38,7 +37,7 @@ class MessageController extends Controller
             foreach ($allMessages as $message) {
                 $partnerId = ($message->id_pengirim == $userId) ? $message->id_penerima : $message->id_pengirim;
 
-                if (!isset($groupedConversations[$partnerId])) {
+                if (! isset($groupedConversations[$partnerId])) {
                     $partner = ($message->id_pengirim == $userId) ? $message->penerima : $message->pengirim;
 
                     // Get latest unread message time for this conversation
@@ -66,16 +65,16 @@ class MessageController extends Controller
                             'isi_pesan' => $message->isi_pesan,
                             'waktu_kirim' => $message->waktu_kirim,
                             'status_terbaca' => $message->status_terbaca,
-                            'is_from_me' => $message->id_pengirim == $userId
+                            'is_from_me' => $message->id_pengirim == $userId,
                         ],
                         'unread_count' => $unreadCount,
                         'latest_unread_time' => $latestUnreadMessage ? $latestUnreadMessage->waktu_kirim : null,
-                        'last_activity_time' => $message->waktu_kirim
+                        'last_activity_time' => $message->waktu_kirim,
                     ];
                 }
             }
 
-            // Sort conversations: 
+            // Sort conversations:
             // 1. Conversations with unread messages first (sorted by latest unread time)
             // 2. Then conversations without unread messages (sorted by last activity time)
             $sortedConversations = collect($groupedConversations)->sort(function ($a, $b) {
@@ -100,6 +99,7 @@ class MessageController extends Controller
             $finalConversations = $sortedConversations->map(function ($conversation) {
                 unset($conversation['latest_unread_time']);
                 unset($conversation['last_activity_time']);
+
                 return $conversation;
             });
 
@@ -115,14 +115,14 @@ class MessageController extends Controller
                     'current_page' => $page,
                     'per_page' => $perPage,
                     'total' => $total,
-                    'last_page' => ceil($total / $perPage)
-                ]
+                    'last_page' => ceil($total / $perPage),
+                ],
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'Failed to get conversations',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -139,10 +139,10 @@ class MessageController extends Controller
 
             // Validate partner exists
             $partner = Pengguna::find($partnerId);
-            if (!$partner) {
+            if (! $partner) {
                 return response()->json([
                     'status' => 'error',
-                    'message' => 'Partner not found'
+                    'message' => 'Partner not found',
                 ], 404);
             }
 
@@ -158,7 +158,7 @@ class MessageController extends Controller
                     });
                 })
                 ->with(['pengirim', 'penerima', 'pesanDireply.pengirim'])
-                ->orderBy('waktu_kirim', 'desc')
+                ->orderBy('waktu_kirim', 'asc')
                 ->paginate($perPage, ['*'], 'page', $page);
 
             // Mark received messages as read
@@ -167,7 +167,7 @@ class MessageController extends Controller
                 ->where('status_terbaca', false)
                 ->update([
                     'status_terbaca' => true,
-                    'waktu_baca' => now()
+                    'waktu_baca' => now(),
                 ]);
 
             $formattedMessages = $messages->map(function ($message) use ($userId) {
@@ -188,12 +188,12 @@ class MessageController extends Controller
                         'id_message' => $message->pesanDireply->id_message,
                         'isi_pesan' => $message->pesanDireply->isi_pesan,
                         'pengirim' => $message->pesanDireply->pengirim->nm_pengguna,
-                        'waktu_kirim' => $message->pesanDireply->waktu_kirim
+                        'waktu_kirim' => $message->pesanDireply->waktu_kirim,
                     ] : null,
                     'status_terbaca' => $message->status_terbaca,
                     'waktu_kirim' => $message->waktu_kirim,
                     'waktu_baca' => $message->waktu_baca,
-                    'is_from_me' => $message->id_pengirim == $userId
+                    'is_from_me' => $message->id_pengirim == $userId,
                 ];
             });
 
@@ -208,14 +208,14 @@ class MessageController extends Controller
                     'current_page' => $messages->currentPage(),
                     'per_page' => $messages->perPage(),
                     'total' => $messages->total(),
-                    'last_page' => $messages->lastPage()
-                ]
+                    'last_page' => $messages->lastPage(),
+                ],
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'Failed to get messages',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -230,14 +230,14 @@ class MessageController extends Controller
                 'id_penerima' => 'required|exists:pengguna,id_pengguna',
                 'tema' => 'nullable|string|max:255',
                 'isi_pesan' => 'required|string',
-                'id_replay' => 'nullable|exists:messages,id_message'
+                'id_replay' => 'nullable|exists:messages,id_message',
             ]);
 
             if ($validator->fails()) {
                 return response()->json([
                     'status' => 'error',
                     'message' => 'Validation failed',
-                    'errors' => $validator->errors()
+                    'errors' => $validator->errors(),
                 ], 422);
             }
 
@@ -247,7 +247,7 @@ class MessageController extends Controller
             if ($userId == $request->id_penerima) {
                 return response()->json([
                     'status' => 'error',
-                    'message' => 'Cannot send message to yourself'
+                    'message' => 'Cannot send message to yourself',
                 ], 422);
             }
 
@@ -259,10 +259,10 @@ class MessageController extends Controller
                             ->orWhere('id_penerima', $userId);
                     })->first();
 
-                if (!$originalMessage) {
+                if (! $originalMessage) {
                     return response()->json([
                         'status' => 'error',
-                        'message' => 'Original message not found or access denied'
+                        'message' => 'Original message not found or access denied',
                     ], 404);
                 }
             }
@@ -273,7 +273,7 @@ class MessageController extends Controller
                 'tema' => $request->tema,
                 'isi_pesan' => $request->isi_pesan,
                 'id_replay' => $request->id_replay,
-                'waktu_kirim' => now()
+                'waktu_kirim' => now(),
             ]);
 
             $message->load(['pengirim', 'penerima', 'pesanDireply.pengirim']);
@@ -298,18 +298,18 @@ class MessageController extends Controller
                         'id_message' => $message->pesanDireply->id_message,
                         'isi_pesan' => $message->pesanDireply->isi_pesan,
                         'pengirim' => $message->pesanDireply->pengirim->nm_pengguna,
-                        'waktu_kirim' => $message->pesanDireply->waktu_kirim
+                        'waktu_kirim' => $message->pesanDireply->waktu_kirim,
                     ] : null,
                     'status_terbaca' => $message->status_terbaca,
                     'waktu_kirim' => $message->waktu_kirim,
-                    'waktu_baca' => $message->waktu_baca
-                ]
+                    'waktu_baca' => $message->waktu_baca,
+                ],
             ], 201);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'Failed to send message',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -326,10 +326,10 @@ class MessageController extends Controller
                 ->where('id_penerima', $userId)
                 ->first();
 
-            if (!$message) {
+            if (! $message) {
                 return response()->json([
                     'status' => 'error',
-                    'message' => 'Message not found or you are not the recipient'
+                    'message' => 'Message not found or you are not the recipient',
                 ], 404);
             }
 
@@ -337,13 +337,13 @@ class MessageController extends Controller
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'Message marked as read'
+                'message' => 'Message marked as read',
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'Failed to mark message as read',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -362,10 +362,10 @@ class MessageController extends Controller
                         ->orWhere('id_penerima', $userId);
                 })->first();
 
-            if (!$message) {
+            if (! $message) {
                 return response()->json([
                     'status' => 'error',
-                    'message' => 'Message not found'
+                    'message' => 'Message not found',
                 ], 404);
             }
 
@@ -378,13 +378,13 @@ class MessageController extends Controller
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'Message deleted successfully'
+                'message' => 'Message deleted successfully',
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'Failed to delete message',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -405,14 +405,14 @@ class MessageController extends Controller
             return response()->json([
                 'status' => 'success',
                 'data' => [
-                    'unread_count' => $count
-                ]
+                    'unread_count' => $count,
+                ],
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'Failed to get unread count',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -425,14 +425,14 @@ class MessageController extends Controller
         try {
             $validator = Validator::make($request->all(), [
                 'query' => 'required|string|min:3',
-                'per_page' => 'nullable|integer|min:1|max:100'
+                'per_page' => 'nullable|integer|min:1|max:100',
             ]);
 
             if ($validator->fails()) {
                 return response()->json([
                     'status' => 'error',
                     'message' => 'Validation failed',
-                    'errors' => $validator->errors()
+                    'errors' => $validator->errors(),
                 ], 422);
             }
 
@@ -472,7 +472,7 @@ class MessageController extends Controller
                     'tema' => $message->tema,
                     'isi_pesan' => $message->isi_pesan,
                     'waktu_kirim' => $message->waktu_kirim,
-                    'is_from_me' => $message->id_pengirim == $userId
+                    'is_from_me' => $message->id_pengirim == $userId,
                 ];
             });
 
@@ -484,14 +484,14 @@ class MessageController extends Controller
                     'current_page' => $messages->currentPage(),
                     'per_page' => $messages->perPage(),
                     'total' => $messages->total(),
-                    'last_page' => $messages->lastPage()
-                ]
+                    'last_page' => $messages->lastPage(),
+                ],
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'Failed to search messages',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
