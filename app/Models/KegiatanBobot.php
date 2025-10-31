@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class KegiatanBobot extends Model
 {
@@ -13,39 +15,54 @@ class KegiatanBobot extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'ID_KEGIATAN_JENIS',
-        'ID_KEGIATAN_TINGKAT',
-        'ID_KEGIATAN_PRESTASI',
-        'ID_KEGIATAN_DOKUMEN_TYPE',
-        'POINT_KEGIATAN_BOBOT',
+        'id_kegiatan_jenis',
+        'id_kegiatan_tingkat',
+        'id_kegiatan_prestasi',
+        'id_kegiatan_dokumen_type',
+        'point_kegiatan_bobot',
     ];
 
     protected $casts = [
-        'POINT_KEGIATAN_BOBOT' => 'integer',
+        'point_kegiatan_bobot' => 'integer',
     ];
 
-    public function kegiatanJenis()
+    /**
+     * Relasi ke KegiatanJenis
+     */
+    public function kegiatanJenis(): BelongsTo
     {
-        return $this->belongsTo(KegiatanJenis::class, 'ID_KEGIATAN_JENIS', 'ID_KEGIATAN_JENIS');
+        return $this->belongsTo(KegiatanJenis::class, 'id_kegiatan_jenis', 'id_kegiatan_jenis');
     }
 
-    public function kegiatanTingkat()
+    /**
+     * Relasi ke KegiatanTingkat
+     */
+    public function kegiatanTingkat(): BelongsTo
     {
-        return $this->belongsTo(KegiatanTingkat::class, 'ID_KEGIATAN_TINGKAT', 'ID_KEGIATAN_TINGKAT');
+        return $this->belongsTo(KegiatanTingkat::class, 'id_kegiatan_tingkat', 'id_kegiatan_tingkat');
     }
 
-    public function kegiatanPrestasi()
+    /**
+     * Relasi ke KegiatanPrestasi
+     */
+    public function kegiatanPrestasi(): BelongsTo
     {
-        return $this->belongsTo(KegiatanPrestasi::class, 'ID_KEGIATAN_PRESTASI', 'ID_KEGIATAN_PRESTASI');
+        return $this->belongsTo(KegiatanPrestasi::class, 'id_kegiatan_prestasi', 'id_kegiatan_prestasi');
     }
 
-    public function kegiatanDokumenType()
+    /**
+     * Relasi ke KegiatanDokumenType
+     */
+    public function kegiatanDokumenType(): BelongsTo
     {
-        return $this->belongsTo(KegiatanDokumenType::class, 'ID_KEGIATAN_DOKUMEN_TYPE', 'ID_KEGIATAN_DOKUMEN_TYPE');
+        return $this->belongsTo(KegiatanDokumenType::class, 'id_kegiatan_dokumen_type', 'id_kegiatan_dokumen_type');
     }
 
-    public function kegiatanKemahasiswaans()
+    /**
+     * Relasi ke KegiatanKemahasiswaan
+     */
+    public function kegiatanKemahasiswaans(): HasMany
     {
-        return $this->hasMany(KegiatanKemahasiswaan::class, 'ID_KEGIATAN_BOBOT', 'ID_KEGIATAN_BOBOT');
+        return $this->hasMany(KegiatanKemahasiswaan::class, 'id_kegiatan_bobot', 'id_kegiatan_bobot');
     }
 }
