@@ -92,13 +92,13 @@ Route::group(['middleware' => 'auth.token'], function () {
     // Kegiatan Kemahasiswaan API Routes
     Route::group(['prefix' => '/kegiatan', 'controller' => KegiatanController::class], function () {
         Route::get('/', 'listKegiatan');
-        Route::post('/', 'store');
-        Route::put('/{id}', 'update');
-        Route::delete('/{id}', 'destroy');
-        Route::get('/{id}', 'show');
         Route::get('/jenis', 'listJenisKegiatan');
         Route::get('/tingkat/{jenis}', 'listTingkatKegiatan');
         Route::get('/prestasi/{jenis}/tingkat/{tingkat?}', 'listPrestasiKegiatan');
+        Route::post('/', 'store');
+        Route::get('/{id}', 'show');
+        Route::put('/{id}', 'update');
+        Route::delete('/{id}', 'destroy');
     });
 
     Route::group(['prefix' => '/beasiswa', 'controller' => BeasiswaController::class], function () {
