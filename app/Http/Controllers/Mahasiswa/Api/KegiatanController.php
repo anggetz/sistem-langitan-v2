@@ -22,10 +22,17 @@ class KegiatanController extends Controller
     {
         try {
             $data = $this->kegiatanService->listKegiatan();
+            // tambahkan total point kegiatan yang appoved dan yang belum approved
+            $totalPointApproved = $data->whereNotNull('approved_at')->sum('point_kegiatan');
+            $totalPointPending = $data->whereNull('approved_at')->sum('point_kegiatan');
 
             return response()->json([
                 'status' => Message::OK,
                 'data' => $data,
+                'total_point' => [
+                    'approved' => $totalPointApproved,
+                    'pending' => $totalPointPending,
+                ],
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
