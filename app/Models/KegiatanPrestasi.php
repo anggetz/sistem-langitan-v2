@@ -6,18 +6,18 @@ use Illuminate\Database\Eloquent\Model;
 
 class KegiatanPrestasi extends Model
 {
-    protected $table = 'KEGIATAN_PRESTASI';
+    protected $table = 'kegiatan_prestasi';
 
-    protected $primaryKey = 'ID_KEGIATAN_PRESTASI';
+    protected $primaryKey = 'id_kegiatan_prestasi';
 
     public $timestamps = false;
 
     protected $fillable = [
-        'NM_KEGIATAN_PRESTASI',
+        'nm_kegiatan_prestasi',
     ];
 
     public function kegiatanBobots()
     {
-        return $this->hasMany(KegiatanBobot::class, 'ID_KEGIATAN_PRESTASI', 'ID_KEGIATAN_PRESTASI');
+        return $this->hasMany(KegiatanBobot::class, 'id_kegiatan_prestasi', 'id_kegiatan_prestasi');
     }
 }

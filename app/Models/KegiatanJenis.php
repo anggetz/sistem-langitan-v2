@@ -9,23 +9,23 @@ class KegiatanJenis extends Model
 {
     use HasFactory;
 
-    protected $table = 'KEGIATAN_JENIS';
+    protected $table = 'kegiatan_jenis';
 
-    protected $primaryKey = 'ID_KEGIATAN_JENIS';
+    protected $primaryKey = 'id_kegiatan_jenis';
 
     public $timestamps = false;
 
     protected $fillable = [
-        'NM_KEGIATAN_JENIS',
-        'IS_HAVE_TINGKAT',
+        'nm_kegiatan_jenis',
+        'is_have_tingkat',
     ];
 
     protected $casts = [
-        'IS_HAVE_TINGKAT' => 'boolean',
+        'is_have_tingkat' => 'boolean',
     ];
 
     public function kegiatanBobots()
     {
-        return $this->hasMany(KegiatanBobot::class, 'ID_KEGIATAN_JENIS', 'ID_KEGIATAN_JENIS');
+        return $this->hasMany(KegiatanBobot::class, 'id_kegiatan_jenis', 'id_kegiatan_jenis');
     }
 }
