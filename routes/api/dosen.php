@@ -8,6 +8,7 @@ use App\Http\Controllers\Dosen\Api\DosenPenelitianController;
 use App\Http\Controllers\Dosen\Api\DosenPenelitianMasterController;
 use App\Http\Controllers\Dosen\Api\DosenPenilaianController;
 use App\Http\Controllers\Dosen\Api\DosenPresensiController;
+use App\Http\Controllers\Dosen\Api\DosenPublikasiController;
 use App\Http\Controllers\Dosen\Api\DosenQrController;
 use App\Models\Role;
 use Illuminate\Support\Facades\Route;
@@ -60,6 +61,13 @@ Route::group(
                 Route::post('/{id}', 'Create');
                 Route::get('/{id}', 'Show');
                 Route::delete('/{id}', 'Delete');
+            }
+        );
+
+        Route::group(
+            ['prefix' => 'publikasi', 'controller' => DosenPublikasiController::class],
+            function () {
+                Route::get('/', 'Index');
             }
         );
 
