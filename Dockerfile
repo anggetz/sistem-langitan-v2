@@ -1,4 +1,4 @@
-FROM umaha/sistem-langitan-v2:base
+FROM ghcr.io/umaha-ac-id/sistem-langitan-v2:base
 
 COPY . .
 
