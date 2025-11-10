@@ -68,6 +68,7 @@ Route::group(
             ['prefix' => 'publikasi', 'controller' => DosenPublikasiController::class],
             function () {
                 Route::get('/', 'Index');
+                Route::post('/sync', 'triggerSync');
             }
         );
 

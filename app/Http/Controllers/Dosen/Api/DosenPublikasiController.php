@@ -48,26 +48,21 @@ class DosenPublikasiController extends Controller
     {
         try {
             //dosen id is required;
-            if (!$request->has('scholar_id')) {
-                $idDosen = $request->get('id_dosen');
-            }
-
-            $dosen = Dosen::find($idDosen);
-            if (!empty($dosen)) {
+            // dd(auth()->user()->dosen);
+            $dosen = auth()->user()->dosen;
+            if (empty($dosen)) {
                 return response()->json(['message' => 'Dosen not found'], 400);
             }
 
-            if (!empty($dosen->scholar_id)) {
+            if (empty($dosen->scholar_id)) {
                 return response()->json(['message' => 'ID Scholar belum di setup'], 400);
             }
 
-            Artisan::queue('app:scrapping-penelitian {--type_scrap=}', [
+            Artisan::queue('app:scrapping-penelitian', [
                 '--type_scrap' => 'scholar',
                 '--id_scholar' =>  $dosen->scholar_id,
-                '--id_dosen' => $dosen->id,
+                '--id_dosen' => $dosen->id_dosen,
             ]);
-
-
 
             return response()->json([
                 'status' => 'success'
