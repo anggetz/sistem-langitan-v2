@@ -19,7 +19,7 @@ class ScrappingPenelitian extends Command
      *
      * @var string
      */
-    protected $signature = 'app:scrapping-penelitian {--type_scrap=}';
+    protected $signature = 'app:scrapping-penelitian {--type_scrap=} {--id_scholar=} {--id_dosen=}';
 
     /**
      * The console command description.
@@ -40,6 +40,8 @@ class ScrappingPenelitian extends Command
         $typeScrap = $this->option('type_scrap');
         $idScholar = $this->option('id_scholar');
         $idDosen = $this->option('id_dosen');
+
+        Log::info("Running scrap!!");
 
         try {
             $filePath = storage_path('app/scrapping/' . $typeScrap . '.json');
