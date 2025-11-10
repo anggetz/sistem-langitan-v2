@@ -3,8 +3,11 @@
 namespace App\Http\Controllers\Dosen\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Dosen;
 use App\Models\PublikasiJurnal;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Validation\Rule;
 
 class DosenPublikasiController extends Controller
@@ -35,6 +38,40 @@ class DosenPublikasiController extends Controller
             ];
 
             return response()->json($penelitian, 200);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Error fetching data: ' . $e->getMessage()], 500);
+        }
+    }
+
+
+    public function triggerSync(Request $request)
+    {
+        try {
+            //dosen id is required;
+            if (!$request->has('scholar_id')) {
+                $idDosen = $request->get('id_dosen');
+            }
+
+            $dosen = Dosen::find($idDosen);
+            if (!empty($dosen)) {
+                return response()->json(['message' => 'Dosen not found'], 400);
+            }
+
+            if (!empty($dosen->scholar_id)) {
+                return response()->json(['message' => 'ID Scholar belum di setup'], 400);
+            }
+
+            Artisan::queue('app:scrapping-penelitian {--type_scrap=}', [
+                '--type_scrap' => 'scholar',
+                '--id_scholar' =>  $dosen->scholar_id,
+                '--id_dosen' => $dosen->id,
+            ]);
+
+
+
+            return response()->json([
+                'status' => 'success'
+            ], 200);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Error fetching data: ' . $e->getMessage()], 500);
         }
