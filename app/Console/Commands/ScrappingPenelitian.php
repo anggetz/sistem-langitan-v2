@@ -42,6 +42,9 @@ class ScrappingPenelitian extends Command
         $idDosen = $this->option('id_dosen');
 
         Log::info("Running scrap!!");
+        Log::info("Type Scrap: ".$typeScrap);
+        Log::info("ID Scholar: ".$idScholar);
+        Log::info("ID Dosen: ".$idDosen);
 
         try {
             $filePath = storage_path('app/scrapping/' . $typeScrap . '.json');
@@ -96,6 +99,7 @@ class ScrappingPenelitian extends Command
                 array_push($finalResult, $result);
             }
 
+            Log::info("found ".count($finalResult)." publications");
 
             foreach ($finalResult as $result) {
                 $newEntity = new PublikasiJurnal();
@@ -161,19 +165,19 @@ class ScrappingPenelitian extends Command
 
             $this->info('Scrapping completed successfully.');
 
-            $response = Http::post(env('WS_HOOK_ADDRESS') . '/broadcast', [ // Changed endpoint to /broadcast
-                'topic' => 'sync-info-' . $idDosen, // Use the topic for the specific presensi
-                'message' => json_encode([
-                    'status' => 'success',
-                ]),
-            ]);
+            // $response = Http::post(env('WS_HOOK_ADDRESS') . '/broadcast', [ // Changed endpoint to /broadcast
+            //     'topic' => 'sync-info-' . $idDosen, // Use the topic for the specific presensi
+            //     'message' => json_encode([
+            //         'status' => 'success',
+            //     ]),
+            // ]);
         } catch (Exception $err) {
-            $response = Http::post(env('WS_HOOK_ADDRESS') . '/broadcast', [ // Changed endpoint to /broadcast
-                'topic' => 'sync-info-' . $idDosen, // Use the topic for the specific presensi
-                'message' => json_encode([
-                    'status' => 'failed',
-                ]),
-            ]);
+            // $response = Http::post(env('WS_HOOK_ADDRESS') . '/broadcast', [ // Changed endpoint to /broadcast
+            //     'topic' => 'sync-info-' . $idDosen, // Use the topic for the specific presensi
+            //     'message' => json_encode([
+            //         'status' => 'failed',
+            //     ]),
+            // ]);
             $this->error('Failed to execute the command.');
             return 1; // Return a non-zero exit code for error
         }
