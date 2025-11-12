@@ -79,7 +79,8 @@ class DosenPublikasiController extends Controller
             ]);
 
             return response()->json([
-                'status' => 'success'
+                'status' => 'success',
+                'message' => 'Sinkronisasi publikasi sedang diproses',
             ], 200);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Error fetching data: ' . $e->getMessage()], 500);
