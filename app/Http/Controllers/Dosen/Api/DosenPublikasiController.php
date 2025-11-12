@@ -24,7 +24,21 @@ class DosenPublikasiController extends Controller
             $newQuery =  new PublikasiJurnal();
 
             $penelitian = $newQuery
-                ->with('Authors')
+                ->with('Authors');
+
+
+            if ($request->has('q')) {
+                $search = $request->input('q');
+                $newQuery = $newQuery->where(function ($query) use ($search) {
+                    $query->where('title', 'LIKE', "%$search%")
+                        ->orWhere('tahun', 'LIKE', "%$search%")
+                        ->orWhere('description', 'LIKE', "%$search%")
+                        ->orWhere('link_artikel', 'LIKE', "%$search%");
+                });
+            }
+
+            $penelitian = $newQuery
+                ->orderBy('tahun', 'desc')
                 ->offset($offset)
                 ->limit($perPage)
                 ->get();
