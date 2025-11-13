@@ -165,19 +165,21 @@ class ScrappingPenelitian extends Command
 
             $this->info('Scrapping completed successfully.');
 
-            // $response = Http::post(env('WS_HOOK_ADDRESS') . '/broadcast', [ // Changed endpoint to /broadcast
-            //     'topic' => 'sync-info-' . $idDosen, // Use the topic for the specific presensi
-            //     'message' => json_encode([
-            //         'status' => 'success',
-            //     ]),
-            // ]);
+            $response = Http::post(env('WS_HOOK_ADDRESS') . '/broadcast', [ // Changed endpoint to /broadcast
+                'topic' => 'sync-info-' . $idDosen, // Use the topic for the specific presensi
+                'message' => json_encode([
+                    'status' => 'success',
+                ]),
+            ]);
+            Log::info("successfully scrapped data for dosen id ".$idDosen);
         } catch (Exception $err) {
-            // $response = Http::post(env('WS_HOOK_ADDRESS') . '/broadcast', [ // Changed endpoint to /broadcast
-            //     'topic' => 'sync-info-' . $idDosen, // Use the topic for the specific presensi
-            //     'message' => json_encode([
-            //         'status' => 'failed',
-            //     ]),
-            // ]);
+            $response = Http::post(env('WS_HOOK_ADDRESS') . '/broadcast', [ // Changed endpoint to /broadcast
+                'topic' => 'sync-info-' . $idDosen, // Use the topic for the specific presensi
+                'message' => json_encode([
+                    'status' => 'failed',
+                ]),
+            ]);
+            Log::info("errpr ".$err->getMessage());
             $this->error('Failed to execute the command.');
             return 1; // Return a non-zero exit code for error
         }
