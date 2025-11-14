@@ -1,0 +1,30 @@
+[
+    {
+        "action": "visit",
+        "value": "https://scholar.google.com/citations?user={arg1}&hl=en&oi=ao"
+    },
+    {
+        "action": "doloopaction",
+        "element": "/html/body/div/div[12]/div[2]/div/div[4]/form/div[1]/table/tbody/tr",
+        "configs": [
+            {
+                "isusingcontext": true,
+                "action": "click",
+                "nowait": true,
+                "element": "td[1]/a",
+                "sleep": 2
+            },
+            {
+                "action": "getvalues",
+                "element": "/html/body/div/div[7]/div[2]/div/div[2]",
+                "jsonkey": "body",
+                "sleep": 2
+            },
+            {
+                "action": "click",
+                "element": "/html/body/div/div[6]/a",
+                "sleep": 2
+            }
+        ]
+    }
+]
