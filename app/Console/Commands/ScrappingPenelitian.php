@@ -142,6 +142,15 @@ class ScrappingPenelitian extends Command
                     $newEntity->description = (int)$result['Issue'];
                 }
 
+                // checj if the publication already exists
+                $existingData = PublikasiJurnal::where("title", $newEntity->title)
+                    ->where("tahun", $newEntity->tahun)
+                    ->first();
+                if (!empty($existingData)) {
+                    Log::info("publication ".$newEntity->title." already exists, skipping...");
+                    continue;
+                }
+
                 $newEntity->save();
                 // set the authors
                 foreach ($authors as $author) {
