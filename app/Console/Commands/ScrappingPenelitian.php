@@ -55,7 +55,7 @@ class ScrappingPenelitian extends Command
             }
 
             // trigger the executeable name webscrapper-windows.exe or webscrapper-linux depending on the OS
-            $executable = (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? 'webscrapper-windows.exe' : 'webscrapper-linux';
+            $executable = (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') ? 'webscrapper-windows.exe' : 'webscrapper-linux.sh';
 
             $command = $executable . ' ' . escapeshellarg($filePath) . ' "' . $idScholar . '" ' . " 2>&1";
 
