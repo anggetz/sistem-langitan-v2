@@ -139,12 +139,12 @@ class DosenJadwalController extends Controller
                     $jadwallAll[] = [
                         'id_jadwal_hari' => $jadwal->id_jadwal_hari,
                         'nama_hari' => $jadwal->nama_hari,
-                        'jam_mulai' => $jadwal->jadwalJam->jam_mulai . ":" . $jadwal->jadwalJam->menit_mulai,
-                        'jam_selesai' => $jadwal->jadwalJam->jam_selesai . ":" . $jadwal->jadwalJam->menit_selesai,
-                        'jam_mulai_ord' => $jadwal->jadwalJam->jam_mulai * 100 +  $jadwal->jadwalJam->menit_mulai,
-                        'jam_selesai_ord' =>  $jadwal->jadwalJam->jam_selesai * 100 +  $jadwal->menit_selesai,
-                        'gedung' => $jadwal->ruangan->gedung->nm_gedung ?? '-',
-                        'ruangan' => $jadwal->ruangan->nm_ruangan ?? '-',
+                        'jam_mulai' => $jadwal->jadwalJam?->jam_mulai . ":" . $jadwal->jadwalJam?->menit_mulai,
+                        'jam_selesai' => $jadwal->jadwalJam?->jam_selesai . ":" . $jadwal->jadwalJam?->menit_selesai,
+                        'jam_mulai_ord' => $jadwal->jadwalJam?->jam_mulai * 100 +  $jadwal->jadwalJam?->menit_mulai,
+                        'jam_selesai_ord' =>  $jadwal->jadwalJam?->jam_selesai * 100 +  $jadwal->menit_selesai,
+                        'gedung' => $jadwal->ruangan?->gedung?->nm_gedung ?? '-',
+                        'ruangan' => $jadwal->ruangan?->nm_ruangan ?? '-',
                     ];
                 }
                 return [
