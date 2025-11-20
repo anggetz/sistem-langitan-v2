@@ -69,6 +69,7 @@ Route::group(
             function () {
                 Route::get('/', 'Index');
                 Route::post('/sync', 'triggerSync');
+                Route::get('/sync-info', 'getJobStatusByWebsocketTopic');
             }
         );
 
@@ -116,3 +117,4 @@ Route::group(
         Route::post('qr-presensi/reset/{id_presensi}', [DosenQrController::class, 'ResetQR']);
     }
 );
+

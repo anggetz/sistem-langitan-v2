@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Dosen\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Dosen;
+use App\Models\PublikasiJobStatus;
 use App\Models\PublikasiJurnal;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
@@ -57,6 +58,19 @@ class DosenPublikasiController extends Controller
         }
     }
 
+    public function getJobStatusByWebsocketTopic(Request $request) {
+        try {
+            $data = PublikasiJobStatus::where('WEBSOCKET_TOPIC', $request->get('websocket_topic'))->first();
+
+            if (empty($data)) {
+                return response()->json(['message' => 'data not found'], 400);
+            }
+
+            return response()->json($data, 200);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Error get job status: ' . $e->getMessage()], 500);
+        }
+    }
 
     public function triggerSync(Request $request)
     {
@@ -72,13 +86,17 @@ class DosenPublikasiController extends Controller
                 return response()->json(['message' => 'ID Scholar belum di setup'], 400);
             }
 
+            $webSocketTopic = 'sync-'.$dosen->id_dosen.'-' . (int) (microtime(true) * 1000);
+
             Artisan::queue('app:sync-penelitian-scopus', [
                 '--id_dosen' => $dosen->id_dosen,
+                '--websocket_topic' => $webSocketTopic,
             ]);
 
             return response()->json([
                 'status' => 'success',
                 'message' => 'Sinkronisasi publikasi sedang diproses',
+                'websocketTopic' => $webSocketTopic
             ], 200);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Error fetching data: ' . $e->getMessage()], 500);
