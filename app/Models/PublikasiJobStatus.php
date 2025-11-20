@@ -21,6 +21,7 @@ class PublikasiJobStatus extends Model
         'JOB_STATUS',
         'PARAMETER',
         'PROCESS_TIMES',
+        'ID_PENGGUNA'
     ];
 
     protected $casts = [

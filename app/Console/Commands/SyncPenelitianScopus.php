@@ -15,7 +15,7 @@ class SyncPenelitianScopus extends Command
      *
      * @var string
      */
-    protected $signature = 'app:sync-penelitian-scopus {--id_dosen=} {--websocket_topic=}';
+    protected $signature = 'app:sync-penelitian-scopus {--id_pengguna=} {--websocket_topic=}';
 
     /**
      * The console command description.
@@ -31,13 +31,14 @@ class SyncPenelitianScopus extends Command
     {
         $startTime = microtime(true);
 
-        $idDosen = $this->option('id_dosen');
+        $idPengguna = $this->option('id_pengguna');
         $websocketTopic = $this->option('websocket_topic');
 
         $jobStatus = PublikasiJobStatus::create([
             "WEBSOCKET_TOPIC" => $websocketTopic,
             "JOB_STATUS" => "ON PROGRESS",
-            "PARAMETER" => "'".$idDosen."' '".$websocketTopic."'",
+            "PARAMETER" => "'".$idPengguna."' '".$websocketTopic."'",
+            "ID_PENGGUNA" => $idPengguna
         ]);
 
         Log::info("Running scrap!!");
@@ -46,7 +47,7 @@ class SyncPenelitianScopus extends Command
         try {
             sleep(10);
             $response = Http::post(env('WS_HOOK_ADDRESS') . '/broadcast', [ // Changed endpoint to /broadcast
-                'topic' => 'sync-' . $idDosen, // Use the topic for the specific presensi
+                'topic' => 'sync-' . $idPengguna, // Use the topic for the specific presensi
                 'message' => json_encode([
                     'status' => 'success',
                 ]),
@@ -60,16 +61,17 @@ class SyncPenelitianScopus extends Command
         } catch (Exception $err) {
             $endTime = microtime(true);
             $processTime = $endTime - $startTime; // in seconds (float)
+            $jobStatus->JOB_STATUS = "FAILED";
+            $jobStatus->PROCESS_TIME = $processTime;
+            $jobStatus->save();
             $response = Http::post(env('WS_HOOK_ADDRESS') . '/broadcast', [ // Changed endpoint to /broadcast
-                'topic' => 'sync-' . $idDosen, // Use the topic for the specific presensi
+                'topic' => 'sync-' . $idPengguna, // Use the topic for the specific presensi
                 'message' => json_encode([
                     'status' => 'failed',
                     'message' => $err->getMessage()
                 ]),
             ]);
-            $jobStatus->JOB_STATUS = "FAILED";
-            $jobStatus->PROCESS_TIME = $processTime;
-            $jobStatus->save();
+
             Log::error("error " + $err->getMessage());
         }
     }

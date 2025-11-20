@@ -60,7 +60,11 @@ class DosenPublikasiController extends Controller
 
     public function getJobStatusByWebsocketTopic(Request $request) {
         try {
-            $data = PublikasiJobStatus::where('WEBSOCKET_TOPIC', $request->get('websocket_topic'))->first();
+            $user = auth()->user();
+
+            $data = PublikasiJobStatus::where('id_pengguna', $user->id_pengguna)
+                ->orderBy('created_at', 'desc')
+                ->first();
 
             if (empty($data)) {
                 return response()->json(['message' => 'data not found'], 400);
@@ -77,19 +81,22 @@ class DosenPublikasiController extends Controller
         try {
             //dosen id is required;
             // dd(auth()->user()->dosen);
-            $dosen = auth()->user()->dosen;
-            if (empty($dosen)) {
-                return response()->json(['message' => 'Dosen not found'], 400);
+            $user = auth()->user();
+
+            //validate if any on progress for this user
+            $dataOnProgress = PublikasiJobStatus::
+                where('id_pengguna', $user->id_pengguna)
+                ->where('job_status', 'ON PROGRESS')
+                ->first();
+
+            if (!empty($dataOnProgress)) {
+                return response()->json(['message' => 'Masih ada sinkronisasi yang sedang berjalan, mohon coba lagi beberapa saat lagi.'], 400);
             }
 
-            if (empty($dosen->scholar_id)) {
-                return response()->json(['message' => 'ID Scholar belum di setup'], 400);
-            }
-
-            $webSocketTopic = 'sync-'.$dosen->id_dosen.'-' . (int) (microtime(true) * 1000);
+            $webSocketTopic = 'sync-'.$user->id_pengguna.'-' . (int) (microtime(true) * 1000);
 
             Artisan::queue('app:sync-penelitian-scopus', [
-                '--id_dosen' => $dosen->id_dosen,
+                '--id_pengguna' => $user->id_pengguna,
                 '--websocket_topic' => $webSocketTopic,
             ]);
 
