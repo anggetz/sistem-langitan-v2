@@ -72,9 +72,7 @@ class DosenPublikasiController extends Controller
                 return response()->json(['message' => 'ID Scholar belum di setup'], 400);
             }
 
-            Artisan::queue('app:scrapping-penelitian', [
-                '--type_scrap' => 'scholar',
-                '--id_scholar' =>  $dosen->scholar_id,
+            Artisan::queue('app:sync-penelitian-scopus', [
                 '--id_dosen' => $dosen->id_dosen,
             ]);
 
