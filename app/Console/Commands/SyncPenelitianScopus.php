@@ -47,7 +47,7 @@ class SyncPenelitianScopus extends Command
         try {
             sleep(10);
             $response = Http::post(env('WS_HOOK_ADDRESS') . '/broadcast', [ // Changed endpoint to /broadcast
-                'topic' => 'sync-' . $idPengguna, // Use the topic for the specific presensi
+                'topic' => $websocketTopic, // Use the topic for the specific presensi
                 'message' => json_encode([
                     'status' => 'success',
                 ]),
@@ -65,7 +65,7 @@ class SyncPenelitianScopus extends Command
             $jobStatus->PROCESS_TIME = $processTime;
             $jobStatus->save();
             $response = Http::post(env('WS_HOOK_ADDRESS') . '/broadcast', [ // Changed endpoint to /broadcast
-                'topic' => 'sync-' . $idPengguna, // Use the topic for the specific presensi
+                'topic' => $websocketTopic, // Use the topic for the specific presensi
                 'message' => json_encode([
                     'status' => 'failed',
                     'message' => $err->getMessage()
