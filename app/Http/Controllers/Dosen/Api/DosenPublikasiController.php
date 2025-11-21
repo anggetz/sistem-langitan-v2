@@ -93,7 +93,7 @@ class DosenPublikasiController extends Controller
                 return response()->json(['message' => 'Masih ada sinkronisasi yang sedang berjalan, mohon coba lagi beberapa saat lagi.'], 400);
             }
 
-            $webSocketTopic = 'sync-'.$user->id_pengguna.'-' . (int) (microtime(true) * 1000);
+            $webSocketTopic = 'sync-'.$user->id_pengguna;
 
             Artisan::queue('app:sync-penelitian-scopus', [
                 '--id_pengguna' => $user->id_pengguna,
