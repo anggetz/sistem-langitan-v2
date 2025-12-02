@@ -24,8 +24,8 @@ class KegiatanJenis extends Model
         'is_have_tingkat' => 'boolean',
     ];
 
-    public function kegiatanBobots()
+    public function kegiatanGolongans()
     {
-        return $this->hasMany(KegiatanBobot::class, 'id_kegiatan_jenis', 'id_kegiatan_jenis');
+        return $this->hasMany(KegiatanGolongan::class, 'id_kegiatan_jenis', 'id_kegiatan_jenis');
     }
 }

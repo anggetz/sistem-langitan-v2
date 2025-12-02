@@ -23,19 +23,19 @@ class KegiatanTingkatSeeder extends Seeder
             ],
             [
                 'id_kegiatan_tingkat' => 3,
-                'nm_kegiatan_tingkat' => 'Regional',
+                'nm_kegiatan_tingkat' => 'Regional (Kabupaten/Kota/Propinsi)',
             ],
             [
                 'id_kegiatan_tingkat' => 4,
-                'nm_kegiatan_tingkat' => 'Provinsi',
+                'nm_kegiatan_tingkat' => 'Universitas',
             ],
             [
                 'id_kegiatan_tingkat' => 5,
-                'nm_kegiatan_tingkat' => 'Kabupaten/Kota',
+                'nm_kegiatan_tingkat' => 'Fakultas',
             ],
             [
                 'id_kegiatan_tingkat' => 6,
-                'nm_kegiatan_tingkat' => 'Universitas',
+                'nm_kegiatan_tingkat' => 'Jurusan / Prodi',
             ],
             [
                 'id_kegiatan_tingkat' => 7,

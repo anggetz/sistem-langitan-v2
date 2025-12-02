@@ -28,6 +28,16 @@ class KegiatanJenisSeeder extends Seeder
                 'NM_KEGIATAN_JENIS' => 'Kegiatan Pilihan : Minat , Bakat dan Kerohanian',
                 'IS_HAVE_TINGKAT' => true,
             ],
+            [
+                'ID_KEGIATAN_JENIS' => 4,
+                'NM_KEGIATAN_JENIS' => 'Kegiatan Pilihan : Bidang Organisasi dan Kepemimpinan',
+                'IS_HAVE_TINGKAT' => true,
+            ],
+            [
+                'ID_KEGIATAN_JENIS' => 5,
+                'NM_KEGIATAN_JENIS' => 'Kegiatan Pilihan : Bidang Pengabdian kepada Masyarakat',
+                'IS_HAVE_TINGKAT' => true,
+            ]
         ]);
     }
 }

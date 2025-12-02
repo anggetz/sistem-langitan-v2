@@ -93,8 +93,9 @@ Route::group(['middleware' => 'auth.token'], function () {
     Route::group(['prefix' => '/kegiatan', 'controller' => KegiatanController::class], function () {
         Route::get('/', 'listKegiatan');
         Route::get('/jenis', 'listJenisKegiatan');
-        Route::get('/tingkat/{jenis}', 'listTingkatKegiatan');
-        Route::get('/prestasi/{jenis}/tingkat/{tingkat?}', 'listPrestasiKegiatan');
+        Route::get('/golongan/{search?}', 'listKegiatanGolongan');
+        Route::get('/tingkat/{golongan}', 'listTingkatKegiatan');
+        Route::get('/prestasi/{golongan}/tingkat/{tingkat?}', 'listPrestasiKegiatan');
         Route::post('/', 'store');
         Route::get('/{id}', 'show');
         Route::put('/{id}', 'update');

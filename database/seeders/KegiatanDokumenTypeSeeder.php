@@ -20,59 +20,31 @@ class KegiatanDokumenTypeSeeder extends Seeder
             ],
             [
                 'id_kegiatan_dokumen_type' => 2,
-                'nm_kegiatan_dokumen_type' => 'Piagam',
+                'nm_kegiatan_dokumen_type' => 'Presensi/SK',
             ],
             [
                 'id_kegiatan_dokumen_type' => 3,
-                'nm_kegiatan_dokumen_type' => 'Surat Keterangan',
+                'nm_kegiatan_dokumen_type' => 'SK Rekomendasi',
             ],
             [
                 'id_kegiatan_dokumen_type' => 4,
-                'nm_kegiatan_dokumen_type' => 'Surat Tugas',
+                'nm_kegiatan_dokumen_type' => 'Surat Surat &bukti pendaftaran',
             ],
             [
                 'id_kegiatan_dokumen_type' => 5,
-                'nm_kegiatan_dokumen_type' => 'Surat Rekomendasi',
+                'nm_kegiatan_dokumen_type' => 'Sert./SK/ST',
             ],
             [
                 'id_kegiatan_dokumen_type' => 6,
-                'nm_kegiatan_dokumen_type' => 'SK Pengurus',
+                'nm_kegiatan_dokumen_type' => 'Sert./Paten',
             ],
             [
                 'id_kegiatan_dokumen_type' => 7,
-                'nm_kegiatan_dokumen_type' => 'Proposal Kegiatan',
+                'nm_kegiatan_dokumen_type' => 'Buku/artikel',
             ],
             [
                 'id_kegiatan_dokumen_type' => 8,
-                'nm_kegiatan_dokumen_type' => 'Laporan Kegiatan',
-            ],
-            [
-                'id_kegiatan_dokumen_type' => 9,
-                'nm_kegiatan_dokumen_type' => 'Foto Dokumentasi',
-            ],
-            [
-                'id_kegiatan_dokumen_type' => 10,
-                'nm_kegiatan_dokumen_type' => 'Undangan',
-            ],
-            [
-                'id_kegiatan_dokumen_type' => 11,
-                'nm_kegiatan_dokumen_type' => 'Daftar Hadir',
-            ],
-            [
-                'id_kegiatan_dokumen_type' => 12,
-                'nm_kegiatan_dokumen_type' => 'Karya/Produk',
-            ],
-            [
-                'id_kegiatan_dokumen_type' => 13,
-                'nm_kegiatan_dokumen_type' => 'Artikel/Publikasi',
-            ],
-            [
-                'id_kegiatan_dokumen_type' => 14,
-                'nm_kegiatan_dokumen_type' => 'Poster/Banner',
-            ],
-            [
-                'id_kegiatan_dokumen_type' => 15,
-                'nm_kegiatan_dokumen_type' => 'Lainnya',
+                'nm_kegiatan_dokumen_type' => 'Foto copy karya/Link Url',
             ],
         ]);
     }
