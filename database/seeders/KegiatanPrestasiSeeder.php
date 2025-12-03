@@ -27,7 +27,7 @@ class KegiatanPrestasiSeeder extends Seeder
             ],
             [
                 'ID_KEGIATAN_PRESTASI' => 4,
-                'NM_KEGIATAN_PRESTASI' => 'Juara Harapan 1',
+                'NM_KEGIATAN_PRESTASI' => 'Juara Harapan',
             ],
             [
                 'ID_KEGIATAN_PRESTASI' => 5,

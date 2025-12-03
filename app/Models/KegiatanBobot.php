@@ -15,25 +15,23 @@ class KegiatanBobot extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'id_kegiatan_jenis',
+        'id_kegiatan_golongan',
         'id_kegiatan_tingkat',
         'id_kegiatan_prestasi',
-        'id_kegiatan_dokumen_type',
         'point_kegiatan_bobot',
     ];
 
+    /**
+     * Relasi ke KegiatanGolongan
+     */
     protected $casts = [
         'point_kegiatan_bobot' => 'integer',
     ];
 
-    /**
-     * Relasi ke KegiatanJenis
-     */
-    public function kegiatanJenis(): BelongsTo
+    public function kegiatanGolongan(): BelongsTo
     {
-        return $this->belongsTo(KegiatanJenis::class, 'id_kegiatan_jenis', 'id_kegiatan_jenis');
+        return $this->belongsTo(KegiatanGolongan::class, 'id_kegiatan_golongan', 'id_kegiatan_golongan');
     }
-
     /**
      * Relasi ke KegiatanTingkat
      */
@@ -48,14 +46,6 @@ class KegiatanBobot extends Model
     public function kegiatanPrestasi(): BelongsTo
     {
         return $this->belongsTo(KegiatanPrestasi::class, 'id_kegiatan_prestasi', 'id_kegiatan_prestasi');
-    }
-
-    /**
-     * Relasi ke KegiatanDokumenType
-     */
-    public function kegiatanDokumenType(): BelongsTo
-    {
-        return $this->belongsTo(KegiatanDokumenType::class, 'id_kegiatan_dokumen_type', 'id_kegiatan_dokumen_type');
     }
 
     /**
