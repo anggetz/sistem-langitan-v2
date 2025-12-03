@@ -189,10 +189,19 @@ class KegiatanController extends Controller
         $kegiatan->deskripsi_kegiatan = $request->deskripsi;
         $kegiatan->tgl_kegiatan = $request->tanggal;
         $kegiatan->point_kegiatan = $bobot->point_kegiatan_bobot;
-        // tambahkan simpan file upload jika ada simpan di folder public/storage/dokumen_kegiatan
+        $idMhs = auth()->user()->mahasiswa->id_mhs;
         if ($request->hasFile('dokumen')) {
+            $request->validate([
+                'dokumen' => 'nullable|file|mimes:pdf,doc,docx,jpg,png|max:2048',
+            ]);
+
             $file = $request->file('dokumen');
-            $path = $file->store('dokumen_kegiatan', 'public');
+            $extension = $file->getClientOriginalExtension();
+            $fileName = time() . '.' . $extension;
+            $folderPath = 'sk3/' . $idMhs;
+            
+            // Simpan file ke storage/app/public/sk3/{id_mhs}/{timestamp}.{extension}
+            $path = $file->storeAs($folderPath, $fileName, 'public');
             $kegiatan->dokumen_kegiatan_path = $path;
         }
         $kegiatan->save();
