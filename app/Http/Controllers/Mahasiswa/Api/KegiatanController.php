@@ -177,8 +177,6 @@ class KegiatanController extends Controller
             'tanggal' => 'required|date',
         ]);
         
-        \Log::info('Validation passed', ['validated' => $validated]);
-
         $bobot = KegiatanBobot::find($request->id_bobot);
         if (! $bobot) {
             return response()->json([
@@ -193,6 +191,8 @@ class KegiatanController extends Controller
         $kegiatan->deskripsi_kegiatan = $request->deskripsi;
         $kegiatan->tgl_kegiatan = $request->tanggal;
         $kegiatan->point_kegiatan = $bobot->point_kegiatan_bobot;
+        $kegiatan->is_rejected = false;
+        $kegiatan->rejected_message = null;
         $idMhs = auth()->user()->mahasiswa->id_mhs;
         if ($request->hasFile('dokumen')) {
             $request->validate([

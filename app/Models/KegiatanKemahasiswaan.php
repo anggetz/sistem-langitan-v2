@@ -23,6 +23,10 @@ class KegiatanKemahasiswaan extends Model
         'is_approved',
         'approved_at',
         'approved_by',
+        'is_rejected',
+        'rejected_at',
+        'rejected_by',
+        'rejected_message',
     ];
 
     protected $casts = [
@@ -30,6 +34,8 @@ class KegiatanKemahasiswaan extends Model
         'point_kegiatan' => 'integer',
         'is_approved' => 'boolean',
         'approved_at' => 'datetime',
+        'is_rejected' => 'boolean',
+        'rejected_at' => 'datetime',
     ];
 
     public function kegiatanBobot()
