@@ -208,7 +208,7 @@ class KegiatanController extends Controller
 
         return response()->json([
             'status' => Message::OK,
-            'data' => $kegiatan->load(['kegiatanBobot.kegiatanJenis', 'kegiatanBobot.kegiatanTingkat', 'kegiatanBobot.kegiatanPrestasi', 'kegiatanBobot.kegiatanDokumenType']),
+            'data' => $kegiatan->load(['kegiatanBobot.kegiatanGolongan.kegiatanJenis','kegiatanBobot.kegiatanGolongan.kegiatanDokumenType', 'kegiatanBobot.kegiatanTingkat', 'kegiatanBobot.kegiatanPrestasi']),
         ], 200);
     }
 
