@@ -98,7 +98,7 @@ Route::group(['middleware' => 'auth.token'], function () {
         Route::get('/prestasi/{golongan}/tingkat/{tingkat?}', 'listPrestasiKegiatan');
         Route::post('/', 'store');
         Route::get('/{id}', 'show');
-        Route::put('/{id}', 'update');
+        Route::post('/ubah/{id}', 'update'); // Changed to POST for form-data support
         Route::delete('/{id}', 'destroy');
     });
 

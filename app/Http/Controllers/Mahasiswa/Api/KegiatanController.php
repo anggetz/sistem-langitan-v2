@@ -152,7 +152,9 @@ class KegiatanController extends Controller
     // fungsi untuk mengupdate kegiatan kemahasiswaan bisa ditambahkan di sini
     public function update(Request $request, $id)
     {
+
         $kegiatan = auth()->user()->mahasiswa->kegiatanKemahasiswaan()->where('id_kegiatan_kemahasiswaan', $id)->first();
+
         if (! $kegiatan) {
             return response()->json([
                 'status' => Message::FAIL,
@@ -168,12 +170,14 @@ class KegiatanController extends Controller
         }
 
         // validasi inputan
-        $request->validate([
+        $validated = $request->validate([
             'id_bobot' => 'required|exists:kegiatan_bobot,id_kegiatan_bobot',
             'nama' => 'required|string|max:255',
             'deskripsi' => 'nullable|string',
             'tanggal' => 'required|date',
         ]);
+        
+        \Log::info('Validation passed', ['validated' => $validated]);
 
         $bobot = KegiatanBobot::find($request->id_bobot);
         if (! $bobot) {
