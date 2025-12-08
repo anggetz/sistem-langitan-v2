@@ -50,8 +50,8 @@ class KrsService
 
         $jadwalKegiatanSemester = JadwalKegiatanSemester::where('id_kegiatan', $kegiatan->id_kegiatan)
             ->where('id_semester', $semesterAktif->id_semester)
-            ->where('tgl_mulai_jks', '<=', Carbon::now()->timezone(env('APP_TIMEZONE')))
-            ->where('tgl_selesai_jks', '>=', Carbon::now()->timezone(env('APP_TIMEZONE')))
+            ->where('tgl_mulai_jks', '<=', now())
+            ->where('tgl_selesai_jks', '>=', now())
             ->first();
 
 
