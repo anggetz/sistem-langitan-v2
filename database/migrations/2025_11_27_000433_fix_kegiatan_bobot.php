@@ -13,11 +13,13 @@ return new class extends Migration
     {
         Schema::table('KEGIATAN_BOBOT', function (Blueprint $table) {
             // hapus ID_KEGIATAN_JENIS jika ada
-            if (Schema::hasColumn('KEGIATAN_BOBOT', 'ID_KEGIATAN_JENIS')) {
+            if (Schema::hasColumn('KEGIATAN_BOBOT', 'ID_KEGIATAN_JENIS')) {                
                 $table->dropForeign(['ID_KEGIATAN_JENIS']);
+                $table->dropColumn('ID_KEGIATAN_JENIS');
             }
             if (Schema::hasColumn('KEGIATAN_BOBOT', 'ID_KEGIATAN_DOKUMEN_TYPE')) {
                 $table->dropForeign(['ID_KEGIATAN_DOKUMEN_TYPE']);
+                $table->dropColumn('ID_KEGIATAN_DOKUMEN_TYPE');
             }
             $table->foreignId('ID_KEGIATAN_GOLONGAN')->nullable()->constrained('KEGIATAN_GOLONGAN', 'ID_KEGIATAN_GOLONGAN')->onDelete('cascade')->after('ID_KEGIATAN_BOBOT');
         });
