@@ -243,7 +243,7 @@ class KegiatanController extends Controller
     // fungsi untuk melihat detail kegiatan kemahasiswaan bisa ditambahkan di sini
     public function show($id)
     {
-        $kegiatan = auth()->user()->mahasiswa->kegiatanKemahasiswaan()->with(['kegiatanBobot.kegiatanJenis', 'kegiatanBobot.kegiatanTingkat', 'kegiatanBobot.kegiatanPrestasi', 'kegiatanBobot.kegiatanDokumenType', 'approver'])->where('id_kegiatan_kemahasiswaan', $id)->first();
+        $kegiatan = auth()->user()->mahasiswa->kegiatanKemahasiswaan()->with(['kegiatanBobot.kegiatanGolongan.kegiatanJenis', 'kegiatanBobot.kegiatanTingkat', 'kegiatanBobot.kegiatanPrestasi', 'kegiatanBobot.kegiatanGolongan.kegiatanDokumenType', 'approver'])->where('id_kegiatan_kemahasiswaan', $id)->first();
         if (! $kegiatan) {
             return response()->json([
                 'status' => Message::FAIL,
