@@ -44,7 +44,7 @@ jobs:
         with:
           context: .
           file: base.Dockerfile
-          tags: ghcr.io/${{ vars.IMAGE_NAME }}:base
+          tags: ghcr.io/nusantarapras/sistem-langitan-v2:base
           cache-from: type=gha
           cache-to: type=gha,mode=max
           push: true
@@ -55,7 +55,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          tags: ghcr.io/${{ vars.IMAGE_NAME }}:develop
+          tags: ghcr.io/nusantarapras/sistem-langitan-v2:develop
           cache-from: type=gha
           cache-to: type=gha,mode=max
           push: true
