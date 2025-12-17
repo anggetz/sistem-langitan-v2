@@ -31,6 +31,18 @@ return [
     'foto_pegawai_path' => env('FOTO_PEGAWAI_PATH', 'foto_pegawai'),
     'foto_pegawai_ext' => env('FOTO_PEGAWAI_EXT', 'JPG'),
 
+    'host_front_end' => env('HOST_FRONT_END', 'https://sistem-langitan-nextjs.vercel.app'),
+
+    /**
+     * new langitan setup
+     */
+
+    'komponen_mk' => env('KOMPONEN_MK', 'Aktivitas Partisipatif,Hasil Proyek,Tugas,Quiz,UTS,UAS'),
+    'qr_expired' => env('QR_EXPIRED', 5),
+    'ws_hook_address' => env('WS_HOOK_ADDRESS'),
+    'firebase_credentials' => env('FIREBASE_CREDENTIALS', 'firebase_credentials.json'),
+    'code_jadwal_penelitian' => env('CODE_JADWAL_PENILAIAN', 'INPUT_NILAI'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Environment

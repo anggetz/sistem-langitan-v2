@@ -22,7 +22,7 @@ class KegiatanKelompokController extends Controller
 
             KegiatanKelompok::create([
                 'nm_kelompok_kegiatan' => $request->nm_kelompok_kegiatan,
-                'id_perguruan_tinggi' => env("APP_ID_PERGURUAN_TINGGI_DEFAULT"),
+                'id_perguruan_tinggi' => config('app.id_perguruan_tinggi_default'),
                 'is_kemahasiswaan' => $request->is_kemahasiswaan,
                 'is_akademik' => $request->is_akademik,
             ]);

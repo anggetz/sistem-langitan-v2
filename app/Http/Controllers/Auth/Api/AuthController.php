@@ -136,7 +136,7 @@ class AuthController extends Controller
 
         $token = Crypt::encryptString($pengguna->id_pengguna);
 
-        $host = env('HOST_FRONT_END', 'https://sistem-langitan-nextjs.vercel.app');
+        $host = config('app.host_front_end');
         $url = "$host/auth/forgot-password?id=$token";
         Mail::to($pengguna->email_alternate)->send(new ForgotPassword($url));
 

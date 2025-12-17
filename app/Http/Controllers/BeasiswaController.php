@@ -31,7 +31,7 @@ class BeasiswaController extends Controller
             ]);
 
             $q->whereHas('GroupBeasiswa', function($q2) {
-                $q2->where('id_perguruan_tinggi', env('APP_ID_PERGURUAN_TINGGI_DEFAULT', null));
+                $q2->where('id_perguruan_tinggi', config('app.id_perguruan_tinggi_default'));
             });
 
             if (!empty($id_group_beasiswa)) {

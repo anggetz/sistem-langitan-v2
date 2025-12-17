@@ -36,7 +36,7 @@ class DosenQrController extends Controller
             $data =  sha1($presensi->id_presensi_kelas . $presensi->id_kelas_mk . $presensi->id_materi_mk);
 
             $presensi->qr_key = $data;
-            $presensi->qr_expired = Carbon::now()->timezone(env("APP_TIMEZONE", "Asia/Jakarta"))->addMinutes((int)env('QR_EXPIRED', 5)); // Set QR code expiration time
+            $presensi->qr_expired = Carbon::now()->timezone(config('app.timezone'))->addMinutes((int)config('app.qr_expired')); // Set QR code expiration time
             $presensi->save();
 
             Log::info("triggered event triggerQrGenerator");

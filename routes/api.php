@@ -25,7 +25,7 @@ Route::get('/', function () {
 
 
 Route::get('/testme', function () {
-    return PerguruanTinggi::find(env('APP_ID_PERGURUAN_TINGGI_DEFAULT'));
+    return PerguruanTinggi::find(config('app.id_perguruan_tinggi_default'));
 });
 
 Route::get('/berita/dashboard', [BeritaController::class, 'dashboard']);
