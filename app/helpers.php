@@ -3,11 +3,12 @@
 use App\Models\PerguruanTinggi;
 use Illuminate\Support\Facades\Cache;
 
-function pt()
-{
-    if (app()->bound('pt')) {
-        return app('pt');
-    }
+if (! function_exists('pt')) {
+    function pt()
+    {
+        if (app()->bound('pt')) {
+            return app('pt');
+        }
 
     $defaultPt = Cache::get("pt", null);
     if ($defaultPt == null) {
@@ -15,5 +16,6 @@ function pt()
         Cache::put("pt", $defaultPt, 600);
     }
 
-    return $defaultPt;
+        return $defaultPt;
+    }
 }

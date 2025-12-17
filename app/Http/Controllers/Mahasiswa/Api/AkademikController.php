@@ -2,65 +2,64 @@
 
 namespace App\Http\Controllers\Mahasiswa\Api;
 
-use App\Models\Message;
-use App\Models\Kegiatan;
-use App\Models\Semester;
-use App\Models\Mahasiswa;
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Auth;
-use App\Models\JadwalKegiatanSemester;
-use App\Services\Mahasiswa\BerandaService;
-use App\Http\Resources\Mahasiswa\JadwalKuliahResource;
 use App\Models\Config;
 use App\Models\ConfigPT;
-use App\Models\PresensiMhs;
+use App\Models\Message;
+use App\Models\Semester;
 use App\Services\Mahasiswa\AkademikService;
 use Exception;
+use Illuminate\Http\Request;
 
 class AkademikController extends Controller
 {
-
     private $akademikService;
+
     public function __construct(AkademikService $akademikService)
     {
         $this->akademikService = $akademikService;
     }
+
     public function index() {}
+
     public function kalender()
     {
         $data = $this->akademikService->kalender();
+
         return response()->json([
             'status' => Message::OK,
-            'data' => $data
+            'data' => $data,
         ], 200);
     }
 
     public function jadwalKuliah()
     {
         $data = $this->akademikService->jadwalKuliah();
+
         return response()->json([
             'status' => Message::OK,
-            'data' => $data
+            'data' => $data,
         ], 200);
     }
 
     public function jadwalKuliahHariIni()
     {
         $data = $this->akademikService->jadwalKuliah(date('w') + 1);
+
         return response()->json([
             'status' => Message::OK,
-            'data' => $data
+            'data' => $data,
         ], 200);
     }
 
     public function khsPerSemester(Request $request)
     {
-        $semester = $request->get("semester");
+        $semester = $request->get('semester');
         $data = $this->akademikService->khs($semester);
+
         return response()->json([
             'status' => Message::OK,
-            'data' => $data
+            'data' => $data,
         ], 200);
     }
 
@@ -68,50 +67,51 @@ class AkademikController extends Controller
     {
         return response()->json([
             'status' => Message::OK,
-            'data' => $mk
+            'data' => $mk,
         ], 200);
     }
 
     public function khs(Request $request)
     {
 
-        if ($request->has("semester") && $request->has("mata-kuliah")) {
+        if ($request->has('semester') && $request->has('mata-kuliah')) {
 
             return response()->json([
                 'status' => Message::OK,
-                'data' => $request->get("mata-kuliah")
+                'data' => $request->get('mata-kuliah'),
             ], 200);
         }
 
-        if ($request->has("semester")) {
-            $data = $this->akademikService->khs($request->get("semester"));
+        if ($request->has('semester')) {
+            $data = $this->akademikService->khs($request->get('semester'));
+
             return response()->json([
                 'status' => Message::OK,
-                'data' => $data
+                'data' => $data,
             ], 200);
         }
 
         $semester = auth()->user()->mahasiswa
             ->pengambilanMk()
-            ->with("semester:id_semester,nm_semester")
-            ->groupBy("id_semester")
-            ->get(["id_semester"]);
+            ->with('semester:id_semester,nm_semester')
+            ->groupBy('id_semester')
+            ->get(['id_semester']);
 
         return response()->json([
             'status' => Message::OK,
-            'data' => $semester
+            'data' => $semester,
         ], 200);
     }
 
     public function historyNilai(Request $request)
     {
-        $semester = $request->get("semester", null);
+        $semester = $request->get('semester', null);
 
         $data = auth()->user()->mahasiswa;
         $history = $data->historyNilai()
             ->with(['semester:id_semester,nm_semester,thn_akademik_semester'])->orderBy('id_mhs_status', 'asc')
             ->orderBy('created_on', 'desc');
-        if (!empty($semester)) {
+        if (! empty($semester)) {
             $history = $history->where('id_semester', $semester);
         }
         $historyData = $history->get(['id_mhs_status', 'ips', 'ipk', 'sks_semester', 'sks_total', 'id_semester']);
@@ -120,17 +120,18 @@ class AkademikController extends Controller
         $ipk = 0;
         if ($historyCount) {
             // $lastSemester = $historyData[$historyCount - 1];
-            $sks_tempuh = (int)$historyData[$historyCount - 1]->sks_total;
+            $sks_tempuh = (int) $historyData[$historyCount - 1]->sks_total;
             $ipk = $historyData[$historyCount - 1]->ipk;
         }
+
         return response()->json([
             'status' => Message::OK,
             'data' => $data,
             // make 2 digit after comma
-            'ipk' => (float)number_format($ipk, 2),
-            "sks_tempuh" => $sks_tempuh,
-            "semester" => $historyCount,
-            "history" => $historyData,
+            'ipk' => (float) number_format($ipk, 2),
+            'sks_tempuh' => $sks_tempuh,
+            'semester' => $historyCount,
+            'history' => $historyData,
         ], 200);
     }
 
@@ -163,6 +164,7 @@ class AkademikController extends Controller
             ->orderBy('jam_mulai', 'asc')
             ->select(['tgl_ujian', 'jam_mulai', 'jam_selesai', 'id_kelas_mk', 'id_kegiatan', 'id_mhs'])
             ->get();
+
         return response()->json([
             'status' => Message::OK,
             'jadwalUTS' => $jadwalUTS,
@@ -174,14 +176,14 @@ class AkademikController extends Controller
     {
         $semester = auth()->user()->mahasiswa
             ->pengambilanMk()
-            ->with("semester:id_semester,nm_semester,tahun_ajaran,status_aktif_semester")
-            ->groupBy("id_semester")
+            ->with('semester:id_semester,nm_semester,tahun_ajaran,status_aktif_semester')
+            ->groupBy('id_semester')
             ->orderByDesc('id_semester')
-            ->get(["id_semester"]);
+            ->get(['id_semester']);
 
         return response()->json([
             'status' => Message::OK,
-            'data' => $semester
+            'data' => $semester,
         ], 200);
     }
 
@@ -193,7 +195,7 @@ class AkademikController extends Controller
                 ->with([
                     'kelasMk.mataKuliah:id_mata_kuliah,kd_mata_kuliah,nm_mata_kuliah',
                     'kelasMk:id_kelas_mk,id_mata_kuliah',
-                    'namaKelas:id_nama_kelas,nama_kelas'
+                    'namaKelas:id_nama_kelas,nama_kelas',
                 ])
                 ->where('pengambilan_mk.id_semester', $semester)
                 ->get(['id_kelas_mk', 'status_cekal', 'status_cekal_uts'])
@@ -202,6 +204,7 @@ class AkademikController extends Controller
                     $item->status_cekal_utes = ($item->status_cekal_uts == 2) ? 'Tidak Cekal UTS' : 'Kena Cekal UTS';
                     $item->jumlah_pertemuan = $item->kelasMk->presensiKelas()->count();
                     $item->jumlah_kehadiran = $item->kelasMk->presensiMhs()->where('id_mhs', auth()->user()->mahasiswa->id_mhs)->count();
+
                     return $item;
                 });
 
@@ -213,7 +216,7 @@ class AkademikController extends Controller
             return response()->json([
                 'status' => Message::FAIL,
                 'message' => 'Gagal mendapatkan data rekap mahasiswa',
-                'error' => $err->getMessage()
+                'error' => $err->getMessage(),
             ], 500);
         }
     }
@@ -223,14 +226,14 @@ class AkademikController extends Controller
     {
         $data = auth()->user()->mahasiswa
             ->pengambilanMkKprs()
-            ->with("semester:id_semester,nm_semester,tahun_ajaran,status_aktif_semester")
-            ->groupBy("id_semester")
+            ->with('semester:id_semester,nm_semester,tahun_ajaran,status_aktif_semester')
+            ->groupBy('id_semester')
             ->orderByDesc('id_semester')
-            ->get(["id_semester"]);
+            ->get(['id_semester']);
 
         return response()->json([
             'status' => Message::OK,
-            'data' => $data
+            'data' => $data,
         ], 200);
     }
 
@@ -241,14 +244,15 @@ class AkademikController extends Controller
                 ->where('id_perguruan_tinggi', config('app.id_perguruan_tinggi_default'))
                 ->first();
 
-            if (!$configPt) {
+            if (! $configPt) {
                 // check if kd_config inside config table
-               return response()->json([
+                return response()->json([
                     'status' => Message::OK,
                     'message' => 'Config not found',
-                    'data' => false
+                    'data' => false,
                 ], 200);
             }
+
             return response()->json([
                 'status' => Message::OK,
                 'data' => $configPt->config_value == 'Y' ? true : false,
@@ -257,7 +261,7 @@ class AkademikController extends Controller
             return response()->json([
                 'status' => Message::FAIL,
                 'message' => 'Gagal mendapatkan config pt',
-                'error' => $err->getMessage()
+                'error' => $err->getMessage(),
             ], 500);
         }
     }

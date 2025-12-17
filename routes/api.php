@@ -1,28 +1,27 @@
 <?php
 
-use App\Events\QrGenerateEvent;
 use App\Http\Controllers\AkademikController;
 use App\Http\Controllers\Api\ForgotPasswordController;
 use App\Http\Controllers\Api\FreshLoginController;
-use App\Http\Controllers\Firebase\Api\FcmController;
-use App\Models\Message;
-use Illuminate\Http\Request;
-use App\Models\PerguruanTinggi;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\BeritaController;
 use App\Http\Controllers\Auth\Api\AuthController;
 use App\Http\Controllers\BeasiswaController;
+use App\Http\Controllers\BeritaController;
+use App\Http\Controllers\Firebase\Api\FcmController;
 use App\Http\Controllers\KegiatanAkdEksController;
 use App\Http\Controllers\KegiatanKelompokController;
+use App\Http\Controllers\Mahasiswa\Api\KegiatanController;
 use App\Http\Controllers\MasterController;
 use App\Http\Controllers\Pengumuman\PengumumanController;
+use App\Models\Message;
 use App\Models\Pengguna;
+use App\Models\PerguruanTinggi;
 use App\Models\Semester;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return "Laravel Version : " . app()->version();
+    return 'Laravel Version : '.app()->version();
 });
-
 
 Route::get('/testme', function () {
     return PerguruanTinggi::find(config('app.id_perguruan_tinggi_default'));
@@ -37,7 +36,6 @@ Route::post('/reset-password', [ForgotPasswordController::class, 'resetPassword'
 
 // forgot password flow
 
-
 Route::get('/quote', function () {
     // generate quotes
     $quote = null;
@@ -49,20 +47,20 @@ Route::get('/quote', function () {
 
     return response()->json([
         'status' => Message::OK,
-        'quote' => $quote
+        'quote' => $quote,
     ]);
 });
 
 Route::group([
     'prefix' => 'auth',
-    'controller' => AuthController::class
+    'controller' => AuthController::class,
 ], function () {
     Route::post('login', 'login');
     Route::post('refresh-token', 'refreshToken');
     // Route::post('forgot-password', 'forgotPassword')->name('forgot-password');
     // Route::get('get-info-reset-password', 'getInfoResetPassword');
     // Route::post('reset-password', 'resetPassword');
-    Route::post('logout', 'destroy')->middleware("auth");
+    Route::post('logout', 'destroy')->middleware('auth');
 });
 
 Route::group(['middleware' => 'auth.token'], function () {
@@ -89,6 +87,19 @@ Route::group(['middleware' => 'auth.token'], function () {
         Route::post('/', 'store');                   // Send new message
         Route::patch('/{messageId}/read', 'markAsRead'); // Mark message as read
         Route::delete('/{messageId}', 'destroy');    // Delete message
+    });
+
+    // Kegiatan Kemahasiswaan API Routes
+    Route::group(['prefix' => '/kegiatan', 'controller' => KegiatanController::class], function () {
+        Route::get('/', 'listKegiatan');
+        Route::get('/jenis', 'listJenisKegiatan');
+        Route::get('/golongan/{search?}', 'listKegiatanGolongan');
+        Route::get('/tingkat/{golongan}', 'listTingkatKegiatan');
+        Route::get('/prestasi/{golongan}/tingkat/{tingkat?}', 'listPrestasiKegiatan');
+        Route::post('/', 'store');
+        Route::get('/{id}', 'show');
+        Route::post('/ubah/{id}', 'update'); // Changed to POST for form-data support
+        Route::delete('/{id}', 'destroy');
     });
 
     Route::group(['prefix' => '/beasiswa', 'controller' => BeasiswaController::class], function () {
@@ -132,19 +143,19 @@ Route::group(['middleware' => 'auth.token'], function () {
         if ($semester) {
             return response()->json([
                 'status' => Message::OK,
-                'data' => $semester
+                'data' => $semester,
             ]);
         } else {
             return response()->json([
                 'status' => Message::FAIL,
-                'message' => 'Semester aktif tidak ditemukan.'
+                'message' => 'Semester aktif tidak ditemukan.',
             ], 404);
         }
     });
 
-    require_once(__DIR__ . "/api/mahasiswa.php");
-    require_once(__DIR__ . "/api/rektor.php");
-    require_once(__DIR__ . "/api/dosen.php");
+    require_once __DIR__.'/api/mahasiswa.php';
+    require_once __DIR__.'/api/rektor.php';
+    require_once __DIR__.'/api/dosen.php';
 });
 
 Route::fallback(function () {

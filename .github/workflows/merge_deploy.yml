@@ -8,6 +8,7 @@ on:
 
 jobs:
   auto-merge:
+    if: github.repository == 'nusantarapras/sistem-langitan-v2'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
