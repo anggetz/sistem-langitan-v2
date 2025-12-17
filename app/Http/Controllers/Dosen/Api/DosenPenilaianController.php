@@ -31,7 +31,7 @@ class DosenPenilaianController extends Controller
             $builder = \App\Models\KomponenMk::where('id_kelas_mk', $id_kelas_mk);
             $totalKomponen = $builder->count();
             if (!$totalKomponen) {
-                $komponens = explode(',', env('KOMPONEN_MK', 'Aktivitas Partisipatif,Hasil Proyek,Tugas,Quiz,UTS,UAS'));
+                $komponens = explode(',', config('app.komponen.mk'));
 
                 // Map data terlebih dahulu, kemudian batch insert
                 $mappedKomponens = collect($komponens)->map(function ($nm_komponen_mk, $index) use ($id_kelas_mk) {

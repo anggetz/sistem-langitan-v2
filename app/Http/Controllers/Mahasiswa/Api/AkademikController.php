@@ -241,7 +241,7 @@ class AkademikController extends Controller
     {
         try {
             $configPt = ConfigPT::where('KD_CONFIG', 'IS_ALLOW_ADD_MK_KRS')
-                ->where('id_perguruan_tinggi', env('APP_ID_PERGURUAN_TINGGI_DEFAULT', '1'))
+                ->where('id_perguruan_tinggi', config('app.id_perguruan_tinggi_default'))
                 ->first();
 
             if (! $configPt) {

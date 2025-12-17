@@ -174,7 +174,7 @@ class ScrappingPenelitian extends Command
 
             $this->info('Scrapping completed successfully.');
 
-            $response = Http::post(env('WS_HOOK_ADDRESS') . '/broadcast', [ // Changed endpoint to /broadcast
+            $response = Http::post(config('app.ws_hook_address') . '/broadcast', [ // Changed endpoint to /broadcast
                 'topic' => 'sync-info-' . $idDosen, // Use the topic for the specific presensi
                 'message' => json_encode([
                     'status' => 'success',
@@ -182,7 +182,7 @@ class ScrappingPenelitian extends Command
             ]);
             Log::info("successfully scrapped data for dosen id ".$idDosen);
         } catch (Exception $err) {
-            $response = Http::post(env('WS_HOOK_ADDRESS') . '/broadcast', [ // Changed endpoint to /broadcast
+            $response = Http::post(config('app.ws_hook_address') . '/broadcast', [ // Changed endpoint to /broadcast
                 'topic' => 'sync-info-' . $idDosen, // Use the topic for the specific presensi
                 'message' => json_encode([
                     'status' => 'failed',

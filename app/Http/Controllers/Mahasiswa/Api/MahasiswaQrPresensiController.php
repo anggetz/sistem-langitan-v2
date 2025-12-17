@@ -84,7 +84,7 @@ class MahasiswaQrPresensiController extends Controller
             DB::beginTransaction();
 
             $presensi = PresensiKelas::where('qr_key', $qr_key)
-                ->where('qr_expired', '>', Carbon::now()->timezone(env("APP_TIMEZONE", "Asia/Jakarta")))
+                ->where('qr_expired', '>', Carbon::now()->timezone(config("app.timezone")))
                 ->lockForUpdate()
                 ->first();
 
@@ -146,11 +146,11 @@ class MahasiswaQrPresensiController extends Controller
 
             // auto regenarete the qr
             $presensi->qr_key = sha1($presensi->id_presensi_kelas . $presensi->id_kelas_mk . $presensi->id_materi_mk . uniqid('qr-uniqid'));
-            $presensi->qr_expired = Carbon::now()->timezone(env("APP_TIMEZONE", "Asia/Jakarta"))->addMinutes((int)env('QR_EXPIRED', 5)); // Set QR code expiration time
+            $presensi->qr_expired = Carbon::now()->timezone(config("app.timezone"))->addMinutes((int)config('app.qr_expired')); // Set QR code expiration time
             $presensi->save();
 
             // event(new QrGenerateEvent($presensi->id_presensi_kelas, $presensi->id_kelas_mk, $presensi->qr_key));
-            $response = Http::post(env('WS_HOOK_ADDRESS').'/broadcast', [ // Changed endpoint to /broadcast
+            $response = Http::post(config('app.ws_hook_address').'/broadcast', [ // Changed endpoint to /broadcast
                 'topic' => 'qr-generator-' . $presensi->id_presensi_kelas, // Use the topic for the specific presensi
                 'message' => json_encode([
                     'qr_key' => $presensi->qr_key,
