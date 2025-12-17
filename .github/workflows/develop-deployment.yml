@@ -46,7 +46,7 @@ jobs:
           context: .
           file: base.Dockerfile
           # PERBAIKAN: Menggunakan format ${{ }} yang benar
-          tags: ghcr.io/${{ github.repository_owner }}/${{ vars.IMAGE_NAME }}:base
+          tags: ghcr.io/${{ github.repository_owner }}/sistm-langitan-v2:base
           cache-from: type=gha
           cache-to: type=gha,mode=max
           push: true
@@ -57,7 +57,7 @@ jobs:
         with:
           context: .
           # PERBAIKAN: Konsistensi pemanggilan tag
-          tags: ghcr.io/${{ github.repository_owner }}/${{ vars.IMAGE_NAME }}:develop
+          tags: ghcr.io/${{ github.repository_owner }}/siste-langitan-v2:develop
           cache-from: type=gha
           cache-to: type=gha,mode=max
           push: true
