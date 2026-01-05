@@ -10,6 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      packages: write
 
     steps:
       - name: Checkout repository
@@ -25,8 +26,9 @@ jobs:
       - name: Log to Docker Hub
         uses: docker/login-action@v3
         with:
-          username: ${{ vars.DOCKERHUB_USER }}
-          password: ${{ secrets.DOCKERHUB_PASS }}
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Check if base.Dockerfile has changed
         run: |
@@ -42,7 +44,7 @@ jobs:
         with:
           context: .
           file: base.Dockerfile
-          tags: ${{ vars.DOCKERHUB_USER }}/${{ vars.IMAGE_NAME }}:base
+          tags: ghcr.io/${{ vars.IMAGE_NAME }}:base
           cache-from: type=gha
           cache-to: type=gha,mode=max
           push: true
@@ -53,7 +55,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          tags: ${{ vars.DOCKERHUB_USER }}/${{ vars.IMAGE_NAME }}:develop
+          tags: ghcr.io/${{ vars.IMAGE_NAME }}:develop
           cache-from: type=gha
           cache-to: type=gha,mode=max
           push: true
@@ -67,22 +69,7 @@ jobs:
       - name: Run Deployment Script langitan-v2
         run: |
           cd ${{ vars.UMAHA_DEV_APP_PATH }}
-          docker compose pull ${{ vars.SERVICE_NAME_DEV_UMAHA }}
-          docker compose up -d --force-recreate --no-deps ${{ vars.SERVICE_NAME_DEV_UMAHA }}
-            
-  # deploy-unulampung-pmb:
-  #   name: Deploy Ke Server Unulampung
-  #   needs: build
-  #   runs-on: ubuntu-latest
-
-  #   steps:
-  #     - name: Execute command on the remote server
-  #       uses: appleboy/ssh-action@v1.2.0
-  #       with:
-  #         host: ${{ vars.SSH_HOST_UNULA }}
-  #         username: ${{ vars.SSH_USER_UNULA }}
-  #         key: ${{ secrets.SSH_KEY_UNULA }}
-  #         script: |
-  #           cd ${{ vars.UNULA_DEV_APP_PATH }}
-  #           docker compose pull ${{ vars.SERVICE_NAME_DEV_UNULA }}
-  #           docker compose up -d --force-recreate --no-deps ${{ vars.SERVICE_NAME_DEV_UNULA }}
+          echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          docker compose pull ${{ vars.SERVICE_NAME_DEV }}
+          docker compose up -d --force-recreate --no-deps ${{ vars.SERVICE_NAME_DEV }}
+          docker logout
