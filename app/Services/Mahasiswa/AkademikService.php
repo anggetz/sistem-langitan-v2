@@ -21,7 +21,7 @@ class AkademikService
 
     public function __construct()
     {
-        $this->CODE_JADWAL_PENILAIAN = env('CODE_JADWAL_PENILAIAN', 'INPUT_NILAI');
+        $this->CODE_JADWAL_PENILAIAN = config('app.code_jadwal_penelitian');
     }
 
     public function kalender()
