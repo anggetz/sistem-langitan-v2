@@ -41,7 +41,7 @@ return [
     'qr_expired' => env('QR_EXPIRED', 5),
     'ws_hook_address' => env('WS_HOOK_ADDRESS'),
     'firebase_credentials' => env('FIREBASE_CREDENTIALS', 'firebase_credentials.json'),
-    'code_jadwal_penelitian' => env('CODE_JADWAL_PENILAIAN', 'INPUT_NILAI'),
+    'code_jadwal_penilaian' => env('CODE_JADWAL_PENILAIAN', 'INPUT_NILAI'),
 
     /*
     |--------------------------------------------------------------------------
