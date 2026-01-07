@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\FreshLoginController;
 use App\Http\Controllers\Auth\Api\AuthController;
 use App\Http\Controllers\BeasiswaController;
 use App\Http\Controllers\BeritaController;
+use App\Http\Controllers\Dosen\Api\Publikasi\PublikasiController;
 use App\Http\Controllers\Firebase\Api\FcmController;
 use App\Http\Controllers\KegiatanAkdEksController;
 use App\Http\Controllers\KegiatanKelompokController;
@@ -33,6 +34,16 @@ Route::get('/berita/detail/{slug}', [BeritaController::class, 'detail']);
 Route::post('/forgot-password', [ForgotPasswordController::class, 'sendOTPForgotPassword']);
 Route::post('/validate-otp', [ForgotPasswordController::class, 'validateOtp']);
 Route::post('/reset-password', [ForgotPasswordController::class, 'resetPassword']);
+
+// Publikasi options - Public endpoints (no auth required)
+// Route::group([
+//     'prefix' => 'dosen/publikasi/options',
+//     'controller' => PublikasiController::class,
+// ], function () {
+//     Route::get('/status', 'statusOptions');
+//     Route::get('/sjr-kuartil', 'sjrKuartilOptions');
+//     Route::get('/sinta', 'sintaOptions');
+// });
 
 // forgot password flow
 
