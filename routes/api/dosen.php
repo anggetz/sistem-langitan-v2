@@ -8,8 +8,12 @@ use App\Http\Controllers\Dosen\Api\DosenPenelitianController;
 use App\Http\Controllers\Dosen\Api\DosenPenelitianMasterController;
 use App\Http\Controllers\Dosen\Api\DosenPenilaianController;
 use App\Http\Controllers\Dosen\Api\DosenPresensiController;
-use App\Http\Controllers\Dosen\Api\DosenPublikasiController;
+// use App\Http\Controllers\Dosen\Api\DosenPublikasiController;
 use App\Http\Controllers\Dosen\Api\DosenQrController;
+use App\Http\Controllers\Dosen\Api\Publikasi\PublikasiController;
+use App\Http\Controllers\Dosen\Api\Publikasi\PublikasiJenisController;
+use App\Http\Controllers\Dosen\Api\Publikasi\PublikasiPengindeksController;
+use App\Http\Controllers\Dosen\Api\Publikasi\PublikasiPenulisController;
 use App\Models\Role;
 use Illuminate\Support\Facades\Route;
 
@@ -65,11 +69,64 @@ Route::group(
         );
 
         Route::group(
-            ['prefix' => 'publikasi', 'controller' => DosenPublikasiController::class],
+            ['prefix' => 'publikasi', 'controller' => PublikasiController::class],
             function () {
-                Route::get('/', 'Index');
-                Route::post('/sync', 'triggerSync');
-                Route::get('/sync-info', 'getJobStatusByWebsocketTopic');
+                Route::get('/', 'index');
+                Route::post('/', 'store');
+                Route::get('/{id}', 'show');
+                Route::put('/{id}', 'update');
+                Route::delete('/{id}', 'destroy');
+                Route::post('/{id}/approve', 'approve');
+                Route::post('/{id}/reject', 'reject');
+                
+                // Options endpoints - accessible without authentication
+                Route::group(['prefix' => 'options'], function () {
+                    Route::get('status', 'statusOptions')->withoutMiddleware(['auth.token', 'role:' . Role::DOSEN]);
+                    Route::get('sjr-kuartil', 'sjrKuartilOptions')->withoutMiddleware(['auth.token', 'role:' . Role::DOSEN]);
+                    Route::get('sinta', 'sintaOptions')->withoutMiddleware(['auth.token', 'role:' . Role::DOSEN]);
+                });
+            }
+        );
+
+        // Route::group(
+        //     ['prefix' => 'publikasi', 'controller' => DosenPublikasiController::class],
+        //     function () {
+        //         Route::get('/', 'Index');
+        //         Route::post('/sync', 'triggerSync');
+        //         Route::get('/sync-info', 'getJobStatusByWebsocketTopic');
+        //     }
+        // );
+
+        Route::group(
+            ['prefix' => 'publikasi-jenis', 'controller' => PublikasiJenisController::class],
+            function () {
+                Route::get('/', 'index');
+                Route::post('/', 'store');
+                Route::get('/{id}', 'show');
+                Route::put('/{id}', 'update');
+                Route::delete('/{id}', 'destroy');
+            }
+        );
+
+        Route::group(
+            ['prefix' => 'publikasi-pengindeks', 'controller' => PublikasiPengindeksController::class],
+            function () {
+                Route::get('/', 'index');
+                Route::post('/', 'store');
+                Route::get('/{id}', 'show');
+                Route::put('/{id}', 'update');
+                Route::delete('/{id}', 'destroy');
+            }
+        );
+
+        Route::group(
+            ['prefix' => 'publikasi-penulis', 'controller' => PublikasiPenulisController::class],
+            function () {
+                Route::get('/', 'index');
+                Route::post('/', 'store');
+                Route::get('/{id}', 'show');
+                Route::put('/{id}', 'update');
+                Route::delete('/{id}', 'destroy');
             }
         );
 

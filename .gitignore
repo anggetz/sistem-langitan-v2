@@ -26,9 +26,4 @@ yarn-error.log
 /.zed
 .DS_Store
 database/seeders/BeritaSeeder.php
-docs/API_DOCUMENTATION.md
-docs/README.md
-docs/Sistem_Langitan_v2_API.postman_collection.json
-docs/API_DOCUMENTATION_COMPLETE.md
-docs/API_DOSEN_DOCUMENTATION.md
-docs/API_MAHASISWA_DOCUMENTATION.md
+docs/*
