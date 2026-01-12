@@ -41,7 +41,11 @@ class PublikasiPenulisService
         $total = $query->count();
         
         $data = $query
-            ->with(['publikasi:id_publikasi,judul', 'dosen:id_dosen,nm_dosen'])
+            ->with([
+                'publikasi:id_publikasi,judul',
+                'dosen:id_dosen,id_pengguna',
+                'dosen.pengguna:id_pengguna,nm_pengguna'
+            ])
             ->orderBy('id_publikasi', 'desc')
             ->orderBy('urutan', 'asc')
             ->offset($offset)

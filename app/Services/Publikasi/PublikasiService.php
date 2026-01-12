@@ -19,7 +19,8 @@ class PublikasiService
         $offset = ($page - 1) * $perPage;
 
         $query = Publikasi::with([
-            'dosen:id_dosen,nm_dosen',
+            'dosen:id_dosen,id_pengguna',
+            'dosen.pengguna:id_pengguna,nm_pengguna',
             'jenisPublikasi:id_jenis_publikasi,jenis_publikasi',
             'pengindeksPublikasi:id_pengindeks_publikasi,pengindeks_publikasi',
             'penulis'
@@ -115,12 +116,14 @@ class PublikasiService
     public function getById($id)
     {
         $publikasi = Publikasi::with([
-            'dosen:id_dosen,nm_dosen,email',
+            'dosen:id_dosen,id_pengguna',
+            'dosen.pengguna:id_pengguna,nm_pengguna',
             'jenisPublikasi:id_jenis_publikasi,jenis_publikasi',
             'pengindeksPublikasi:id_pengindeks_publikasi,pengindeks_publikasi',
-            'penulis.dosen:id_dosen,nm_dosen',
-            'approvedBy:id_pengguna,nama',
-            'rejectedBy:id_pengguna,nama'
+            'penulis.dosen:id_dosen,id_pengguna',
+            'penulis.dosen.pengguna:id_pengguna,nm_pengguna',
+            'approvedBy:id_pengguna,nm_pengguna',
+            'rejectedBy:id_pengguna,nm_pengguna'
         ])->find($id);
         
         if (!$publikasi) {
@@ -147,7 +150,8 @@ class PublikasiService
 
             DB::commit();
             return $publikasi->fresh([
-                'dosen',
+                'dosen:id_dosen,id_pengguna',
+                'dosen.pengguna:id_pengguna,nm_pengguna',
                 'jenisPublikasi',
                 'pengindeksPublikasi',
                 'penulis'
@@ -209,10 +213,11 @@ class PublikasiService
 
             DB::commit();
             return $publikasi->fresh([
-                'dosen',
+                'dosen:id_dosen,id_pengguna',
+                'dosen.pengguna:id_pengguna,nm_pengguna',
                 'jenisPublikasi',
                 'pengindeksPublikasi',
-                'approvedBy'
+                'approvedBy:id_pengguna,nm_pengguna'
             ]);
         } catch (Exception $e) {
             DB::rollBack();
@@ -244,10 +249,11 @@ class PublikasiService
 
             DB::commit();
             return $publikasi->fresh([
-                'dosen',
+                'dosen:id_dosen,id_pengguna',
+                'dosen.pengguna:id_pengguna,nm_pengguna',
                 'jenisPublikasi',
                 'pengindeksPublikasi',
-                'rejectedBy'
+                'rejectedBy:id_pengguna,nm_pengguna'
             ]);
         } catch (Exception $e) {
             DB::rollBack();
