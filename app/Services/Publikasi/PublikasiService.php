@@ -35,10 +35,10 @@ class PublikasiService
         if (isset($params['q']) && !empty($params['q'])) {
             $search = $params['q'];
             $query->where(function($q) use ($search) {
-                $q->where('judul', 'LIKE', "%$search%")
-                  ->orWhere('penerbit', 'LIKE', "%$search%")
-                  ->orWhere('abstrak', 'LIKE', "%$search%")
-                  ->orWhere('kata_kunci', 'LIKE', "%$search%");
+            $q->whereRaw("LOWER(judul) LIKE ?", ["%".strtolower($search)."%"])
+              ->orWhereRaw("LOWER(penerbit) LIKE ?", ["%".strtolower($search)."%"])
+              ->orWhereRaw("LOWER(abstrak) LIKE ?", ["%".strtolower($search)."%"])
+              ->orWhereRaw("LOWER(kata_kunci) LIKE ?", ["%".strtolower($search)."%"]);
             });
         }
 
@@ -54,7 +54,7 @@ class PublikasiService
 
         // Filter by status
         if (isset($params['status']) && !empty($params['status'])) {
-            $query->where('status', $params['status']);
+            $query->whereRaw("LOWER(status) LIKE ?", [strtolower($params['status'])]);
         }
 
         // Filter by approval status
