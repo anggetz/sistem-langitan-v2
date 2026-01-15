@@ -18,6 +18,8 @@ class PublikasiService
         $perPage = $params['per_page'] ?? 10;
         $offset = ($page - 1) * $perPage;
 
+//        dd($params);
+
         $query = Publikasi::with([
             'dosen:id_dosen,id_pengguna',
             'dosen.pengguna:id_pengguna,nm_pengguna',
@@ -54,7 +56,7 @@ class PublikasiService
 
         // Filter by status
         if (isset($params['status']) && !empty($params['status'])) {
-            $query->whereRaw("LOWER(status) LIKE ?", [strtolower($params['status'])]);
+            $query->whereRaw("LOWER(status) = ?", [strtolower($params['status'])]);
         }
 
         // Filter by approval status

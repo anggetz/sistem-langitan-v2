@@ -92,7 +92,7 @@ class PublikasiSeeder extends Seeder
                 'kata_kunci' => implode(', ', $faker->words(5)),
                 'bahasa' => $faker->randomElement(['Indonesia', 'English']),
                 'pendanaan' => $faker->randomElement([null, $faker->company, 'Internal', 'PNBP']),
-                'status' => 'published',
+                'status' => $faker->randomElement(['DRAFT', 'SUBMITTED', 'ACCEPTED', 'REJECTED', 'PUBLISHED']),
                 'url' => $faker->url,
                 'id_pengindeks_publikasi' => $faker->randomElement($pengindeks),
                 'sjr_kuartil' => $faker->randomElement([null, 'Q1', 'Q2', 'Q3', 'Q4']),
