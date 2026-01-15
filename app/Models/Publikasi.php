@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Publikasi extends Model
 {
-    use Blameable;
+    // use Blameable;
 
     protected $table = 'publikasi';
     protected $primaryKey = 'id_publikasi';
