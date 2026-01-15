@@ -50,16 +50,6 @@ class PublikasiController extends Controller
     public function store(StorePublikasiRequest $request)
     {
         try {
-            // Get authenticated user's dosen ID before validation
-            $idDosen = auth()->user()->dosen?->id_dosen;
-            
-            if (!$idDosen) {
-                return response()->json(['message' => 'Dosen tidak ditemukan'], 404);
-            }
-            
-            // Merge id_dosen into request
-            $request->merge(['id_dosen' => $idDosen]);
-            
             $publikasi = $this->publikasiService->create($request->validated());
 
             return response()->json([
@@ -95,16 +85,6 @@ class PublikasiController extends Controller
     public function update(UpdatePublikasiRequest $request, $id)
     {
         try {
-            // Get authenticated user's dosen ID before validation
-            $idDosen = auth()->user()->dosen?->id_dosen;
-            
-            if (!$idDosen) {
-                return response()->json(['message' => 'Dosen tidak ditemukan'], 404);
-            }
-            
-            // Merge id_dosen into request
-            $request->merge(['id_dosen' => $idDosen]);
-            
             $publikasi = $this->publikasiService->update($id, $request->validated());
 
             return response()->json([
