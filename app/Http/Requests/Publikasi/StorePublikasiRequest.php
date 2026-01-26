@@ -52,6 +52,13 @@ class StorePublikasiRequest extends FormRequest
             'id_pengindeks_publikasi' => ['nullable', 'integer', 'exists:publikasi_pengindeks,id_pengindeks_publikasi'],
             'sjr_kuartil' => ['nullable', 'string', 'max:10'],
             'sinta' => ['nullable', 'string', 'max:10'],
+
+            // Validasi untuk array penulis
+            'penulis' => ['nullable', 'array'],
+            'penulis.*.id_dosen' => ['nullable', 'integer', 'exists:dosen,id_dosen'],
+            'penulis.*.nama' => ['required', 'string', 'max:255'],
+            'penulis.*.afiliasi' => ['required', 'string', 'max:255'],
+            'penulis.*.urutan' => ['required', 'integer', 'min:1'],
         ];
     }
 
@@ -105,6 +112,20 @@ class StorePublikasiRequest extends FormRequest
             'sjr_kuartil.max' => 'SJR Kuartil maksimal 10 karakter',
             'sinta.string' => 'SINTA harus berupa teks',
             'sinta.max' => 'SINTA maksimal 10 karakter',
+
+            // Pesan validasi untuk penulis
+            'penulis.array' => 'Data penulis harus berupa array',
+            'penulis.*.id_dosen.integer' => 'ID dosen pada penulis harus berupa angka',
+            'penulis.*.id_dosen.exists' => 'Dosen pada penulis tidak ditemukan',
+            'penulis.*.nama.required' => 'Nama penulis harus diisi',
+            'penulis.*.nama.string' => 'Nama penulis harus berupa teks',
+            'penulis.*.nama.max' => 'Nama penulis maksimal 255 karakter',
+            'penulis.*.afiliasi.required' => 'Afiliasi penulis harus diisi',
+            'penulis.*.afiliasi.string' => 'Afiliasi penulis harus berupa teks',
+            'penulis.*.afiliasi.max' => 'Afiliasi penulis maksimal 255 karakter',
+            'penulis.*.urutan.required' => 'Urutan penulis harus diisi',
+            'penulis.*.urutan.integer' => 'Urutan penulis harus berupa angka',
+            'penulis.*.urutan.min' => 'Urutan penulis minimal 1',
         ];
     }
 }
