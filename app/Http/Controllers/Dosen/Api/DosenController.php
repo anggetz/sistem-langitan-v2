@@ -181,10 +181,27 @@ class DosenController extends Controller
         ], 200);
     }
 
-    public function list()
+    public function list(Request $request)
     {
         try {
-            $dosen = \App\Models\Dosen::with('pengguna:id_pengguna,nm_pengguna')->get();
+            $query = \App\Models\Dosen::with('pengguna:id_pengguna,nm_pengguna');
+
+            // Search by name if q parameter is provided and length > 3
+            if ($request->has('q') && strlen($request->q) >= 3) {
+                $search = $request->q;
+                $query->whereHas('pengguna', function ($q) use ($search) {
+                    // sebelum dicari dijadikan upper case
+                    $searchUpper = strtoupper($search);
+                    $q->whereRaw('UPPER(nm_pengguna) like ?', ['%' . $searchUpper . '%']);
+                });
+            }
+
+            // Order by name and limit to 10 records
+            $dosen = $query->join('pengguna', 'dosen.id_pengguna', '=', 'pengguna.id_pengguna')
+                ->orderBy('pengguna.nm_pengguna')
+                ->select('dosen.id_dosen', 'dosen.id_pengguna')
+                ->limit(10)
+                ->get();
 
             return response()->json([
                 'status' => Message::OK,
