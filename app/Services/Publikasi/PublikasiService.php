@@ -18,45 +18,45 @@ class PublikasiService
         $perPage = $params['per_page'] ?? 10;
         $offset = ($page - 1) * $perPage;
 
-//        dd($params);
+        //        dd($params);
 
         $query = Publikasi::with([
             'dosen:id_dosen,id_pengguna',
             'dosen.pengguna:id_pengguna,nm_pengguna',
             'jenisPublikasi:id_jenis_publikasi,jenis_publikasi',
             'pengindeksPublikasi:id_pengindeks_publikasi,pengindeks_publikasi',
-            'penulis'
+            'penulis',
         ]);
 
         // Filter by dosen (required - must be filtered first)
-        if (isset($params['id_dosen']) && !empty($params['id_dosen'])) {
+        if (isset($params['id_dosen']) && ! empty($params['id_dosen'])) {
             $query->where('id_dosen', $params['id_dosen']);
         }
 
         // Search functionality
-        if (isset($params['q']) && !empty($params['q'])) {
+        if (isset($params['q']) && ! empty($params['q'])) {
             $search = $params['q'];
-            $query->where(function($q) use ($search) {
-            $q->whereRaw("LOWER(judul) LIKE ?", ["%".strtolower($search)."%"])
-              ->orWhereRaw("LOWER(penerbit) LIKE ?", ["%".strtolower($search)."%"])
-              ->orWhereRaw("LOWER(abstrak) LIKE ?", ["%".strtolower($search)."%"])
-              ->orWhereRaw("LOWER(kata_kunci) LIKE ?", ["%".strtolower($search)."%"]);
+            $query->where(function ($q) use ($search) {
+                $q->whereRaw('LOWER(judul) LIKE ?', ['%'.strtolower($search).'%'])
+                    ->orWhereRaw('LOWER(penerbit) LIKE ?', ['%'.strtolower($search).'%'])
+                    ->orWhereRaw('LOWER(abstrak) LIKE ?', ['%'.strtolower($search).'%'])
+                    ->orWhereRaw('LOWER(kata_kunci) LIKE ?', ['%'.strtolower($search).'%']);
             });
         }
 
         // Filter by jenis publikasi
-        if (isset($params['id_jenis_publikasi']) && !empty($params['id_jenis_publikasi'])) {
+        if (isset($params['id_jenis_publikasi']) && ! empty($params['id_jenis_publikasi'])) {
             $query->where('id_jenis_publikasi', $params['id_jenis_publikasi']);
         }
 
         // Filter by pengindeks publikasi
-        if (isset($params['id_pengindeks_publikasi']) && !empty($params['id_pengindeks_publikasi'])) {
+        if (isset($params['id_pengindeks_publikasi']) && ! empty($params['id_pengindeks_publikasi'])) {
             $query->where('id_pengindeks_publikasi', $params['id_pengindeks_publikasi']);
         }
 
         // Filter by status
-        if (isset($params['status']) && !empty($params['status'])) {
-            $query->whereRaw("LOWER(status) = ?", [strtolower($params['status'])]);
+        if (isset($params['status']) && ! empty($params['status'])) {
+            $query->whereRaw('LOWER(status) = ?', [strtolower($params['status'])]);
         }
 
         // Filter by approval status
@@ -69,12 +69,12 @@ class PublikasiService
         }
 
         // Filter by year
-        if (isset($params['year']) && !empty($params['year'])) {
+        if (isset($params['year']) && ! empty($params['year'])) {
             $query->whereYear('tanggal_publikasi', $params['year']);
         }
 
         $total = $query->count();
-        
+
         $data = $query
             ->orderBy('tanggal_publikasi', 'desc')
             ->orderBy('id_publikasi', 'desc')
@@ -97,14 +97,32 @@ class PublikasiService
     {
         DB::beginTransaction();
         try {
+            // Pisahkan data penulis dari data publikasi
+            $penulisData = $data['penulis'] ?? [];
+            unset($data['penulis']);
+
+            // Buat publikasi
             $publikasi = Publikasi::create($data);
 
+            // Simpan data penulis jika ada
+            if (! empty($penulisData)) {
+                foreach ($penulisData as $penulis) {
+                    $publikasi->penulis()->create([
+                        'id_dosen' => $penulis['id_dosen'] ?? null,
+                        'nama' => $penulis['nama'],
+                        'afiliasi' => $penulis['afiliasi'],
+                        'urutan' => $penulis['urutan'],
+                    ]);
+                }
+            }
+
             DB::commit();
+
             return $publikasi->load([
                 'dosen',
                 'jenisPublikasi',
                 'pengindeksPublikasi',
-                'penulis'
+                'penulis',
             ]);
         } catch (Exception $e) {
             DB::rollBack();
@@ -125,10 +143,10 @@ class PublikasiService
             'penulis.dosen:id_dosen,id_pengguna',
             'penulis.dosen.pengguna:id_pengguna,nm_pengguna',
             'approvedBy:id_pengguna,nm_pengguna',
-            'rejectedBy:id_pengguna,nm_pengguna'
+            'rejectedBy:id_pengguna,nm_pengguna',
         ])->find($id);
-        
-        if (!$publikasi) {
+
+        if (! $publikasi) {
             throw new ModelNotFoundException('Publikasi tidak ditemukan');
         }
 
@@ -143,20 +161,44 @@ class PublikasiService
         DB::beginTransaction();
         try {
             $publikasi = Publikasi::find($id);
-            
-            if (!$publikasi) {
+
+            if (! $publikasi) {
                 throw new ModelNotFoundException('Publikasi tidak ditemukan');
             }
 
+            // Pisahkan data penulis dari data publikasi
+            $penulisData = $data['penulis'] ?? null;
+            unset($data['penulis']);
+
+            // Update publikasi
             $publikasi->update($data);
 
+            // Update data penulis jika ada
+            if ($penulisData !== null) {
+                // Hapus semua penulis lama
+                $publikasi->penulis()->delete();
+
+                // Tambahkan penulis baru
+                if (! empty($penulisData)) {
+                    foreach ($penulisData as $penulis) {
+                        $publikasi->penulis()->create([
+                            'id_dosen' => $penulis['id_dosen'] ?? null,
+                            'nama' => $penulis['nama'],
+                            'afiliasi' => $penulis['afiliasi'],
+                            'urutan' => $penulis['urutan'],
+                        ]);
+                    }
+                }
+            }
+
             DB::commit();
+
             return $publikasi->fresh([
                 'dosen:id_dosen,id_pengguna',
                 'dosen.pengguna:id_pengguna,nm_pengguna',
                 'jenisPublikasi',
                 'pengindeksPublikasi',
-                'penulis'
+                'penulis',
             ]);
         } catch (Exception $e) {
             DB::rollBack();
@@ -172,18 +214,19 @@ class PublikasiService
         DB::beginTransaction();
         try {
             $publikasi = Publikasi::find($id);
-            
-            if (!$publikasi) {
+
+            if (! $publikasi) {
                 throw new ModelNotFoundException('Publikasi tidak ditemukan');
             }
 
             // Delete related penulis first
             $publikasi->penulis()->delete();
-            
+
             // Delete publikasi
             $publikasi->delete();
 
             DB::commit();
+
             return true;
         } catch (Exception $e) {
             DB::rollBack();
@@ -199,8 +242,8 @@ class PublikasiService
         DB::beginTransaction();
         try {
             $publikasi = Publikasi::find($id);
-            
-            if (!$publikasi) {
+
+            if (! $publikasi) {
                 throw new ModelNotFoundException('Publikasi tidak ditemukan');
             }
 
@@ -214,12 +257,13 @@ class PublikasiService
             ]);
 
             DB::commit();
+
             return $publikasi->fresh([
                 'dosen:id_dosen,id_pengguna',
                 'dosen.pengguna:id_pengguna,nm_pengguna',
                 'jenisPublikasi',
                 'pengindeksPublikasi',
-                'approvedBy:id_pengguna,nm_pengguna'
+                'approvedBy:id_pengguna,nm_pengguna',
             ]);
         } catch (Exception $e) {
             DB::rollBack();
@@ -235,8 +279,8 @@ class PublikasiService
         DB::beginTransaction();
         try {
             $publikasi = Publikasi::find($id);
-            
-            if (!$publikasi) {
+
+            if (! $publikasi) {
                 throw new ModelNotFoundException('Publikasi tidak ditemukan');
             }
 
@@ -250,12 +294,13 @@ class PublikasiService
             ]);
 
             DB::commit();
+
             return $publikasi->fresh([
                 'dosen:id_dosen,id_pengguna',
                 'dosen.pengguna:id_pengguna,nm_pengguna',
                 'jenisPublikasi',
                 'pengindeksPublikasi',
-                'rejectedBy:id_pengguna,nm_pengguna'
+                'rejectedBy:id_pengguna,nm_pengguna',
             ]);
         } catch (Exception $e) {
             DB::rollBack();

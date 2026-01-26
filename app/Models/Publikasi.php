@@ -10,7 +10,9 @@ class Publikasi extends Model
     // use Blameable;
 
     protected $table = 'publikasi';
+
     protected $primaryKey = 'id_publikasi';
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -54,15 +56,17 @@ class Publikasi extends Model
      * Status constants
      */
     public const STATUS_DRAFT = 'DRAFT';
+
     public const STATUS_SUBMITTED = 'SUBMITTED';
+
     public const STATUS_ACCEPTED = 'ACCEPTED';
+
     public const STATUS_REJECTED = 'REJECTED';
+
     public const STATUS_PUBLISHED = 'PUBLISHED';
 
     /**
      * Get all status options
-     *
-     * @return array
      */
     public static function statusOptions(): array
     {
@@ -79,14 +83,15 @@ class Publikasi extends Model
      * SJR Kuartil constants
      */
     public const SJR_Q1 = 'Q1';
+
     public const SJR_Q2 = 'Q2';
+
     public const SJR_Q3 = 'Q3';
+
     public const SJR_Q4 = 'Q4';
 
     /**
      * Get all SJR Kuartil options
-     *
-     * @return array
      */
     public static function sjrKuartilOptions(): array
     {
@@ -102,16 +107,19 @@ class Publikasi extends Model
      * SINTA constants
      */
     public const SINTA_1 = '1';
+
     public const SINTA_2 = '2';
+
     public const SINTA_3 = '3';
+
     public const SINTA_4 = '4';
+
     public const SINTA_5 = '5';
+
     public const SINTA_6 = '6';
 
     /**
      * Get all SINTA options
-     *
-     * @return array
      */
     public static function sintaOptions(): array
     {
@@ -154,7 +162,8 @@ class Publikasi extends Model
      */
     public function penulis()
     {
-        return $this->hasMany(PublikasiPenulis::class, 'id_publikasi', 'id_publikasi');
+        return $this->hasMany(PublikasiPenulis::class, 'id_publikasi', 'id_publikasi')
+            ->orderBy('urutan', 'asc');
     }
 
     /**
