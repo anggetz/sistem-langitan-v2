@@ -187,10 +187,12 @@ class DosenController extends Controller
             $query = \App\Models\Dosen::with('pengguna:id_pengguna,nm_pengguna');
 
             // Search by name if q parameter is provided and length > 3
-            if ($request->has('q') && strlen($request->q) > 3) {
+            if ($request->has('q') && strlen($request->q) >= 3) {
                 $search = $request->q;
                 $query->whereHas('pengguna', function ($q) use ($search) {
-                    $q->where('nm_pengguna', 'like', '%' . $search . '%');
+                    // sebelum dicari dijadikan upper case
+                    $searchUpper = strtoupper($search);
+                    $q->whereRaw('UPPER(nm_pengguna) like ?', ['%' . $searchUpper . '%']);
                 });
             }
 
