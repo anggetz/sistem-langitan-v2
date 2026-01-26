@@ -21,6 +21,7 @@ Route::group(
     ['prefix' => 'dosen', 'middleware' => 'role:' . Role::DOSEN],
     function () {
 
+        Route::get('list', [DosenController::class, 'list']);
         Route::get('profile', [DosenController::class, 'profile']);
         Route::put('profile', [DosenController::class, 'EditProfile']);
 

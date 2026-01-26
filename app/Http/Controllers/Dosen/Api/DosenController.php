@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Dosen\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\DosenListResource;
 use App\Models\Jenjang;
 use App\Models\Message;
 use App\Models\Pengguna;
@@ -178,5 +179,22 @@ class DosenController extends Controller
             'status' => Message::OK,
             'data' => $data
         ], 200);
+    }
+
+    public function list()
+    {
+        try {
+            $dosen = \App\Models\Dosen::with('pengguna:id_pengguna,nm_pengguna')->get();
+
+            return response()->json([
+                'status' => Message::OK,
+                'data' => DosenListResource::collection($dosen)
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 }
