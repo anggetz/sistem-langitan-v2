@@ -4,11 +4,13 @@ namespace App\Http\Controllers\Dosen\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\DosenListResource;
+use App\Models\Dosen;
 use App\Models\Jenjang;
 use App\Models\Message;
 use App\Models\Pengguna;
 use App\Models\ProgramStudi;
 use App\Services\Mahasiswa\AkademikService;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -89,6 +91,105 @@ class DosenController extends Controller
                 'data' => $data
             ]);
         } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function biodata(Request $request)
+    {
+        try {
+            $user = Pengguna::select([
+                'id_pengguna',
+                'nm_pengguna',
+                'gelar_depan',
+                'gelar_belakang',
+                'id_kota_lahir',
+                'tgl_lahir_pengguna',
+                'kelamin_pengguna',
+                'id_agama',
+                'id_status_pernikahan',
+                'email_pengguna',
+                'email_alternate',
+            ])->with([
+                'kotaLahir:id_kota,nm_kota',
+                'agama:id_agama,nm_agama',
+                'statusPernikahan:id_status_pernikahan,nm_status_pernikahan',
+                'dosen' => function ($query) {
+                    $query->select([
+                        'id_dosen',
+                        'id_pengguna',
+                        'nip_dosen',
+                        'nidn_dosen',
+                        'serdos',
+                        'status_dosen',
+                        'nomor_npwp',
+                        'no_ktp',
+                        'alamat_rumah_dosen',
+                        'kode_pos',
+                        'tlp_dosen',
+                        'mobile_dosen',
+                        'id_program_studi',
+                        'id_golongan',
+                        'id_jabatan_fungsional',
+                        'id_status_pengguna',
+                    ])->with([
+                        'programStudi:id_program_studi,nm_program_studi,id_fakultas',
+                        'programStudi.fakultas:id_fakultas,nm_fakultas',
+                        'golongan:id_golongan,nm_golongan',
+                        'jabatanFungsional:id_jabatan_fungsional,nm_jabatan_fungsional',
+                        'statusPengguna:id_status_pengguna,nm_status_pengguna',
+                        'sejarahGolongan',
+                        'sejarahJabatanFungsional',
+                    ]);
+                },
+            ])->find(auth()->user()->id_pengguna);
+
+            if (!$user) {
+                return response()->json(['message' => 'User not found'], 404);
+            }
+
+            $dosen = $user->dosen;
+
+            $data = [
+                'id_pengguna'           => $user->id_pengguna,
+                'nm_pengguna'           => $user->nm_pengguna,
+                'gelar_depan'           => $user->gelar_depan,
+                'gelar_belakang'        => $user->gelar_belakang,
+                'tgl_lahir_pengguna'    => $user->tgl_lahir_pengguna,
+                'kelamin_pengguna'      => $user->kelamin_pengguna,
+                'email_pengguna'        => $user->email_pengguna,
+                'email_alternate'       => $user->email_alternate,
+                'kota_lahir'            => $user->kotaLahir?->nm_kota,
+                'agama'                 => $user->agama?->nm_agama,
+                'status_pernikahan'     => $user->statusPernikahan?->nm_status_pernikahan,
+                'id_dosen'              => $dosen->id_dosen,
+                'nip_dosen'             => $dosen->nip_dosen,
+                'nidn_dosen'            => $dosen->nidn_dosen,
+                'serdos'                => $dosen->serdos,
+                'status_dosen'          => $dosen->status_dosen,
+                'nomor_npwp'            => $dosen->nomor_npwp,
+                'no_ktp'                => $dosen->no_ktp,
+                'alamat_rumah_dosen'    => $dosen->alamat_rumah_dosen,
+                'kode_pos'              => $dosen->kode_pos,
+                'tlp_dosen'             => $dosen->tlp_dosen,
+                'mobile_dosen'          => $dosen->mobile_dosen,
+                'program_studi'         => $dosen->programStudi?->nm_program_studi,
+                'fakultas'              => $dosen->programStudi?->fakultas?->nm_fakultas,
+                'golongan'              => $dosen->golongan?->nm_golongan,
+                'jabatan_fungsional'    => $dosen->jabatanFungsional?->nm_jabatan_fungsional,
+                'status_pengguna'       => $dosen->statusPengguna?->nm_status_pengguna,
+                'sejarah_golongan'      => $dosen->sejarahGolongan,
+                'sejarah_jabatan_fungsional' => $dosen->sejarahJabatanFungsional,
+            ];
+
+            return response()->json([
+                'message' => Message::OK,
+                'data'    => $data,
+            ]);
+        } catch (Exception $e) {
             return response()->json([
                 'status' => 'error',
                 'message' => $e->getMessage()

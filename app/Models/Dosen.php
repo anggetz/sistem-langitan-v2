@@ -30,6 +30,14 @@ class Dosen extends Model
         return $this->hasMany(DosenPenghargaan::class,"id_dosen","id_dosen");
     }
 
+    public function sejarahGolongan(){
+        return $this->hasMany(Penelitian::class,"id_peneliti","id_dosen");
+    }
+
+    public function sejarahJabatanFungsional(){
+        return $this->hasMany(Penelitian::class,"id_peneliti","id_dosen");
+    }
+
     public function penelitian(){
         return $this->hasMany(Penelitian::class,"id_peneliti","id_dosen");
     }
@@ -48,6 +56,18 @@ class Dosen extends Model
 
     public function namaPengguna(){
         return $this->belongsTo(Pengguna::class,"id_pengguna","id_pengguna")->select(["id_pengguna","nm_pengguna"]);
+    }
+
+    public function golongan(){
+        return $this->belongsTo(Golongan::class,"id_golongan","id_golongan");
+    }
+
+    public function jabatanFungsional(){
+        return $this->belongsTo(JabatanFungsional::class,"id_jabatan_fungsional","id_jabatan_fungsional");
+    }
+
+    public function statusPengguna(){
+        return $this->belongsTo(StatusPengguna::class,"id_status_pengguna","id_status_pengguna");
     }
 
 }

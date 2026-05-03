@@ -23,6 +23,7 @@ Route::group(
 
         Route::get('list', [DosenController::class, 'list']);
         Route::get('profile', [DosenController::class, 'profile']);
+        Route::get('biodata', [DosenController::class, 'biodata']);
         Route::put('profile', [DosenController::class, 'EditProfile']);
 
         Route::post('profile-photo', [DosenController::class, 'EditPhotoProfile']);
@@ -79,7 +80,7 @@ Route::group(
                 Route::delete('/{id}', 'destroy');
                 Route::post('/{id}/approve', 'approve');
                 Route::post('/{id}/reject', 'reject');
-                
+
                 // Options endpoints - accessible without authentication
                 Route::group(['prefix' => 'options'], function () {
                     Route::get('status', 'statusOptions')->withoutMiddleware(['auth.token', 'role:' . Role::DOSEN]);

@@ -12,12 +12,12 @@ use Illuminate\Validation\ValidationException;
 
 abstract class AuthService
 {
-    
+
     /**
      * Melakukan hashing password.
      * Kamu bisa menggantinya dengan algoritma lain (misalnya bcrypt) jika diperlukan.
      */
-    protected function hashPassword(string $password): string
+    public function hashPassword(string $password): string
     {
         return sha1($password);
     }
@@ -76,12 +76,12 @@ abstract class AuthService
                $pengguna->password_hash_temp === $hashedPassword ||
                $perguruanTinggi->password_general === $hashedPassword;
     }
-    
+
     protected function sendFailedResponse($message, $statusCode)
     {
         throw ValidationException::withMessages([
             'username' => 'username atau password tidak sesuai',
         ]);
     }
-    
+
 }
