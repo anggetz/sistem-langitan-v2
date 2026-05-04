@@ -219,8 +219,8 @@ class DosenPresensiController extends Controller
                     'presensi_kelas.latitude',
                     'presensi_kelas.longitude',
                     'materi_mk.isi_materi_mk',
-                    DB::raw('COUNT(hadir.id_presensi_mkmhs) as total_hadir'),
-                    DB::raw('COUNT(thadir.id_presensi_mkmhs) as total_absen')
+                    DB::raw('COUNT(DISTINCT hadir.id_mhs) as total_hadir'),
+                    DB::raw('COUNT(DISTINCT thadir.id_mhs) as total_absen')
                 );
 
             $total = $presensiKelas->count();
