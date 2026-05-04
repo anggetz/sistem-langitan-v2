@@ -6,7 +6,7 @@ services:
     container_name: sistem-langitan-v2
     restart: unless-stopped
     ports:
-      - "80:80"
+      - "8000:80"
     env_file:
       - .env
     volumes:
