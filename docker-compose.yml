@@ -5,8 +5,6 @@ services:
       dockerfile: base.Dockerfile
     container_name: sistem-langitan-v2
     restart: unless-stopped
-    ports:
-      - "80:80"
     env_file:
       - .env
     volumes:
