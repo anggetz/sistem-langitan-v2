@@ -11,4 +11,7 @@ class SejarahJabatanFungsional extends Model
     protected $table = 'sejarah_jabatan_fungsional';
     protected $primaryKey = 'id_sejarah_jabatan_fungsional';
 
+    public function jabatanFungsional() {
+        return $this->belongsTo(JabatanFungsional::class, 'id_jabatan_fungsional', 'id_jabatan_fungsional');
+    }
 }

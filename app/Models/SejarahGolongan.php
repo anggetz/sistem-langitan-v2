@@ -11,4 +11,7 @@ class SejarahGolongan extends Model
     protected $table = 'sejarah_golongan';
     protected $primaryKey = 'id_sejarah_golongan';
 
+    public function golongan(){
+        return $this->belongsTo(Golongan::class, "id_golongan", "id_golongan");
+    }
 }

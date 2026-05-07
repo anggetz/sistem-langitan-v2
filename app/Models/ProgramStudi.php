@@ -24,4 +24,8 @@ class ProgramStudi extends Model
         return $this->belongsTo(Fakultas::class, 'id_fakultas', 'id_fakultas');
     }
 
+    public function department() {
+        return $this->belongsTo(Departemen::class, 'id_departemen', 'id_departemen');
+    }
+
 }

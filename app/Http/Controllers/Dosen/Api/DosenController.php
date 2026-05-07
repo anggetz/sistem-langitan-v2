@@ -135,14 +135,20 @@ class DosenController extends Controller
                         'id_golongan',
                         'id_jabatan_fungsional',
                         'id_status_pengguna',
+                        // 'id_departemen',
                     ])->with([
-                        'programStudi:id_program_studi,nm_program_studi,id_fakultas',
+                        'programStudi:id_program_studi,nm_program_studi,id_fakultas,id_departemen',
                         'programStudi.fakultas:id_fakultas,nm_fakultas',
-                        'golongan:id_golongan,nm_golongan',
-                        'jabatanFungsional:id_jabatan_fungsional,nm_jabatan_fungsional',
+                        // 'departemen:id_departemen,nm_departemen',
+                        'sejarahGolongan:tmt_sejarah_golongan,id_pengguna,id_golongan,tmt_sejarah_golongan',
+                        'sejarahGolongan.golongan:id_golongan,nm_golongan',
+                        'sejarahJabatanFungsional:id_pengguna,id_jabatan_fungsional,TMT_SEJ_JAB_FUNGSIONAL',
+                        'sejarahJabatanFungsional.jabatanFungsional:id_jabatan_fungsional,nm_jabatan_fungsional',
+                        'sejarahJabatanStruktural:id_pengguna,id_jabatan_struktural,tmt_sej_jab_struktural',
+                        'sejarahJabatanStruktural.jabatanStruktural:id_jabatan_struktural,nm_jabatan_struktural',
                         'statusPengguna:id_status_pengguna,nm_status_pengguna',
-                        'sejarahGolongan',
-                        'sejarahJabatanFungsional',
+                        'sejarahPendidikan:id_pengguna,id_pendidikan_akhir',
+                        'sejarahPendidikan.pendidikanAkhir:id_pendidikan_akhir,nama_pendidikan_akhir',
                     ]);
                 },
             ])->find(auth()->user()->id_pengguna);
@@ -152,6 +158,7 @@ class DosenController extends Controller
             }
 
             $dosen = $user->dosen;
+
 
             $data = [
                 'id_pengguna'           => $user->id_pengguna,
@@ -178,11 +185,14 @@ class DosenController extends Controller
                 'mobile_dosen'          => $dosen->mobile_dosen,
                 'program_studi'         => $dosen->programStudi?->nm_program_studi,
                 'fakultas'              => $dosen->programStudi?->fakultas?->nm_fakultas,
-                'golongan'              => $dosen->golongan?->nm_golongan,
-                'jabatan_fungsional'    => $dosen->jabatanFungsional?->nm_jabatan_fungsional,
+                'golongan'              => $dosen->sejarahGolongan?->golongan?->nm_golongan,
+                'sejarah_golongan'      => $dosen->sejarahGolongan?->tmt_sejarah_golongan,
+                'jabatan_fungsional'    => $dosen->sejarahJabatanFungsional?->jabatanFungsional?->nm_jabatan_fungsional,
                 'status_pengguna'       => $dosen->statusPengguna?->nm_status_pengguna,
-                'sejarah_golongan'      => $dosen->sejarahGolongan,
-                'sejarah_jabatan_fungsional' => $dosen->sejarahJabatanFungsional,
+                'sejarah_jabatan_fungsional' => $dosen->sejarahJabatanFungsional?->tmt_sej_jab_fungsional,
+                'sejarah_jabatan_strutural' => $dosen->sejarahJabatanStruktural?->tmt_sej_jab_struktural,
+                'jabatan_struktural'    => $dosen->sejarahJabatanStruktural?->jabatanStruktural?->nm_jabatan_struktural,
+                'pendidikan_akhir' => $dosen->sejarahPendidikan?->pendidikanAkhir?->nama_pendidikan_akhir,
             ];
 
             return response()->json([
