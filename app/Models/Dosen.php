@@ -50,19 +50,19 @@ class Dosen extends Model
     }
 
     public function sejarahGolongan(){
-        return $this->belongsTo(SejarahGolongan::class,"id_pengguna","id_pengguna");
+        return $this->hasMany(SejarahGolongan::class,"id_pengguna","id_pengguna")->orderByDesc('id_sejarah_golongan');
     }
 
     public function sejarahJabatanFungsional(){
-        return $this->belongsTo(SejarahJabatanFungsional::class,"id_pengguna","id_pengguna");
+        return $this->hasMany(SejarahJabatanFungsional::class,"id_pengguna","id_pengguna")->orderByDesc('id_sejarah_jabatan_fungsional');
     }
 
     public function sejarahJabatanStruktural() {
-        return $this->belongsTo(SejarahJabatanStruktural::class,"id_pengguna","id_pengguna");
+        return $this->hasMany(SejarahJabatanStruktural::class,"id_pengguna","id_pengguna")->orderByDesc('id_sejarah_jabatan_struktural');
     }
 
     public function sejarahPendidikan() {
-        return $this->belongsTo(SejarahPendidikan::class,"id_pengguna","id_pengguna");
+        return $this->hasMany(SejarahPendidikan::class,"id_pengguna","id_pengguna")->orderByDesc('id_sejarah_pendidikan');
     }
 
     public function statusPengguna(){
