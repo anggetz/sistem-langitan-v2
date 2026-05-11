@@ -23,7 +23,20 @@ class Pengguna extends Authenticatable implements JWTSubject
         'password_encrypted',
         'password_hash_temp'
     ];
-    protected $fillable = ['password_hash', 'fcm_token'];
+    protected $fillable = [
+        'password_hash',
+        'fcm_token',
+        'nm_pengguna',
+        'gelar_depan',
+        'gelar_belakang',
+        'tgl_lahir_pengguna',
+        'kelamin_pengguna',
+        'email_pengguna',
+        'email_alternate',
+        'id_kota_lahir',
+        'id_agama',
+        'id_status_pernikahan',
+    ];
     protected $dates = [
         'tgl_lahir_pengguna',
         'last_time_password',

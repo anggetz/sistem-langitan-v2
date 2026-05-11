@@ -148,7 +148,7 @@ class DosenController extends Controller
                         'sejarahJabatanStruktural:id_pengguna,id_jabatan_struktural,tmt_sej_jab_struktural',
                         'sejarahJabatanStruktural.jabatanStruktural:id_jabatan_struktural,nm_jabatan_struktural',
                         'statusPengguna:id_status_pengguna,nm_status_pengguna',
-                        'sejarahPendidikan:id_pengguna,id_pendidikan_akhir',
+                        'sejarahPendidikan:id_sejarah_pendidikan,id_pengguna,id_pendidikan_akhir',
                         'sejarahPendidikan.pendidikanAkhir:id_pendidikan_akhir,nama_pendidikan_akhir',
                     ]);
                 },
@@ -204,6 +204,81 @@ class DosenController extends Controller
         } catch (Exception $e) {
             return response()->json([
                 'status' => 'error',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function editBiodata(Request $request)
+    {
+        try {
+            $data = $request->validate([
+                'nm_pengguna'          => 'required|string|max:255',
+                'gelar_depan'          => 'nullable|string|max:50',
+                'gelar_belakang'       => 'nullable|string|max:50',
+                'tgl_lahir_pengguna'   => 'required|date_format:Y-m-d',
+                'kelamin_pengguna'     => 'required|in:L,P',
+                'email_pengguna'       => 'nullable|email',
+                'email_alternate'      => 'nullable|email',
+                'id_kota_lahir'        => 'required|integer',
+                'id_status_pernikahan' => 'required|integer',
+                'id_pendidikan_akhir'  => 'nullable|integer',
+                'nomor_npwp'           => 'nullable|string|max:30',
+                'no_ktp'               => 'nullable|string|max:20',
+                'alamat_rumah_dosen'   => 'nullable|string|max:255',
+                'kode_pos'             => 'nullable|string|max:10',
+                'tlp_dosen'            => 'nullable|string|max:20',
+                'mobile_dosen'         => 'nullable|string|max:20',
+            ]);
+
+            $user = Pengguna::with('dosen.sejarahPendidikan')->find(auth()->user()->id_pengguna);
+
+            if (!$user) {
+                return response()->json(['message' => 'User not found'], 404);
+            }
+
+            DB::beginTransaction();
+
+            $user->fill([
+                'nm_pengguna'          => $data['nm_pengguna'],
+                'gelar_depan'          => $data['gelar_depan'] ?? null,
+                'gelar_belakang'       => $data['gelar_belakang'] ?? null,
+                'tgl_lahir_pengguna'   => $data['tgl_lahir_pengguna'],
+                'kelamin_pengguna'     => $data['kelamin_pengguna'],
+                'email_pengguna'       => $data['email_pengguna'] ?? null,
+                'email_alternate'      => $data['email_alternate'] ?? null,
+                'id_kota_lahir'        => $data['id_kota_lahir'],
+                'id_status_pernikahan' => $data['id_status_pernikahan'],
+            ])->save();
+
+            $user->dosen->fill([
+                'nomor_npwp'         => $data['nomor_npwp'] ?? null,
+                'no_ktp'             => $data['no_ktp'] ?? null,
+                'alamat_rumah_dosen' => $data['alamat_rumah_dosen'] ?? null,
+                'kode_pos'           => $data['kode_pos'] ?? null,
+                'tlp_dosen'          => $data['tlp_dosen'] ?? null,
+                'mobile_dosen'       => $data['mobile_dosen'] ?? null,
+            ])->save();
+
+            if (!empty($data['id_pendidikan_akhir'])) {
+                $sejarahPendidikan = $user->dosen->sejarahPendidikan->first();
+                if ($sejarahPendidikan) {
+                    $sejarahPendidikan->update(['id_pendidikan_akhir' => $data['id_pendidikan_akhir']]);
+                } else {
+                    \App\Models\SejarahPendidikan::create([
+                        'id_pengguna'        => $user->id_pengguna,
+                        'id_pendidikan_akhir' => $data['id_pendidikan_akhir'],
+                    ]);
+                }
+            }
+
+            DB::commit();
+
+            return response()->json(['message' => Message::OK]);
+        } catch (Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'status'  => 'error',
                 'message' => $e->getMessage()
             ], 500);
         }

@@ -24,6 +24,7 @@ Route::group(
         Route::get('list', [DosenController::class, 'list']);
         Route::get('profile', [DosenController::class, 'profile']);
         Route::get('biodata', [DosenController::class, 'biodata']);
+        Route::put('biodata', [DosenController::class, 'editBiodata']);
         Route::put('profile', [DosenController::class, 'EditProfile']);
 
         Route::post('profile-photo', [DosenController::class, 'EditPhotoProfile']);

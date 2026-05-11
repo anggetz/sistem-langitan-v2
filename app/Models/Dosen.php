@@ -15,6 +15,15 @@ class Dosen extends Model
     const CREATED_AT = 'created_on';
     const UPDATED_AT = 'updated_on';
 
+    protected $fillable = [
+        'nomor_npwp',
+        'no_ktp',
+        'alamat_rumah_dosen',
+        'kode_pos',
+        'tlp_dosen',
+        'mobile_dosen',
+    ];
+
     protected function casts(): array
     {
         return [

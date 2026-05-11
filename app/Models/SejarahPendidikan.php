@@ -11,6 +11,13 @@ class SejarahPendidikan extends Model
     protected $table = 'sejarah_pendidikan';
     protected $primaryKey = 'id_sejarah_pendidikan';
 
+    protected $fillable = [
+        'id_pengguna',
+        'id_pendidikan_akhir',
+    ];
+
+    public $timestamps = false;
+
     public function pendidikanAkhir() {
         return $this->belongsTo(PendidikanAkhir::class, 'id_pendidikan_akhir', 'id_pendidikan_akhir');
     }
